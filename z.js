@@ -234,36 +234,6 @@ function z_engine_message_handler(this_session, client, message, tw)
 			}
 		});
 	}
-	else if (message.favorite)
-	{
-		tw.favorite(message.favorite.status.id_str, function(error, data, response)
-		{
-			if(error)
-			{
-				console.error("FAVORITE ERROR\ndata: "+data+'response: '+response+'oauth: '+tw+'message: '+message);
-			}
-		});
-	}
-	else if (message.unfavorite)
-	{
-		tw.unfavorite(message.unfavorite.status.id_str, function(error, data, response)
-		{
-			if(error)
-			{
-				console.error("UNFAVORITE ERROR\ndata: "+data+'response: '+response+'oauth: '+tw+'message: '+message);
-			}
-		});
-	}
-	else if (message.retweet)
-	{
-		tw.retweet(message.retweet.status.id_str, function(error, data, response)
-		{
-			if(error)
-			{
-				console.error("RETWEET ERROR\ndata: "+data+'response: '+response+'oauth: '+tw+'message: '+message);
-			}
-		});
-	}
 	else if (message.destroy)
 	{
 		tw.destroy(message.destroy.status.id_str, function(error, data, response)
@@ -282,6 +252,36 @@ function z_engine_message_handler(this_session, client, message, tw)
 				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'mentions', count: startup_count, include_entities: true}, false, "mentions");
 			break;
 		}
+	}
+	else if (message.favorite)
+	{
+		tw.favorite(message.favorite.status.id_str, function(error, data, response)
+		{
+			if(error)
+			{
+				console.error("FAVORITE ERROR\ndata: "+data+'response: '+response+'oauth: '+tw+'message: '+message);
+			}
+		});
+	}
+	else if (message.retweet)
+	{
+		tw.retweet(message.retweet.status.id_str, function(error, data, response)
+		{
+			if(error)
+			{
+				console.error("RETWEET ERROR\ndata: "+data+'response: '+response+'oauth: '+tw+'message: '+message);
+			}
+		});
+	}
+	else if (message.unfavorite)
+	{
+		tw.unfavorite(message.unfavorite.status.id_str, function(error, data, response)
+		{
+			if(error)
+			{
+				console.error("UNFAVORITE ERROR\ndata: "+data+'response: '+response+'oauth: '+tw+'message: '+message);
+			}
+		});
 	}
 }
 
