@@ -123,7 +123,7 @@ function z_engine_attrition()
 			},15000);
 			var populate_mentions_tab = window.setTimeout(function()
 			{
-				//this.socket.send({fetch: "mentions"});
+				this.socket.send({fetch: "mentions"});
 			},5000);
 		}
 		else if (json.delete)
