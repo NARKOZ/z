@@ -1,0 +1,31 @@
+img#loading(src='img/spinner.gif', class='loading')
+
+.comment-list-wrapper
+  #sub-nav(class='navigation')
+    ul.tabbed
+      li(style='float:right;')
+        a(href='/oauth/logout') logout
+      li(style='float:right;')
+        a#clear(href='#') clear
+      li(style='float:right')
+        a#pause(href='#') pause
+      li
+        a#home-timeline-click(href='#', onclick='return false;') home
+      li
+        a#mentions-timeline-click(href='#', onclick='return false;') mentions
+    .clearer &nbsp;
+
+  form#new-tweet-form(autocomplete='off')
+    ul.tabbed
+      li(style='float:right;')
+        input#new-tweet-submit(type='submit', disabled='disabled', value='send')
+      li(style='float:left;width:93%;')
+        input#new-tweet(type='text', disabled='disabled', placeholder='write your tweet here!', style='width:100%;', maxlength='140', value='loading...')
+
+  .hr
+
+  ul#mentions-timeline(style='display:none;')
+
+  ul#home-timeline
+
+script z_engine_kickstart(); //this is the only inline javascript so far
