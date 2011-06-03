@@ -128,7 +128,10 @@ function z_engine_attrition()
 		}
 		else if (json.delete)
 		{
-			$("comment-"+json.status.id_str).remove();
+			if ($("comment-"+json.delete.status.id_str))
+			{
+				$("comment-"+json.delete.status.id_str).remove(); //add effects here later
+			}
 		}
 		else if (json.event)
 		{
