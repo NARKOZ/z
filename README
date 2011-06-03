@@ -1,1 +1,20 @@
-TODO: this
+about:
+
+most just a client im writing in my spare time, nothing really that special here.
+it is meant to be ran with only a single user (eg localhost, NOT the internet) at a time at the moment.
+
+you should use http://127.0.0.1:8080/oauth/callback as your callback url.
+
+it is licensed under the new bsd license, and is partially based on "designo" (search for it on here).
+
+rquirements:
+
+npm install connect
+npm install express
+npm install jade
+npm install oauth
+npm install socket.io
+
+optional:
+
+npm install connect-gzip
