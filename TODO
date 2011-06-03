@@ -1,1 +1,10 @@
-too much
+1) stop userstream when client disconnects
+2) pull the new id of what is retweeted in (so it can be undone if necessary)
+3) much smoother effects, possibly a conversion to scripty2
+4) more overall sanity, i have quite a bit in already but i am addicted to putting ifs / else ifs / elses / switches, so deal with it
+5) further simplification of clientside javascript for faster execution
+6) documentation of some sort maybe?
+7) a way to internally hold new tweets as they come in when "paused", and  spit those out when unpaused
+8) deleting tweets is untested, its a rare occasion when i need to do that
+9) possibly a govern of some sort when it spits out too many tweets (eg it slows each outputted tweet down to one per second)
+10) fix the reply thing, everything works except the specific id replied to
