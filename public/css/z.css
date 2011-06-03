@@ -451,15 +451,14 @@ ul.tabbed li
 
 ::-webkit-scrollbar-track-piece
 {
-	background: #888888;
-
+	background-color: #F6F6F6;
 }
 
 ::-webkit-scrollbar-thumb:vertical, ::-webkit-scrollbar-thumb:horizontal
 {
 	height: 20px;
-	background: #333;
-	border-radius: 4px;
+	background-color: #666666;
+	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 }
 
 ::-moz-selection
