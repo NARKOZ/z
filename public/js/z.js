@@ -3,7 +3,7 @@
  */
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
 var content_paused = Array(); //a cycling temporary array that holds the tweets we miss when paused
-var cutoff = 200; //max amount of tweets to display before pruning occurs
+var cutoff = 250; //max amount of tweets to display before pruning occurs
 var following = Array(); //holds our following id's array
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
 var in_reply_to_status_id = false;
@@ -40,97 +40,127 @@ function z_engine_attrition()
 	});
 	socket.on("message", function(json)
 	{
-		if (!json['delete'])
+		if (json.loaded)
 		{
-			if (json.loaded)
+			$("new-tweet").setValue("");
+			$("new-tweet").enable();
+			$("new-tweet-submit").enable();
+			$("loading").fade();
+			new Event.observe("new-tweet-form", "submit", function(event)
 			{
-				$("new-tweet").setValue("");
-				$("new-tweet").enable();
-				$("new-tweet-submit").enable();
-				$("loading").fade();
-				new Event.observe("new-tweet-form", "submit", function(event)
+				Event.stop(event);
+				z_engine_send_tweet();
+			});
+			new Event.observe("home-timeline-click", "click", function(event)
+			{
+				Event.stop(event);
+				if ($("mentions-timeline").visible())
 				{
-					Event.stop(event);
-					z_engine_send_tweet();
-				});
-				new Event.observe("home-timeline-click", "click", function(event)
-				{
-					Event.stop(event);
-					if ($("mentions-timeline").visible())
-					{
-						new Effect.Parallel(
-						[
-							new Effect.SlideUp("mentions-timeline",
-							{
-								duration: 0.5,
-								mode: 'relative'
-							}),
-							new Effect.SlideDown("home-timeline",
-							{
-								duration: 0.5,
-								mode: 'relative'
-							})
-						],
+					new S2.FX.Parallel(
+					[
+						new Effect.Fade("mentions-timeline",
 						{
-							duration: 1
-						});
-					}
-				});
-				new Event.observe("mentions-timeline-click", "click", function(event)
-				{
-					Event.stop(event);
-					if ($("home-timeline").visible())
-					{
-						new Effect.Parallel(
-						[
-							new Effect.SlideUp("home-timeline",
-							{
-								duration: 0.5,
-								mode: 'relative'
-							}),
-							new Effect.SlideDown("mentions-timeline",
-							{
-								duration: 0.5,
-								mode: 'relative'
-							})
-						],
+							duration: 0.25,
+							mode: 'relative'
+						}),
+						new Effect.BlindUp("mentions-timeline",
 						{
-							duration: 1
-						});
-					}
-				});
-				var update_relative_time = window.setInterval(function()
-				{
-					this.z_engine_update_relative_time()
-				},15000);
-				var populate_mentions_tab = window.setTimeout(function()
-				{
-					this.socket.send({fetch: "mentions"});
-				},5000);
-			}
-			else if (json.info)
-			{
-				screen_name = json.info.screen_name;
-				user_id = json.info.user_id;
-			}
-			else if (json.friends)
-			{
-				following = JSON.stringify(json.friends);
-			}
-			else if (json.text && json.user)
-			{
-				if (!paused)
-				{
-					z_engine_tweet(json, "home");
-					z_engine_clean_tweets();
+							duration: 0.25,
+							mode: 'relative'
+						}),
+						new Effect.BlindDown("home-timeline",
+						{
+							duration: 0.25,
+							mode: 'relative'
+						}),
+						new Effect.Appear("home-timeline",
+						{
+							duration: 0.25,
+							mode: 'relative'
+						})
+					],
+					{
+						duration: 1
+					});
 				}
-			}
-			else if (json.mentions)
+			});
+			new Event.observe("mentions-timeline-click", "click", function(event)
 			{
-				for (i = 0; i < json.mentions.length; i++)
+				Event.stop(event);
+				if ($("home-timeline").visible())
 				{
-					z_engine_tweet(json.mentions[i], "mentions");
+					new S2.FX.Parallel(
+					[
+						new Effect.Fade("home-timeline",
+						{
+							duration: 0.25,
+							mode: 'relative'
+						}),
+						new Effect.BlindUp("home-timeline",
+						{
+							duration: 0.25,
+							mode: 'relative'
+						}),
+						new Effect.BlindDown("mentions-timeline",
+						{
+							duration: 0.25,
+							mode: 'relative'
+						}),
+						new Effect.Appear("mentions-timeline",
+						{
+							duration: 0.25,
+							mode: 'relative'
+						})
+					],
+					{
+						duration: 1
+					});
 				}
+			});
+			var update_relative_time = window.setInterval(function()
+			{
+				this.z_engine_update_relative_time()
+			},15000);
+			var populate_mentions_tab = window.setTimeout(function()
+			{
+				//this.socket.send({fetch: "mentions"});
+			},5000);
+		}
+		else if (json.delete)
+		{
+			$("comment-"+json.status.id_str).remove();
+		}
+		else if (json.event)
+		{
+			//here we will handle events, some examples would be:
+				//list_member_added
+				//list_member_removed
+				//favorite
+				//unfavorite
+				//follows
+		}
+		else if (json.friends)
+		{
+			following = JSON.stringify(json.friends);
+		}
+		else if (json.info)
+		{
+			screen_name = json.info.screen_name;
+			user_id = json.info.user_id;
+		}
+		else if (json.mentions)
+		{
+			for (i = 0; i < json.mentions.length; i++)
+			{
+				z_engine_tweet(json.mentions[i], "mentions");
+			}
+		}
+		else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
+		{
+			if (!paused)
+			{
+				z_engine_tweet(json, "home");
+				z_engine_clean_tweets();
 			}
 		}
 	});
@@ -148,7 +178,7 @@ function z_engine_attrition()
  */
 function z_engine_clean_tweets()
 {
-	var tweet_elements = $$("li.comment-parent");
+	var tweet_elements = $$("ul#home-timeline > li.comment-parent");
 	if (tweet_elements.length >= cutoff)
 	{
 		var last_tweet = tweet_elements.pop();
@@ -229,7 +259,7 @@ function z_engine_send_tweet()
 		});
 		var reply_element = new Element('input',
 		{
-			'id': 'in_reply_to_status_id',
+			'id': 'in-reply-to-status-id',
 			'name': 'in_reply_to_status_id',
 			'value': reply_id,
 			'type': 'hidden'
@@ -238,7 +268,7 @@ function z_engine_send_tweet()
 		{
 			'id': 'include-entities',
 			'name': 'include_entities',
-			'value': true,
+			'value': 'true',
 			'type': 'hidden'
 		});
 		$("new-tweet-form").insert(text_element);
@@ -247,7 +277,7 @@ function z_engine_send_tweet()
 		var params = $("new-tweet-form").serialize(true);
 		socket.send(params);
 		$("new-tweet-text").remove();
-		$("in_reply_to_status_id").remove();
+		$("in-reply-to-status-id").remove();
 		$("include-entities").remove();
 		reply_id = "";
 		$("new-tweet").setValue("");
@@ -301,9 +331,9 @@ function z_engine_tweet(data, output)
 	}
 	if (!content[id]) //this probably looks funny at first but it is very important because it delimits every tweet by its id
 	{                 //the reason being is because retweet data works in _literal_ manner via the streaming api
-		ids[tid] = id;
 		if (output != "mentions")
 		{
+			ids[tid] = id;
 			content[id] = true; //see comment above
 		}
 		var linebreak = new Element('br');
@@ -432,7 +462,8 @@ function z_engine_tweet(data, output)
 				$("home-timeline").insert({'top': container_element});
 				if (mentioned)
 				{
-					$("mentions-timeline").insert({'top': container_element});
+					var mentioned_clone = $(container_element.cloneNode(true));
+					$("mentions-timeline").insert({'top': mentioned_clone});
 				}
 			break;
 		}
@@ -481,18 +512,16 @@ function z_engine_tweet(data, output)
 				z_engine_tweet_event_handler(event, {delete: {status: {id_str: id}}}, "delete", id);
 			});
 		}
-		new Effect.Parallel(
+		new S2.FX.Parallel(
 		[
-			new Effect.Opacity('comment-'+id,
+			new Effect.Appear('comment-'+id,
 			{
 				duration: 1.25,
-				transition: Effect.Transitions.sinoidal,
 				mode: 'relative'
 			}),
-			new Effect.SlideDown('comment-'+id,
+			new Effect.BlindDown('comment-'+id,
 			{
 				duration: 0.7,
-				transition: Effect.Transitions.sinoidal,
 				mode: 'relative'
 			})
 		],
@@ -500,7 +529,10 @@ function z_engine_tweet(data, output)
 			duration: 1.5
 		});
 	}
-	tid++;
+	if (!mentioned)
+	{
+		tid++;
+	}
 }
 
 /*
@@ -520,15 +552,7 @@ function z_engine_tweet_event_handler(event, params, resource, id, author, text)
 	switch (resource)
 	{
 		case 'delete':
-			Element.extend("del-"+id);
-			new Effect.DropOut("del-"+id,
-			{
-				onComplete: function()
-				{
-					socket.send(params);
-					$("del-"+id).remove();
-				}
-			});
+			socket.send(params); //it may look blank but we will be handling this elsewhere in the engine
 		break;
 		case 'favorite':
 			Element.extend("fave-"+id);

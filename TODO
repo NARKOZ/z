@@ -8,3 +8,4 @@
 8) deleting tweets is untested, its a rare occasion when i need to do that
 9) possibly a govern of some sort when it spits out too many tweets (eg it slows each outputted tweet down to one per second)
 10) fix the reply thing, everything works except the specific id replied to
+11) reset the userstream every...1000-2000 or so tweets / hour, whichever comes first
