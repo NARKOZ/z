@@ -55,72 +55,8 @@ function z_engine_attrition()
 				Event.stop(event);
 				z_engine_send_tweet();
 			});
-			new Event.observe("home-timeline-click", "click", function(event)
-			{
-				Event.stop(event);
-				if ($("mentions-timeline").visible())
-				{
-					new S2.FX.Parallel(
-					[
-						new Effect.Fade("mentions-timeline",
-						{
-							duration: 0.25,
-							mode: 'relative'
-						}),
-						new Effect.BlindUp("mentions-timeline",
-						{
-							duration: 0.25,
-							mode: 'relative'
-						}),
-						new Effect.BlindDown("home-timeline",
-						{
-							duration: 0.25,
-							mode: 'relative'
-						}),
-						new Effect.Appear("home-timeline",
-						{
-							duration: 0.25,
-							mode: 'relative'
-						})
-					],
-					{
-						duration: 1
-					});
-				}
-			});
-			new Event.observe("mentions-timeline-click", "click", function(event)
-			{
-				Event.stop(event);
-				if ($("home-timeline").visible())
-				{
-					new S2.FX.Parallel(
-					[
-						new Effect.Fade("home-timeline",
-						{
-							duration: 0.25,
-							mode: 'relative'
-						}),
-						new Effect.BlindUp("home-timeline",
-						{
-							duration: 0.25,
-							mode: 'relative'
-						}),
-						new Effect.BlindDown("mentions-timeline",
-						{
-							duration: 0.25,
-							mode: 'relative'
-						}),
-						new Effect.Appear("mentions-timeline",
-						{
-							duration: 0.25,
-							mode: 'relative'
-						})
-					],
-					{
-						duration: 1
-					});
-				}
-			});
+			z_engine_clicker("home-timeline-click", "home-timeline", "mentions-timeline"); //home
+			z_engine_clicker("mentions-timeline-click", "mentions-timeline", "home-timeline"); //mentions
 			var update_relative_time = window.setInterval(function()
 			{
 				this.z_engine_update_relative_time()
@@ -194,6 +130,47 @@ function z_engine_clean_tweets()
 		}
 	}
 }
+
+/*
+ * the "home", "mentions", "inbox", etc switcher
+ */
+function z_engine_clicker(id, one, two)
+{
+	new Event.observe(id, "click", function(event)
+	{
+		Event.stop(event);
+		if ($(two).visible())
+		{
+			new S2.FX.Parallel(
+			[
+				new Effect.Fade(two,
+				{
+					duration: 0.25,
+					mode: 'relative'
+				}),
+				new Effect.BlindUp(two,
+				{
+					duration: 0.25,
+					mode: 'relative'
+				}),
+				new Effect.BlindDown(one,
+				{
+					duration: 0.25,
+					mode: 'relative'
+				}),
+				new Effect.Appear(one,
+				{
+					duration: 0.25,
+					mode: 'relative'
+				})
+			],
+			{
+				duration: 1
+			});
+		}
+	});
+}
+
 /*
  * starts up the engine
  */
