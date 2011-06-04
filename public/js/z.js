@@ -223,13 +223,13 @@ function z_engine_notification(av, head, text)
  */
 function z_engine_parse_tweet(text)
 {
-	text = text.replace(/\n\r?/g, '<br />');
 	if(!text)
 	{
 		return text;
 	}
 	else
 	{
+		text = text.replace(/\n\r?/g, '<br />');
 		text = text.replace(/((https?\:\/\/)|(www\.))([^ ]+)/g, function(url)
 		{
 			return '<a target="_blank" href="'+ url +'">'+url.replace(/^www./i,'')+'</a>';
