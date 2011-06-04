@@ -35,6 +35,20 @@ function z_engine_attrition()
 		Event.stop(event);
 		return z_engine_tweet_pause();
 	});
+	new Event.observe("new-tweet","keyup",function(event)
+	{
+		if($("new-tweet").getValue() === '')
+		{
+			reply_id = false;
+		}
+	});
+	new Event.observe("new-tweet","keydown",function(event)
+	{
+		if($("new-tweet").getValue() === '')
+		{
+			reply_id = false;
+		}
+	});
 	socket.connect();
 	socket.on("connect",function()
 	{
