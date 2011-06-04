@@ -266,7 +266,7 @@ function z_engine_send_tweet()
 			};
 		}
 		socket.send(params);
-		reply_id = "";
+		reply_id = false;
 		$("new-tweet").setValue("");
 		$("new-tweet").enable();
 		$("new-tweet-submit").enable();
