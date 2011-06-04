@@ -2,14 +2,12 @@
  * initial variables
  */
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
-var content_paused = Array(); //a cycling temporary array that holds the tweets we miss when paused
 var cutoff = 250; //max amount of tweets to display before pruning occurs
 var following = Array(); //holds our following id's array
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
-var in_reply_to_status_id = false;
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var page = 1; //the page we start on (on the home timeline)
-var reply_id = "";
+var reply_id = false;
 var screen_name = "";
 var socket = new io.Socket(); //socket.io, duh
 var tid = 0; //internal counter
@@ -129,6 +127,14 @@ function z_engine_clean_tweets()
 			$(tweet_elements[i]).remove();
 		}
 	}
+	var mention_elements = $("mentions-timeline").childElements();
+	for (i = 0; i < mention_elements.length; i++)
+	{
+		if (i > cutoff)
+		{
+			$(mention_elements[i]).remove();
+		}
+	}
 }
 
 /*
@@ -244,35 +250,22 @@ function z_engine_send_tweet()
 		$("new-tweet").disable();
 		$("new-tweet-submit").disable();
 		var temp_element = $("new-tweet").getValue();
-		var text_element = new Element('input',
+		if (!reply_id)
 		{
-			'id': 'new-tweet-text',
-			'name': 'status',
-			'value': temp_element,
-			'type': 'hidden'
-		});
-		var reply_element = new Element('input',
+			var params = {
+				status: temp_element,
+				include_entities: true
+			};
+		}
+		else
 		{
-			'id': 'in-reply-to-status-id',
-			'name': 'in_reply_to_status_id',
-			'value': reply_id,
-			'type': 'hidden'
-		});
-		var include_entities_element = new Element('input',
-		{
-			'id': 'include-entities',
-			'name': 'include_entities',
-			'value': 'true',
-			'type': 'hidden'
-		});
-		$("new-tweet-form").insert(text_element);
-		$("new-tweet-form").insert({'bottom': reply_element});
-		$("new-tweet-form").insert({'bottom': include_entities_element});
-		var params = $("new-tweet-form").serialize(true);
+			var params = {
+				status: temp_element,
+				in_reply_to_status_id: Number(reply_id),
+				include_entities: true
+			};
+		}
 		socket.send(params);
-		$("new-tweet-text").remove();
-		$("in-reply-to-status-id").remove();
-		$("include-entities").remove();
 		reply_id = "";
 		$("new-tweet").setValue("");
 		$("new-tweet").enable();
@@ -341,7 +334,14 @@ function z_engine_tweet(data, output)
 		{
 			var mentioned = z_engine_tweet_mentioned(entities);
 		}
-		var container_element = new Element('li', {'id': 'comment-'+id, 'class': 'comment-parent', 'style': 'display:none;opacity:0;'});
+		if (!mentioned)
+		{
+			var container_element = new Element('li', {'id': 'comment-'+id, 'class': 'comment-parent', 'style': 'display:none;opacity:0;'});
+		}
+		else
+		{
+			var container_element = new Element('li', {'id': 'comment-'+id+'-mentioned', 'class': 'comment-parent', 'style': 'display:none;opacity:0;'});
+		}
 			var profile_wrapper_element = new Element('div', {'class': 'comment-profile-wrapper left'});
 				var gravatar_element = new Element('div', {'class': 'comment-gravatar'});
 					var gravatar_author_link_element = new Element('a', {'target': '_blank', href: 'http://twitter.com/'+author});
@@ -460,7 +460,7 @@ function z_engine_tweet(data, output)
 				{
 					z_engine_notification(avatar, author, text);
 					var mentioned_clone = $(container_element.cloneNode(true));
-					mentioned_clone.setAttribute("id","comment-mentioned-"+id);
+					mentioned_clone.setAttribute("id","comment-"+id+"-mentioned-clone");
 					$("mentions-timeline").insert({'top': mentioned_clone});
 				}
 			break;
@@ -566,9 +566,9 @@ function z_engine_tweet(data, output)
  */
 function z_engine_tweet_clear()
 {
-	content = Array();
+	/*content = Array();
 	ids = Array();
-	tid = 0;
+	tid = 0;*/
 	$("home-timeline").update();
 }
 
