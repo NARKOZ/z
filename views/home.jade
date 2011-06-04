@@ -13,6 +13,8 @@ img#loading(src='img/spinner.gif', class='loading')
         a#home-timeline-click(href='#', onclick='return false;') home
       li
         a#mentions-timeline-click(href='#', onclick='return false;') mentions
+      li
+        a#dms-timeline-click(href='#', onclick='return false;') inbox
     .clearer &nbsp;
 
   form#new-tweet-form(autocomplete='off')
@@ -24,8 +26,10 @@ img#loading(src='img/spinner.gif', class='loading')
 
   .hr
 
-  ul#mentions-timeline(style='display:none;')
-
   ul#home-timeline
 
-script z_engine_kickstart(); //this is the only inline javascript so far
+  ul#mentions-timeline(style='display:none;')
+
+  ul#dms-timeline(style='display:none;')
+
+script z_engine_kickstart();

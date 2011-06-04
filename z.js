@@ -240,7 +240,7 @@ function z_engine_message_handler(this_session, client, message, tw)
 		{
 			if(error)
 			{
-				console.error("DELETE ERROR\ndata: "+data+'response: '+response+'oauth: '+tw+'message: '+message);
+				console.error("DELETE ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
 			}
 		});
 	}
@@ -248,6 +248,9 @@ function z_engine_message_handler(this_session, client, message, tw)
 	{
 		switch (message.fetch)
 		{
+			case 'dms':
+				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'direct_messages', count: startup_count, include_entities: true}, false, "dms");
+			break;
 			case 'mentions':
 				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'mentions', count: startup_count, include_entities: true}, false, "mentions");
 			break;
@@ -259,7 +262,7 @@ function z_engine_message_handler(this_session, client, message, tw)
 		{
 			if(error)
 			{
-				console.error("FAVORITE ERROR\ndata: "+data+'response: '+response+'oauth: '+tw+'message: '+message);
+				console.error("FAVORITE ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
 			}
 		});
 	}
@@ -269,7 +272,7 @@ function z_engine_message_handler(this_session, client, message, tw)
 		{
 			if(error)
 			{
-				console.error("RETWEET ERROR\ndata: "+data+'response: '+response+'oauth: '+tw+'message: '+message);
+				console.error("RETWEET ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
 			}
 		});
 	}
@@ -279,7 +282,7 @@ function z_engine_message_handler(this_session, client, message, tw)
 		{
 			if(error)
 			{
-				console.error("UNFAVORITE ERROR\ndata: "+data+'response: '+response+'oauth: '+tw+'message: '+message);
+				console.error("UNFAVORITE ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
 			}
 		});
 	}
@@ -290,28 +293,45 @@ function z_engine_message_handler(this_session, client, message, tw)
  */
 function z_engine_static_timeline_fetch(this_session, tw, client, params, init, json)
 {
-	tw.getTimeline(params, function(error, data, response)
+	if (json != "dms")
 	{
-		if(error)
+		tw.getTimeline(params, function(error, data, response)
 		{
-			console.error('TIMELINE ERROR: '+error);
-		}
-		else
+			if(error)
+			{
+				console.error('TIMELINE ERROR: '+error);
+			}
+			else
+			{
+				if (init)
+				{
+					client.send({loaded: true});
+					client.send({info: {screen_name: this_session.oauth._results.screen_name, user_id: this_session.oauth._results.user_id}});
+				}
+				switch (json)
+				{
+					case 'mentions':
+						client.send({mentions:  data.reverse()});
+					break;
+					case 'home':
+						client.send(data.reverse());
+					break;
+				}
+			}
+		});
+	}
+	else
+	{
+		tw.getInbox(params, function(error, data, response)
 		{
-			if (init)
+			if(error)
 			{
-				client.send({loaded: true});
-				client.send({info: {screen_name: this_session.oauth._results.screen_name, user_id: this_session.oauth._results.user_id}});
+				console.error('TIMELINE ERROR: '+error);
 			}
-			switch (json)
+			else
 			{
-				case 'mentions':
-					client.send({mentions:  data.reverse()});
-				break;
-				case 'home':
-					client.send(data.reverse());
-				break;
+				client.send({dms:  data.reverse()});
 			}
-		}
-	});
+		});
+	}
 }
