@@ -64,8 +64,9 @@ function z_engine_attrition()
 				Event.stop(event);
 				z_engine_send_tweet();
 			});
-			z_engine_clicker("home-timeline-click", "home-timeline", "mentions-timeline"); //home
-			z_engine_clicker("mentions-timeline-click", "mentions-timeline", "home-timeline"); //mentions
+			z_engine_clicker("home-timeline-click", "home-timeline"); //home
+			z_engine_clicker("mentions-timeline-click", "mentions-timeline"); //mentions
+			z_engine_clicker("dms-timeline-click", "dms-timeline"); //dms
 			var update_relative_time = window.setInterval(function()
 			{
 				this.z_engine_update_relative_time()
