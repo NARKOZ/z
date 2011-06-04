@@ -539,6 +539,16 @@ function z_engine_tweet(data, output)
 				{
 					duration: 0.7,
 					mode: 'relative'
+				}),
+				new Effect.Appear('comment-'+id+'-mentioned-clone',
+				{
+					duration: 1.25,
+					mode: 'relative'
+				}),
+				new Effect.BlindDown('comment-'+id+'-mentioned-clone',
+				{
+					duration: 0.7,
+					mode: 'relative'
 				})
 			],
 			{
