@@ -530,12 +530,12 @@ function z_engine_tweet(data, output)
 		{
 			new S2.FX.Parallel(
 			[
-				new Effect.Appear('comment-mentioned-'+id,
+				new Effect.Appear('comment-'+id+'-mentioned',
 				{
 					duration: 1.25,
 					mode: 'relative'
 				}),
-				new Effect.BlindDown('comment-mentioned-'+id,
+				new Effect.BlindDown('comment-'+id+'-mentioned',
 				{
 					duration: 0.7,
 					mode: 'relative'
