@@ -786,7 +786,7 @@ var relative_time = function (a)
 	{
 		return "last year";
 	}
-	if (d > year)relative_time(date)
+	if (d > year)
 	{
 		return Math.floor(d / year) + " years ago";
 	}
