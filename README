@@ -18,3 +18,9 @@ npm install socket.io
 optional:
 
 npm install connect-gzip
+
+note:
+
+upon the client disconnecting from the socket, there needs to be a way to stop the userstream properly.
+until this is done, make sure that after you disconnect, you stop the entire server before running in
+your browser again. sorry for this inconviencence!
