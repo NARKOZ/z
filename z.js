@@ -226,11 +226,11 @@ function z_engine_message_handler(this_session, client, message, tw)
 {
 	if (message.status)
 	{
-		tw.update(message.status, function(error, data, response)
+		tw.update(message.status, message.params, function(error, data, response)
 		{
 			if(error)
 			{
-				console.error("UPDATE ERROR\ndata: "+data+'response: '+response+'oauth: '+tw+'message: '+message);
+				console.error("UPDATE ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
 			}
 		});
 	}
