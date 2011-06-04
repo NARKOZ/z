@@ -21,6 +21,10 @@ var user_id = 0;
  */
 function z_engine_attrition()
 {
+	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1) //figured id go ahead and use this, why not?
+	{
+		window.webkitNotifications.requestPermission();
+	}
 	new Element.extend("new-tweet-form");
 	new Element.extend("home-timeline");
 	new Event.observe("clear","click",function(event)
@@ -206,10 +210,27 @@ function z_engine_kickstart()
 }
 
 /*
+ * send a notification to the client
+ */
+function z_engine_notification(av, head, text)
+{
+	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0)
+	{
+		var notification = window.webkitNotifications.createNotification(av, head, text);
+		notification.show();
+	}
+	else if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1)
+	{
+		window.webkitNotifications.requestPermission();
+	}
+}
+
+/*
  * parse and convert all mentions, links, and hashtags appropriately into their respective links
  */
 function z_engine_parse_tweet(text)
 {
+	text = text.replace(/\n\r?/g, '<br />');
 	if(!text)
 	{
 		return text;
@@ -288,6 +309,7 @@ function z_engine_tweet(data, output)
 		var author = data.user.screen_name;
 		var author2 = false;
 		var avatar = data.user.profile_image_url;
+		var avatar2 = false;
 		var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,''); //fix some "blank dates"
 		var entities = data.entities;
 		var faved = data.favorited;
@@ -298,7 +320,7 @@ function z_engine_tweet(data, output)
 		var replyid = data.in_reply_to_status_id_str;
 		var rtd = false;
 		var source = data.source;
-		var text = data.text.replace(/\n\r?/g, '<br />');
+		var text = data.text;
 		var userid = data.user.id;
 		var verified = data.user.verified;
 	}
@@ -307,6 +329,7 @@ function z_engine_tweet(data, output)
 		var author = data.retweeted_status.user.screen_name;
 		var author2 = data.user.screen_name;
 		var avatar = data.retweeted_status.user.profile_image_url;
+		var avatar2 = data.user.profile_image_url;
 		var date = new Date(data.retweeted_status.created_at).toLocaleString().replace(/GMT.+/,''); //fix some "blank dates"
 		var entities = data.retweeted_status.entities;
 		var faved = data.retweeted_status.favorited;
@@ -317,7 +340,7 @@ function z_engine_tweet(data, output)
 		var replyid = data.retweeted_status.in_reply_to_status_id_str;
 		var rtd = true;
 		var source = data.retweeted_status.source;
-		var text = data.retweeted_status.text.replace(/\n\r?/g, '<br />');
+		var text = data.retweeted_status.text;
 		var userid = data.retweeted_status.user.id;
 		var verified = data.retweeted_status.user.verified;
 	}
@@ -454,6 +477,7 @@ function z_engine_tweet(data, output)
 				$("home-timeline").insert({'top': container_element});
 				if (mentioned)
 				{
+					z_engine_notification(avatar, author, text);
 					var mentioned_clone = $(container_element.cloneNode(true));
 					mentioned_clone.setAttribute("id","comment-mentioned-"+id);
 					$("mentions-timeline").insert({'top': mentioned_clone});
@@ -541,6 +565,13 @@ function z_engine_tweet(data, output)
 			{
 				duration: 1.5
 			});
+		}
+	}
+	else
+	{
+		if (author == screen_name && author2)
+		{
+			z_engine_notification(avatar2, author2+" retweeted you!", text);
 		}
 	}
 	if (!mentioned)
