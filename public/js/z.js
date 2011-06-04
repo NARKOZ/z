@@ -187,7 +187,6 @@ function z_engine_clean_tweets()
 		if (i > cutoff)
 		{
 			$(tweet_elements[i]).remove();
-			console.log("dropped "+tweet_elements[i]);
 		}
 	}
 }
