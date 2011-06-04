@@ -569,7 +569,7 @@ function z_engine_tweet(data, output)
 	}
 	else
 	{
-		if (author == screen_name && author2)
+		if (author == screen_name && author2 != screen_name)
 		{
 			z_engine_notification(avatar2, author2+" retweeted you!", text);
 		}
