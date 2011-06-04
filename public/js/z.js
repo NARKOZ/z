@@ -268,14 +268,15 @@ function z_engine_send_tweet()
 		{
 			var params = {
 				status: temp_element,
-				in_reply_to_status_id: "",
 			};
 		}
 		else
 		{
 			var params = {
 				status: temp_element,
-				in_reply_to_status_id: Number(reply_id),
+				params: {
+					in_reply_to_status_id: reply_id
+				}
 			};
 		}
 		socket.send(params);
@@ -301,6 +302,7 @@ function z_engine_tweet(data, output)
 		var entities = data.entities;
 		var faved = data.favorited;
 		var id = data.id_str;
+		var idd = data.id;
 		var locked = data.user.protected;
 		var name = data.user.name;
 		var reply = data.in_reply_to_screen_name;
@@ -321,6 +323,7 @@ function z_engine_tweet(data, output)
 		var entities = data.retweeted_status.entities;
 		var faved = data.retweeted_status.favorited;
 		var id = data.retweeted_status.id_str;
+		var idd = data.retweeted_status.id;
 		var locked = data.retweeted_status.user.protected;
 		var name = data.retweeted_status.user.name;
 		var reply = data.retweeted_status.in_reply_to_screen_name;
@@ -347,14 +350,7 @@ function z_engine_tweet(data, output)
 		{
 			var mentioned = z_engine_tweet_mentioned(entities);
 		}
-		if (!mentioned)
-		{
-			var container_element = new Element('li', {'id': 'comment-'+id, 'class': 'comment-parent', 'style': 'display:none;opacity:0;'});
-		}
-		else
-		{
-			var container_element = new Element('li', {'id': 'comment-'+id+'-mentioned', 'class': 'comment-parent', 'style': 'display:none;opacity:0;'});
-		}
+		var container_element = new Element('li', {'id': 'comment-'+id, 'class': 'comment-parent', 'style': 'display:none;opacity:0;'});
 			var profile_wrapper_element = new Element('div', {'class': 'comment-profile-wrapper left'});
 				var gravatar_element = new Element('div', {'class': 'comment-gravatar'});
 					var gravatar_author_link_element = new Element('a', {'target': '_blank', href: 'http://twitter.com/'+author});
@@ -473,7 +469,8 @@ function z_engine_tweet(data, output)
 				{
 					z_engine_notification(avatar, author, text);
 					var mentioned_clone = $(container_element.cloneNode(true));
-					mentioned_clone.setAttribute("id","comment-"+id+"-mentioned-clone");
+					new Element.extend(mentioned_clone);
+					mentioned_clone.setAttribute("id","comment-"+id+"-mentioned");
 					$("mentions-timeline").insert({'top': mentioned_clone});
 				}
 			break;
@@ -483,7 +480,7 @@ function z_engine_tweet(data, output)
 			new Event.observe('reply-'+id, 'click', function(event)
 			{
 				Event.stop(event);
-				reply_id = id;
+				reply_id = idd;
 				$("new-tweet").setValue("@"+author+" ");
 				$("new-tweet").focus();
 			});
@@ -551,16 +548,6 @@ function z_engine_tweet(data, output)
 					mode: 'relative'
 				}),
 				new Effect.BlindDown('comment-'+id+'-mentioned',
-				{
-					duration: 0.7,
-					mode: 'relative'
-				}),
-				new Effect.Appear('comment-'+id+'-mentioned-clone',
-				{
-					duration: 1.25,
-					mode: 'relative'
-				}),
-				new Effect.BlindDown('comment-'+id+'-mentioned-clone',
 				{
 					duration: 0.7,
 					mode: 'relative'
