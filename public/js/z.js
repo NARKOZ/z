@@ -171,8 +171,8 @@ function z_engine_attrition()
 	{
 		$("new-tweet").disable();
 		$("new-tweet-submit").disable();
-		$("new-tweet").setValue("lost connection, reconnecting...");
-		setTimeout(function(){window.location.reload();},5000);
+		$("new-tweet").setValue("lost connection");
+		//setTimeout(function(){window.location.reload();},5000);
 	});
 }
 
