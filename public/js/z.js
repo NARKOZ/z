@@ -532,7 +532,7 @@ function z_engine_tweet(data, output)
 		{
 			new Event.observe('del-'+id, 'click', function(event)
 			{
-				z_engine_tweet_event_handler(event, {delete: {status: {id_str: id}}}, "delete", id);
+				z_engine_tweet_event_handler(event, {destroy: {status: {id_str: id}}}, "delete", id);
 			});
 		}
 		new S2.FX.Parallel(
