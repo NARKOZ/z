@@ -181,16 +181,16 @@ function z_engine_attrition()
  */
 function z_engine_clean_tweets()
 {
-	var tweet_elements = $$("ul#home-timeline > li.comment-parent");
-	if (tweet_elements.length >= cutoff)
+	var tweet_elements = $("home-timeline").childElements();
+	for (i = 0; i < tweet_elements.length; i++)
 	{
-		var last_tweet = tweet_elements.pop();
-		var tweet_id = last_tweet.getAttribute("id");
-		content.pop();
-		$(tweet_id).remove();
+		if (i > cutoff)
+		{
+			$(tweet_elements[i]).remove();
+			console.log("dropped "+tweet_elements[i]);
+		}
 	}
 }
-
 /*
  * starts up the engine
  */
