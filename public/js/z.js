@@ -233,16 +233,6 @@ function z_engine_parse_tweet(text)
 }
 
 /*
- * todo: explain me
- */
-function z_engine_reply_to_tweet(id, author)
-{
-	reply_id = id;
-	$("new-tweet").setValue("@"+author+" ");
-	$("new-tweet").focus();
-}
-
-/*
  * send our tweet
  */
 function z_engine_send_tweet()
@@ -475,7 +465,9 @@ function z_engine_tweet(data, output)
 			new Event.observe('reply-'+id, 'click', function(event)
 			{
 				Event.stop(event);
-				z_engine_reply_to_tweet(id, author);
+				reply_id = id;
+				$("new-tweet").setValue("@"+author+" ");
+				$("new-tweet").focus();
 			});
 			if (!locked)
 			{
