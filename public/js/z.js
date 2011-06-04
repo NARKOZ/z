@@ -299,7 +299,7 @@ function z_engine_tweet(data, output)
 		var author = data.user.screen_name;
 		var author2 = false;
 		var avatar = data.user.profile_image_url;
-		var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,'');
+		var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,''); //fix some "blank dates"
 		var entities = data.entities;
 		var faved = data.favorited;
 		var id = data.id_str;
@@ -309,7 +309,7 @@ function z_engine_tweet(data, output)
 		var replyid = data.in_reply_to_status_id_str;
 		var rtd = false;
 		var source = data.source;
-		var text = data.text;
+		var text = data.text.replace(/\n\r?/g, '<br />');
 		var userid = data.user.id;
 		var verified = data.user.verified;
 	}
@@ -318,7 +318,7 @@ function z_engine_tweet(data, output)
 		var author = data.retweeted_status.user.screen_name;
 		var author2 = data.user.screen_name;
 		var avatar = data.retweeted_status.user.profile_image_url;
-		var date = new Date(data.retweeted_status.created_at).toLocaleString().replace(/GMT.+/,'');
+		var date = new Date(data.retweeted_status.created_at).toLocaleString().replace(/GMT.+/,''); //fix some "blank dates"
 		var entities = data.retweeted_status.entities;
 		var faved = data.retweeted_status.favorited;
 		var id = data.retweeted_status.id_str;
@@ -328,7 +328,7 @@ function z_engine_tweet(data, output)
 		var replyid = data.retweeted_status.in_reply_to_status_id_str;
 		var rtd = true;
 		var source = data.retweeted_status.source;
-		var text = data.retweeted_status.text;
+		var text = data.retweeted_status.text.replace(/\n\r?/g, '<br />');
 		var userid = data.retweeted_status.user.id;
 		var verified = data.retweeted_status.user.verified;
 	}
@@ -340,7 +340,7 @@ function z_engine_tweet(data, output)
 			content[id] = true; //see comment above
 		}
 		var linebreak = new Element('br');
-		if (!entities)
+		if (!entities) //theres been a few instances of entities not being included, and thus this
 		{
 			var mentioned = false;
 		}
@@ -361,16 +361,16 @@ function z_engine_tweet(data, output)
 			{
 				if (!mentioned)
 				{
-					var comment_body_element = new Element('div', {'class': 'comment-body'});
+					var comment_body_element = new Element('div', {'class': 'comment-body'}); //regular shadow
 				}
 				else
 				{
-					var comment_body_element = new Element('div', {'class': 'comment-body-mentioned'});
+					var comment_body_element = new Element('div', {'class': 'comment-body-mentioned'}); //a noticeable red shadow
 				}
 			}
 			else
 			{
-				var comment_body_element = new Element('div', {'class': 'comment-body-me'});
+				var comment_body_element = new Element('div', {'class': 'comment-body-me'}); //a noticable purple shadow
 			}
 					var comment_arrow_element = new Element('div', {'class': 'comment-arrow'});
 					comment_body_element.insert(comment_arrow_element);
@@ -466,6 +466,7 @@ function z_engine_tweet(data, output)
 				if (mentioned)
 				{
 					var mentioned_clone = $(container_element.cloneNode(true));
+					mentioned_clone.setAttribute("id","comment-mentioned-"+id);
 					$("mentions-timeline").insert({'top': mentioned_clone});
 				}
 			break;
@@ -531,6 +532,25 @@ function z_engine_tweet(data, output)
 		{
 			duration: 1.5
 		});
+		if (mentioned)
+		{
+			new S2.FX.Parallel(
+			[
+				new Effect.Appear('comment-mentioned-'+id,
+				{
+					duration: 1.25,
+					mode: 'relative'
+				}),
+				new Effect.BlindDown('comment-mentioned-'+id,
+				{
+					duration: 0.7,
+					mode: 'relative'
+				})
+			],
+			{
+				duration: 1.5
+			});
+		}
 	}
 	if (!mentioned)
 	{
