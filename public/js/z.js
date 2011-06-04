@@ -254,7 +254,6 @@ function z_engine_send_tweet()
 		{
 			var params = {
 				status: temp_element,
-				include_entities: true
 			};
 		}
 		else
@@ -262,7 +261,6 @@ function z_engine_send_tweet()
 			var params = {
 				status: temp_element,
 				in_reply_to_status_id: Number(reply_id),
-				include_entities: true
 			};
 		}
 		socket.send(params);
