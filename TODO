@@ -6,5 +6,8 @@
 6) a way to internally hold new tweets as they come in when "paused", and  spit those out when unpaused
 7) deleting tweets is untested, its a rare occasion when i need to do that
 8) possibly a govern of some sort when it spits out too many tweets (eg it slows each outputted tweet down to one per second)
-9) fix the reply thing, everything works except the specific id replied to
-10) reset the userstream every...1000-2000 or so tweets / hour, whichever comes first
+9) reset the userstream every...1000-2000 or so tweets / hour, whichever comes first
+10) ability to mute individual users, clients (or the source param from the api, eg "Tumblr"), mentions, etc
+11) this one will require more than one sentence to explain because im polarized at both ends for implementing either:
+    - idea #1: implement a "hovercard" style tooltip or something when you hover over a users avatar
+    - idea #2: implement an entire page to display a specific users tweets and info when clicking on their avatar
