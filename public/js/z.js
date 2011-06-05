@@ -482,7 +482,7 @@ function z_engine_tweet(data, output)
 								if (replyid)
 								{
 									var in_reply_to_element = new Element('span');
-									in_reply_to_element.update('in reply to ');
+									in_reply_to_element.update(' in reply to ');
 									var in_reply_to_link_element = new Element('a', {'target': '_blank', href: 'http://twitter.com/'+reply+'/status/'+replyid});
 									in_reply_to_link_element.update(reply+' ');
 									left_element.insert(in_reply_to_element);
