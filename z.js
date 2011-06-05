@@ -181,7 +181,7 @@ socket.on('connection', function(client)
 				var tw = new twitter(key,secret,this_session.oauth);
 				client.send({loaded: true});
 				client.send({info: {screen_name: this_session.oauth._results.screen_name, user_id: this_session.oauth._results.user_id}});
-				/*setTimeout(function()
+				setTimeout(function()
 				{
 					var stream = tw.openUserStream({include_entities: true});
 					stream.setMaxListeners(0); //dont do this
@@ -208,7 +208,7 @@ socket.on('connection', function(client)
 					{
 						stream.end();
 					});
-				},3000);*/
+				},3000);
 				client.on('message', function(message)
 				{
 					if(tw)
