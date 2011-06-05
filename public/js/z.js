@@ -535,9 +535,12 @@ function z_engine_tweet(data, output)
 							}
 							else
 							{
-								var reply_img_element = new Element('img', {'src': 'img/rep.png', id: 'reply-'+id, 'alt': ''});
+								if (author != screen_name)
+								{
+									var reply_img_element = new Element('img', {'src': 'img/rep.png', id: 'reply-'+id, 'alt': ''});
+									right2_element.insert(reply_img_element);
+								}
 								var del_img_element = new Element('img', {'src': 'img/del.png', id: 'del-'+id, 'alt': ''});
-								right2_element.insert(reply_img_element);
 								right2_element.insert({'bottom': del_img_element});
 							}
 							comment_text_body_element.insert(linebreak);
