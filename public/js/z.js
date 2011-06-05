@@ -1,6 +1,8 @@
 /*
- * initial variables
+ * z engine stuff
  */
+
+/* initial variables */
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
 var cutoff = 200; //max amount of tweets to display before pruning occurs
 var dm_to = false;
@@ -16,9 +18,7 @@ var ts = 0;
 var ttid = 0; //temporary internal counter
 var user_id = 0;
 
-/*
- * the websocket itself
- */
+/* the websocket itself */
 function z_engine_attrition()
 {
 	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1) //figured id go ahead and use this, why not?
@@ -71,15 +71,21 @@ function z_engine_attrition()
 			z_engine_clicker("home-timeline-click", "home-timeline"); //home
 			z_engine_clicker("mentions-timeline-click", "mentions-timeline"); //mentions
 			z_engine_clicker("dms-timeline-click", "dms-timeline"); //dms
+			z_engine_dms_clicker("dms-inbox-timeline-click", "dms-inbox-timeline");
+			z_engine_dms_clicker("dms-outbox-timeline-click", "dms-outbox-timeline");
 			socket.send({fetch: "home"});
 			var populate_mentions_tab = window.setTimeout(function()
 			{
 				this.socket.send({fetch: "mentions"});
-			},5000);
-			var populate_dms_tab = window.setTimeout(function()
-			{
-				this.socket.send({fetch: "dms"});
 			},10000);
+			var populate_dms_inbox_tab = window.setTimeout(function()
+			{
+				this.socket.send({fetch: "dms-inbox"});
+			},15000);
+			var populate_dms_outbox_tab = window.setTimeout(function()
+			{
+				this.socket.send({fetch: "dms-outbox"});
+			},20000);
 			var update_relative_time = window.setInterval(function()
 			{
 				this.z_engine_update_relative_time()
@@ -89,8 +95,8 @@ function z_engine_attrition()
 		{
 			if ($("comment-"+json.delete.status.id_str))
 			{
-				$("comment-"+json.delete.status.id_str).setStyle("text-decoration: line-through;");
-				setTimeout(function()
+				$("comment-"+json.delete.status.id_str).setStyle("text-decoration: line-through;"); //lol
+				window.setTimeout(function()
 				{
 					$("comment-"+json.delete.status.id_str).remove();
 				},5000);
@@ -144,18 +150,70 @@ function z_engine_attrition()
 	{
 		$("new-tweet").disable();
 		$("new-tweet-submit").disable();
-		$("new-tweet").setValue("lost connection, reconnecting...");
+		$("new-tweet").setValue("lost connection!");
 	});
 }
 
-/*
- * the "home", "mentions", "inbox", etc switcher
- */
+/* the "home", "mentions", "mentions", etc switcher */
 function z_engine_clicker(id, this_id)
 {
 	new Event.observe(id, "click", function(event)
 	{
 		Event.stop(event);
+		if (this_id == "dms-timeline")
+		{
+			new S2.FX.Parallel(
+			[
+				new Effect.Fade("dms-timeline-click",
+				{
+					duration: 0.25,
+					mode: 'relative'
+				}),
+				new Effect.Appear("dms-inbox-timeline-click",
+				{
+					delay: 0.1,
+					duration: 0.25,
+					mode: 'relative'
+				}),
+				new Effect.Appear("dms-outbox-timeline-click",
+				{
+					delay: 0.1,
+					duration: 0.25,
+					mode: 'relative'
+				})
+			],
+			{
+				duration: 1
+			});
+		}
+		else
+		{
+			if ($("dms-inbox-timeline-click").visible() || $("dms-outbox-timeline-click").visible())
+			{
+				new S2.FX.Parallel(
+				[
+					new Effect.Fade("dms-outbox-timeline-click",
+					{
+						duration: 0.25,
+						mode: 'relative'
+					}),
+					new Effect.Fade("dms-inbox-timeline-click",
+					{
+						duration: 0.25,
+						mode: 'relative'
+					}),
+					new Effect.Appear("dms-timeline-click",
+					{
+						delay: 0.25,
+						duration: 0.25,
+						mode: 'relative'
+					})
+				],
+				{
+					duration: 1
+				});
+			}
+		}
 		if (!$(this_id).visible())
 		{
 			if ($("home-timeline").visible())
@@ -194,46 +252,117 @@ function z_engine_clicker(id, this_id)
 				})
 			],
 			{
+				duration: 0.5
+			});
+		}
+	});
+}
+
+/* a more specific clicker for the inbox / outbox page */
+function z_engine_dms_clicker(id, this_id)
+{
+	new Event.observe(id, "click", function(event)
+	{
+		Event.stop(event);
+		if (!$(this_id).visible())
+		{
+			if ($("dms-outbox-timeline").visible())
+			{
+				var hide = "dms-outbox-timeline";
+			}
+			else if ($("dms-inbox-timeline").visible())
+			{
+				var hide = "dms-inbox-timeline";
+			}
+			new S2.FX.Parallel(
+			[
+				new Effect.Fade(hide,
+				{
+					duration: 0.25,
+					mode: 'relative'
+				}),
+				new Effect.BlindUp(hide,
+				{
+					duration: 0.25,
+					mode: 'relative'
+				}),
+				new Effect.BlindDown(this_id,
+				{
+					duration: 0.25,
+					mode: 'relative'
+				}),
+				new Effect.Appear(this_id,
+				{
+					duration: 0.25,
+					mode: 'relative'
+				})
+			],
+			{
 				duration: 1
 			});
 		}
 	});
 }
 
-/*
- * hopefully this will hopefully trim older tweets later on (when you get around 50 or so logged up)
- */
+/* hopefully this will hopefully trim older tweets later on (when you get around 50 or so logged up) */
 function z_engine_clean_tweets()
 {
 	var tweet_elements = $("home-timeline").childElements();
-	for (i = 0; i < tweet_elements.length; i++)
+	if (tweet_elements.length > 0)
 	{
-		if (i > cutoff)
+		for (i = 0; i < tweet_elements.length; i++)
 		{
-			$(tweet_elements[i]).remove();
+			if (i > cutoff)
+			{
+				$(tweet_elements[i]).remove();
+			}
 		}
 	}
-	var mention_elements = $("mentions-timeline").childElements();
-	for (i = 0; i < mention_elements.length; i++)
+	window.setTimeout(function()
 	{
-		if (i > cutoff)
+		var mention_elements = $("mentions-timeline").childElements();
+		if (mention_elements.length > 0)
 		{
-			$(mention_elements[i]).remove();
+			for (i = 0; i < mention_elements.length; i++)
+			{
+				if (i > cutoff)
+				{
+					$(mention_elements[i]).remove();
+				}
+			}
 		}
-	}
-	var dm_elements = $("dms-timeline").childElements();
-	for (i = 0; i < dm_elements.length; i++)
+	},4000);
+	window.setTimeout(function()
 	{
-		if (i > cutoff)
+		var dm_elements = $("dms-inbox-timeline").childElements();
+		if (dm_elements.length > 0)
 		{
-			$(dm_elements[i]).remove();
+			for (i = 0; i < dm_elements.length; i++)
+			{
+				if (i > cutoff)
+				{
+					$(dm_elements[i]).remove();
+				}
+			}
 		}
-	}
+	},8000);
+	window.setTimeout(function()
+	{
+		var dm_sent_elements = $("dms-outbox-timeline").childElements();
+		if (dm_sent_elements.length > 0)
+		{
+			for (i = 0; i < dm_sent_elements.length; i++)
+			{
+				if (i > cutoff)
+				{
+					$(dm_sent_elements[i]).remove();
+				}
+			}
+		}
+	},12000);
 }
 
-/*
- * starts up the engine
- */
+/* starts up the engine */
 function z_engine_kickstart()
 {
 	if (window.addEventListener)
@@ -246,16 +375,14 @@ function z_engine_kickstart()
 	}
 }
 
-/*
- * send a notification to the client
- */
+/* send a notification to the client */
 function z_engine_notification(av, head, text)
 {
 	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0)
 	{
 		var notification = window.webkitNotifications.createNotification(av, head, text);
 		notification.show();
-		setTimeout(function()
+		window.setTimeout(function()
 		{
 
 			notification.cancel();
@@ -267,9 +394,7 @@ function z_engine_notification(av, head, text)
 	}
 }
 
-/*
- * parse and convert all mentions, links, and hashtags appropriately into their respective links
- */
+/* parse and convert all mentions, links, and hashtags appropriately into their respective links */
 function z_engine_parse_tweet(text)
 {
 	if(!text)
@@ -278,7 +403,6 @@ function z_engine_parse_tweet(text)
 	}
 	else
 	{
-		text = text.replace(/\n\r?/g, '<br />');
 		text = text.replace(/((https?\:\/\/)|(www\.))([^ ]+)/g, function(url)
 		{
 			return '<a target="_blank" href="'+ url +'">'+url.replace(/^www./i,'')+'</a>';
@@ -291,13 +415,12 @@ function z_engine_parse_tweet(text)
 		{
 			return '<a target="_blank" href="http://search.twitter.com/search?q='+tag.replace(/#/i,'%23')+'">'+tag+'</a>';
 		})+" ";
+		text = text.replace(/\n\r?/g, '<br />');
 		return text;
 	}
 }
 
-/*
- * send our tweet
- */
+/* send our tweet */
 function z_engine_send_tweet()
 {
 	if ($("new-tweet").getValue().length > 0)
@@ -345,9 +468,7 @@ function z_engine_send_tweet()
 	}
 }
 
-/*
- * the engine that handles, sorts, and displays our data
- */
+/* the engine that handles, sorts, and displays our data */
 function z_engine_tweet(data, output)
 {
 	if (output != "dms")
@@ -363,7 +484,6 @@ function z_engine_tweet(data, output)
 			var entities = data.entities;
 			var faved = data.favorited;
 			var id = data.id_str;
-			var idd = data.id;
 			var locked = data.user.protected;
 			var name = data.user.name;
 			var reply = data.in_reply_to_screen_name;
@@ -384,7 +504,6 @@ function z_engine_tweet(data, output)
 			var entities = data.retweeted_status.entities;
 			var faved = data.retweeted_status.favorited;
 			var id = data.retweeted_status.id_str;
-			var idd = data.retweeted_status.id;
 			var locked = data.retweeted_status.user.protected;
 			var name = data.retweeted_status.user.name;
 			var reply = data.retweeted_status.in_reply_to_screen_name;
@@ -402,7 +521,6 @@ function z_engine_tweet(data, output)
 			var avatar = data.sender.profile_image_url;
 			var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,''); //fix some "blank dates"
 			var id = data.id_str;
-			var idd = data.id;
 			var locked = data.sender.protected;
 			var name = data.sender.name;
 			var reply = data.in_reply_to_screen_name;
@@ -427,6 +545,7 @@ function z_engine_tweet(data, output)
 		{
 			var mentioned = z_engine_tweet_mentioned(entities);
 		}
+		var quick_anchor_element = new Element('a', {id: 'anchor-'+id, 'name': 'comment-'+id});
 		var container_element = new Element('li', {'id': 'comment-'+id, 'class': 'comment-parent', 'style': 'display:none;opacity:0;'});
 			var profile_wrapper_element = new Element('div', {'class': 'comment-profile-wrapper left'});
 				var gravatar_element = new Element('div', {'class': 'comment-gravatar'});
@@ -449,7 +568,7 @@ function z_engine_tweet(data, output)
 			}
 			else
 			{
-				var comment_body_element = new Element('div', {'class': 'comment-body-me'}); //a noticable purple shadow
+				var comment_body_element = new Element('div', {'class': 'comment-body-me'}); //a noticeable purple shadow
 			}
 					var comment_arrow_element = new Element('div', {'class': 'comment-arrow'});
 					comment_body_element.insert(comment_arrow_element);
@@ -483,7 +602,7 @@ function z_engine_tweet(data, output)
 								{
 									var in_reply_to_element = new Element('span');
 									in_reply_to_element.update(' in reply to ');
-									var in_reply_to_link_element = new Element('a', {'target': '_blank', href: 'http://twitter.com/'+reply+'/status/'+replyid});
+									var in_reply_to_link_element = new Element('a', {'href': 'http://twitter.com/"+reply+"/status/"+replyid)'});
 									in_reply_to_link_element.update(reply+' ');
 									left_element.insert(in_reply_to_element);
 									left_element.insert({'bottom': in_reply_to_link_element});
@@ -519,7 +638,7 @@ function z_engine_tweet(data, output)
 								}
 								else
 								{
-									var rt_img_element = new Element('img', {'src': 'img/lock.png', 'alt': ''});
+									var rt_img_element = new Element('img', {'src': 'img/lock.png', 'style': 'curosr: default;', 'alt': ''});
 								}
 								if (!faved)
 								{
@@ -554,25 +673,29 @@ function z_engine_tweet(data, output)
 			container_element.insert(profile_wrapper_element);
 			container_element.insert({'bottom': comment_content_element});
 			container_element.insert({'bottom': clearer_element});
+		new Element.extend(quick_anchor_element);
 		new Element.extend(container_element);
 		switch (output)
 		{
 			case 'dms':
-				$("dms-timeline").insert({'top': container_element});
+				if (author != screen_name)
+				{
+					$("dms-inbox-timeline").insert({'top': container_element});
+					$("dms-inbox-timeline").insert({'top': quick_anchor_element});
+				}
+				else if (author == screen_name)
+				{
+					$("dms-outbox-timeline").insert({'top': container_element});
+					$("dms-outbox-timeline").insert({'top': quick_anchor_element});
+				}
 			break;
 			case 'mentions':
 				$("mentions-timeline").insert({'top': container_element});
+				$("mentions-timeline").insert({'top': quick_anchor_element});
 			break;
 			case 'home':
 				$("home-timeline").insert({'top': container_element});
-				if (mentioned)
-				{
-					z_engine_notification(avatar, author, text);
-					var mentioned_clone = $(container_element.cloneNode(true));
-					new Element.extend(mentioned_clone);
-					mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
-					$("mentions-timeline").insert({'top': mentioned_clone});
-				}
+				$("home-timeline").insert({'top': quick_anchor_element});
 			break;
 		}
 		if (author != screen_name && output != "dms")
@@ -626,13 +749,16 @@ function z_engine_tweet(data, output)
 			}
 			else
 			{
-				new Event.observe('reply-'+id, 'click', function(event)
+				if (author != screen_name)
 				{
-					Event.stop(event);
-					dm_to = userid;
-					$("new-tweet").setValue("");
-					$("new-tweet").focus();
-				});
+					new Event.observe('reply-'+id, 'click', function(event)
+					{
+						Event.stop(event);
+						dm_to = userid;
+						$("new-tweet").setValue("");
+						$("new-tweet").focus();
+					});
+				}
 				new Event.observe('del-'+id, 'click', function(event)
 				{
 					z_engine_tweet_event_handler(event, {destroy_dm: {status: {id_str: id}}}, "delete", id);
@@ -658,6 +784,15 @@ function z_engine_tweet(data, output)
 		});
 		if (mentioned && output != "mentions")
 		{
+			if (mentioned)
+			{
+				z_engine_notification(avatar, author, text);
+				//var mentioned_clone = $(container_element.cloneNode(true));
+				var mentioned_clone = cloneNodeWithEvents(container_element);
+				mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
+				new Element.extend(mentioned_clone);
+				$("mentions-timeline").insert({'top': mentioned_clone});
+			}
 			new S2.FX.Parallel(
 			[
 				new Effect.Appear('comment-'+id+'-mentioned',
@@ -689,14 +824,16 @@ function z_engine_tweet(data, output)
 	}
 }
 
-/*
- * clear everything out (view & content var wise)
- */
+/* clear everything out (view & content var wise) */
 function z_engine_tweet_clear()
 {
 	$("home-timeline").update();
+	$("mentions-timeline").update();
+	$("dms-inbox-timeline").update();
+	$("dms-outbox-timeline").update();
 }
 
+/* handle all click events here */
 function z_engine_tweet_event_handler(event, params, resource, id, author, text)
 {
 	Event.stop(event);
@@ -735,6 +872,7 @@ function z_engine_tweet_event_handler(event, params, resource, id, author, text)
 	socket.send(params);
 }
 
+/* see if we were mentioned, this is faster than parsing through the text itself */
 function z_engine_tweet_mentioned(entities)
 {
 	var mentioned = false;
@@ -752,18 +890,7 @@ function z_engine_tweet_mentioned(entities)
 	return mentioned;
 }
 
-function z_engine_tweet_paused_recieve(data)
-{
-	if (!data.retweeted_status)
-	{
-		var id = data.id_str;
-	}
-	else
-	{
-		var id = data.retweeted_status.id_str;
-	}
-}
-
+/* still a temporary hack to stop the engine from spitting out new tweets into (only) the home timeline */
 function z_engine_tweet_pause()
 {
 	if (!paused)
@@ -776,6 +903,7 @@ function z_engine_tweet_pause()
 	}
 }
 
+/* update all time elements */
 function z_engine_update_relative_time()
 {
 	var time_elements = $$("time");
@@ -787,8 +915,37 @@ function z_engine_update_relative_time()
 }
 
 /*
- * parse and convert the majority of our timestamps
+ * other functions used by the engine
  */
+
+/* replacement for cloneNode to carry events over  */
+function cloneNodeWithEvents(orgNode)
+{
+	var orgNodeEvenets = orgNode.getElementsByTagName('*');
+	//var cloneNode = orgNode.cloneNode(true);
+	var cloneNode = $(orgNode.cloneNode(true));
+	var cloneNodeEvents = cloneNode.getElementsByTagName('*');
+	var allEvents = new Array('onabort','onbeforecopy','onbeforecut','onbeforepaste','onblur',
+	'onchange','onclick','oncontextmenu','oncopy','ondblclick','ondrag','ondragend','ondragenter',
+	'ondragleave','ondragover','ondragstart', 'ondrop','onerror','onfocus','oninput','oninvalid',
+	'onkeydown','onkeypress','onkeyup','onload','onmousedown','onmousemove','onmouseout','onmouseover',
+	'onmouseup', 'onmousewheel', 'onpaste','onreset', 'onresize','onscroll','onsearch', 'onselect',
+	'onselectstart','onsubmit','onunload');
+	for(var j=0; j<allEvents.length; j++)
+	{
+		eval('if( orgNode.'+allEvents[j]+' ) cloneNode.'+allEvents[j]+' = orgNode.'+allEvents[j]);
+	}
+	for(var i=0 ; i<orgNodeEvenets.length; i++)
+	{
+		for(var j=0; j<allEvents.length; j++)
+		{
+			eval('if( orgNodeEvenets[i].'+allEvents[j]+' ) cloneNodeEvents[i].'+allEvents[j]+' = orgNodeEvenets[i].'+allEvents[j]);
+		}
+	}
+	return cloneNode;
+}
+
+/* parse and convert the majority of our timestamps */
 var relative_time = function (a)
 {
 	var K = function ()

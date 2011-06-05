@@ -174,8 +174,6 @@ socket.on('connection', function(client)
 		{
 			if (typeof(this_session) === "undefined")
 			{
-				//client.send({event: 'disconnect'});
-				//client.connection.end();
 				console.log("User connected to socket.io without any oauth info, ignoring");
 			}
 			else
@@ -183,7 +181,7 @@ socket.on('connection', function(client)
 				var tw = new twitter(key,secret,this_session.oauth);
 				client.send({loaded: true});
 				client.send({info: {screen_name: this_session.oauth._results.screen_name, user_id: this_session.oauth._results.user_id}});
-				setTimeout(function()
+				/*setTimeout(function()
 				{
 					var stream = tw.openUserStream({include_entities: true});
 					stream.setMaxListeners(0); //dont do this
@@ -210,7 +208,7 @@ socket.on('connection', function(client)
 					{
 						stream.end();
 					});
-				},4000);
+				},3000);*/
 				client.on('message', function(message)
 				{
 					if(tw)
@@ -272,14 +270,20 @@ function z_engine_message_handler(this_session, client, message, tw)
 	{
 		switch (message.fetch)
 		{
-			case 'dms':
-				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'direct_messages', count: startup_count, include_entities: true}, "dms");
+			case 'dms-inbox':
+				z_engine_static_timeline_fetch(this_session, tw, client, {count: startup_count, include_entities: true}, "dms-inbox");
+			break;
+			case 'dms-outbox':
+				z_engine_static_timeline_fetch(this_session, tw, client, {count: startup_count, include_entities: true}, "dms-outbox");
 			break;
 			case 'home':
 				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'home_timeline', count: startup_count, include_entities: true}, "home");
 			break;
 			case 'mentions':
 				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'mentions', count: startup_count, include_entities: true}, "mentions");
+			break;
+			case 'retweets':
+				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'retweeted_of_me', count: startup_count, include_entities: true}, "retweets");
 			break;
 		}
 	}
@@ -320,7 +324,7 @@ function z_engine_message_handler(this_session, client, message, tw)
  */
 function z_engine_static_timeline_fetch(this_session, tw, client, params, json)
 {
-	if (json != "dms")
+	if (json != "dms-inbox" && json != "dms-outbox")
 	{
 		tw.getTimeline(params, function(error, data, response)
 		{
@@ -333,11 +337,14 @@ function z_engine_static_timeline_fetch(this_session, tw, client, params, json)
 				var out = data.reverse();
 				switch (json)
 				{
+					case 'home':
+						client.send(out);
+					break;
 					case 'mentions':
 						client.send({mentions: out});
 					break;
-					case 'home':
-						client.send(out);
+					case 'retweets':
+						client.send({retweets: out});
 					break;
 				}
 			}
@@ -345,16 +352,33 @@ function z_engine_static_timeline_fetch(this_session, tw, client, params, json)
 	}
 	else
 	{
-		tw.getInbox(params, function(error, data, response)
+		if (json == "dms-inbox")
 		{
-			if(error)
+			tw.getInbox(params, function(error, data, response)
 			{
-				console.error('TIMELINE ERROR: '+error);
-			}
-			else
+				if(error)
+				{
+					console.error('TIMELINE ERROR: '+error);
+				}
+				else
+				{
+					client.send({dms: data.reverse()});
+				}
+			});
+		}
+		else if (json == "dms-outbox")
+		{
+			tw.getOutbox(params, function(error, data, response)
 			{
-				client.send({dms:  data.reverse()});
-			}
-		});
+				if(error)
+				{
+					console.error('TIMELINE ERROR: '+error);
+				}
+				else
+				{
+					client.send({dms: data.reverse()});
+				}
+			});
+		}
 	}
 }

@@ -55,7 +55,7 @@ li
 	-khtml-user-select: none;
 	-webkit-user-select: none;
 	cursor: default;
-	font: normal 90% sans-serif;
+	font: normal 90% "Open Sans", sans-serif;
 	font-size: 68px;
 	color: #555;
 	letter-spacing: -1px;
@@ -65,7 +65,7 @@ li
 
 .large, h2
 {
-	font: normal 90% sans-serif;
+	font: normal 90% "Open Sans", sans-serif;
 	font-size: 42px;
 	color: #555;
 	line-height: 48px;
@@ -81,7 +81,7 @@ li
 
 .normal, body
 {
-	font: normal 80% sans-serif;
+	font: normal 80% "Open Sans", sans-serif;
 }
 
 .small, small
@@ -152,6 +152,7 @@ li
 
 .comment-text img
 {
+	cursor: pointer;
 	margin-left: 10px;
 }
 
@@ -210,7 +211,7 @@ li
 	display: block;
 	float: left;
 	height: 35px;
-	margin: 15px 0 -45px -29px;
+	margin: 14px 0 -46px -29px;
 	position: absolute;
 	width: 20px;
 }
@@ -472,7 +473,7 @@ ul.tabbed li
 
 body
 {
-	font: normal 75% sans-serif;
+	font: normal 75% "Open Sans", sans-serif;
 	line-height: 1.5;
 	-webkit-font-smoothing: subpixel-antialiased;
 	height: 100%;

@@ -14,7 +14,11 @@ img#loading(src='img/spinner.gif', class='loading')
       li
         a#mentions-timeline-click(href='#', onclick='return false;') mentions
       li
-        a#dms-timeline-click(href='#', onclick='return false;') inbox
+        a#dms-timeline-click(href='#', onclick='return false;') messages
+      li
+        a#dms-inbox-timeline-click(href='#', onclick='return false;', style='display:none;') inbox
+      li
+        a#dms-outbox-timeline-click(href='#', onclick='return false;', style='display:none;') outbox
     .clearer &nbsp;
 
   form#new-tweet-form(autocomplete='off')
@@ -31,5 +35,7 @@ img#loading(src='img/spinner.gif', class='loading')
   ul#mentions-timeline(style='display:none;')
 
   ul#dms-timeline(style='display:none;')
+    ul#dms-inbox-timeline
+    ul#dms-outbox-timeline(style='display:none;')
 
 script z_engine_kickstart();
