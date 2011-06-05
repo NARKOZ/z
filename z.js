@@ -36,7 +36,7 @@ server.configure(function()
 {
 	server.set('views', __dirname + '/views');
 	server.use(express.cookieParser());
-	server.use(express.session({secret: storage_secret, fingerprint: storage_fingerprint, store: storage}));
+	server.use(express.session({secret: storage_secret, fingerprint: storage_fingerprint, store: new express.session.MemoryStore()}));
 	server.use(express.bodyParser());
 	server.use(express.methodOverride());
 	server.use(server.router);
