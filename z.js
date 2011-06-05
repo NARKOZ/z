@@ -36,7 +36,7 @@ server.configure(function()
 {
 	server.set('views', __dirname + '/views');
 	server.use(express.cookieParser());
-	server.use(express.session({secret: storage_secret, fingerprint: storage_fingerprint, store: new express.session.MemoryStore();}));
+	server.use(express.session({secret: storage_secret, fingerprint: storage_fingerprint, store: storage}));
 	server.use(express.bodyParser());
 	server.use(express.methodOverride());
 	server.use(server.router);
@@ -95,7 +95,7 @@ server.get('/oauth/login', function(req, res)
 			{
 				console.error(error);
 				res.writeHead(500, {'Content-Type': 'text/html'});
-				res.send('ERROR :' + error);
+				res.send("there was an issue building the url..<a href='/'>return</a>");
 			});
 		}
 		else
@@ -160,6 +160,7 @@ if (use_gzip)
  */
 socket.on('connection', function(client)
 {
+	var connected = true;
 	var cookie_string = client.request.headers.cookie;
 	var parsed_cookies = connect.utils.parseCookie(cookie_string);
 	var connect_sid = parsed_cookies['connect.sid'];
@@ -173,12 +174,15 @@ socket.on('connection', function(client)
 		{
 			if (typeof(this_session) === "undefined")
 			{
+				//client.send({event: 'disconnect'});
+				//client.connection.end();
 				console.log("User connected to socket.io without any oauth info, ignoring");
 			}
 			else
 			{
 				var tw = new twitter(key,secret,this_session.oauth);
-				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'home_timeline', count: startup_count, include_entities: true}, true, "home");
+				client.send({loaded: true});
+				client.send({info: {screen_name: this_session.oauth._results.screen_name, user_id: this_session.oauth._results.user_id}});
 				setTimeout(function()
 				{
 					var stream = tw.openUserStream({include_entities: true});
@@ -191,12 +195,12 @@ socket.on('connection', function(client)
 						}
 						catch(e)
 						{
-							console.error('dispatch event ERROR: ' + e);
+							console.error('dispatch event ERROR: ' + data);
 						}
 					});
-					stream.on('error', function(err)
+					stream.on('error', function(data)
 					{
-						console.error('UserStream ERROR: ' + err);
+						console.error('UserStream ERROR: ' + data);
 					});
 					stream.on('end', function()
 					{
@@ -206,7 +210,7 @@ socket.on('connection', function(client)
 					{
 						stream.end();
 					});
-				},3000);
+				},4000);
 				client.on('message', function(message)
 				{
 					if(tw)
@@ -226,7 +230,7 @@ function z_engine_message_handler(this_session, client, message, tw)
 {
 	if (message.status)
 	{
-		tw.update(message.status, message.params, function(error, data, response)
+		tw.update(message.status, function(error, data, response)
 		{
 			if(error)
 			{
@@ -244,15 +248,38 @@ function z_engine_message_handler(this_session, client, message, tw)
 			}
 		});
 	}
+	else if (message.destroy_dm)
+	{
+		tw.destroy_dm(message.destroy_dm.status.id_str, function(error, data, response)
+		{
+			if(error)
+			{
+				console.error("DELETE ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
+			}
+		});
+	}
+	else if (message.direct_message)
+	{
+		tw.direct_message(message.direct_message, function(error, data, response)
+		{
+			if(error)
+			{
+				console.error("UPDATE ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
+			}
+		});
+	}
 	else if (message.fetch)
 	{
 		switch (message.fetch)
 		{
 			case 'dms':
-				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'direct_messages', count: startup_count, include_entities: true}, false, "dms");
+				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'direct_messages', count: startup_count, include_entities: true}, "dms");
+			break;
+			case 'home':
+				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'home_timeline', count: startup_count, include_entities: true}, "home");
 			break;
 			case 'mentions':
-				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'mentions', count: startup_count, include_entities: true}, false, "mentions");
+				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'mentions', count: startup_count, include_entities: true}, "mentions");
 			break;
 		}
 	}
@@ -291,7 +318,7 @@ function z_engine_message_handler(this_session, client, message, tw)
 /*
  * callback function to send static resources via websocket to client
  */
-function z_engine_static_timeline_fetch(this_session, tw, client, params, init, json)
+function z_engine_static_timeline_fetch(this_session, tw, client, params, json)
 {
 	if (json != "dms")
 	{
@@ -303,18 +330,14 @@ function z_engine_static_timeline_fetch(this_session, tw, client, params, init, 
 			}
 			else
 			{
-				if (init)
-				{
-					client.send({loaded: true});
-					client.send({info: {screen_name: this_session.oauth._results.screen_name, user_id: this_session.oauth._results.user_id}});
-				}
+				var out = data.reverse();
 				switch (json)
 				{
 					case 'mentions':
-						client.send({mentions:  data.reverse()});
+						client.send({mentions: out});
 					break;
 					case 'home':
-						client.send(data.reverse());
+						client.send(out);
 					break;
 				}
 			}
