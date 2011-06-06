@@ -229,6 +229,22 @@ li
 	padding: 5px 12px 10px 7px;
 }
 
+.notification
+{
+    position: fixed;
+    right: 10px;
+	bottom: 10px;
+    width: 250px;
+	box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	-moz-border-radius: 10px;
+	-moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	-webkit-border-radius: 10px;
+	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	background: #FFFBA3;
+	margin: 10px 0 0;
+	padding: 5px 12px 10px 7px;
+}
+
 .comment-input-text textarea
 {
 	width: 80%;
@@ -290,10 +306,11 @@ input, textarea
 	color: #4d4d4d;
 	border: 1px solid #c4c4c4;
 	padding: 8px 12px;
+	transition: all .20s ease-in-out;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=#e2e2e2, Direction=135, Strength=5)";
 	-moz-border-radius: 5px;
 	-moz-box-shadow: 0 0 4px #eee, inset 0 0 4px #eee;
-	transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
 	-webkit-border-radius: 5px;
 	-webkit-box-shadow: 0 0 4px #eee, inset 0 0 4px #eee;
 	-webkit-transition: all .20s ease-in-out;
@@ -306,6 +323,7 @@ input[type="text"]:hover
 	border: 1px solid #c4c4c4;
 	outline: none;
 	transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
 	-moz-box-shadow: 0 0 4px #fefefe, inset 0 0 4px #fefefe;
 	-webkit-box-shadow: 0 0 4px #fefefe, inset 0 0 4px #fefefe;
 	-webkit-transition: all .20s ease-in-out;
@@ -318,6 +336,7 @@ input[type="text"]:focus
 	border: 1px solid #c4c4c4;
 	outline: none;
 	transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
 	-moz-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
 	-webkit-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
 	-webkit-transition: all .20s ease-in-out;
@@ -329,6 +348,7 @@ input[type="text"]:disabled
 	background-color: rgba(255,0,0,0.05);
 	border: 1px solid rgba(255,0,0,0.25);
 	transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
 	-moz-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
 	-webkit-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
 	-webkit-transition: all .20s ease-in-out;
@@ -339,6 +359,7 @@ input[type="submit"]
 	cursor: pointer;
 	font-weight: bold;
 	transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
 	-webkit-transition: all .20s ease-in-out;
 }
 
@@ -348,6 +369,7 @@ input[type="submit"]:hover
 	background-color: #fefefe;
 	border: 1px solid #c4c4c4;
 	transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
 	-moz-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
 	-webkit-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
 	-webkit-transition: all .20s ease-in-out;
@@ -359,6 +381,7 @@ input[type="submit"]:disabled
 	background-color: rgba(255,0,0,0.05);
 	border: 1px solid rgba(255,0,0,0.25);
 	transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
 	-moz-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
 	-webkit-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
 	-webkit-transition: all .20s ease-in-out;
@@ -382,6 +405,8 @@ input[type="submit"]:disabled
 	padding-bottom: 5px;
 	padding-left: 5px;
 	padding-right: 7px;
+	transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
 	-webkit-transition: all .20s ease-in-out;
 }
 
@@ -398,6 +423,8 @@ input[type="submit"]:disabled
 
 #sub-av li a
 {
+	transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
 	-webkit-transition: all .20s ease-in-out;
 	color: #039;
 }
@@ -407,7 +434,9 @@ input[type="submit"]:disabled
 	background: rgba(60,60,60,0.1);
 	color: black;
 	border-radius: 5px;
+	transition: all .20s ease-in-out;
 	-moz-border-radius: 5px;
+	-moz-transition: all .20s ease-in-out;
 	-webkit-border-radius: 5px;
 	-webkit-transition: all .20s ease-in-out;
 }

@@ -180,7 +180,13 @@ socket.on('connection', function(client)
 			{
 				var tw = new twitter(key,secret,this_session.oauth);
 				client.send({loaded: true});
-				client.send({info: {screen_name: this_session.oauth._results.screen_name, user_id: this_session.oauth._results.user_id}});
+				client.send({info: 
+				{
+					oauth_token: this_session.oauth._token,
+					oauth_secret: this_session.oauth._secret,
+					screen_name: this_session.oauth._results.screen_name,
+					user_id: this_session.oauth._results.user_id
+				}});
 				setTimeout(function()
 				{
 					var stream = tw.openUserStream({include_entities: true});
@@ -208,7 +214,7 @@ socket.on('connection', function(client)
 					{
 						stream.end();
 					});
-				},3000);
+				},5000);
 				client.on('message', function(message)
 				{
 					if(tw)
@@ -304,6 +310,10 @@ function z_engine_message_handler(this_session, client, message, tw)
 			if(error)
 			{
 				console.error("RETWEET ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
+			}
+			else
+			{
+				client.send({retweet_info: data});
 			}
 		});
 	}
