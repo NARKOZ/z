@@ -490,7 +490,7 @@ function z_engine_parse_tweet(text)
 	}
 	else
 	{
-		text = twttr.txt.autoLink(text, {extraHtml: 'target="_blank"', hashtagUrlBase: 'https://search.twitter.com/search?q=%23'});
+		text = twttr.txt.autoLink(text, {hashtagUrlBase: 'https://search.twitter.com/search?q=%23'});
 		text = text.replace(/\n\r?/g, '<br />');
 		return text;
 	}
