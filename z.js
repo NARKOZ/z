@@ -17,7 +17,6 @@ var storage_secret = "";
 
 var supported_transports = [
 	'websocket', //tested and working in google chrome / chromium, firefox, and opera (cant test ie from here) :D
-	//'flashsocket', //it is recommended you leave this one disabled, no idea how sessions will work out with tihs
 	'htmlfile', //untested, might work
 	'xhr-multipart', //untested, should work
 	'xhr-polling' //untested, should work

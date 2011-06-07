@@ -12,3 +12,4 @@
     - idea #1: implement a "hovercard" style tooltip or something when you hover over a users avatar
     - idea #2: implement an entire page to display a specific users tweets and info when clicking on their avatar
 12) extend the notifications support beyond google chrome / chromium (although you can do this in firefox using: http://code.google.com/p/ff-html5notifications/)
+13) not sure what happened but firefox is no longer working right (it ran fine with xhr-multi)..need to investigate
