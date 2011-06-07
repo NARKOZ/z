@@ -469,13 +469,11 @@ function z_engine_notification(av, head, text)
 	{
 		var notification = window.webkitNotifications.createNotification(av, head, text);
 		notification.show();
-		if (notification.cancel())
+		window.setTimeout(function()
 		{
-			window.setTimeout(function()
-			{
-				notification.cancel();
-			},5500);
-		}
+
+			notification.cancel();
+		},5500);
 	}
 	else if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1)
 	{
