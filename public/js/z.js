@@ -932,11 +932,8 @@ function z_engine_tweet_pause()
 /* hold the data in a temporary array */
 function z_engine_tweet_pause_handler(data)
 {
-	if (data.isJSON())
-	{
-		content_paused[pttid] = JSON.stringify(data);
-		pttid++;
-	}
+	content_paused[pttid] = JSON.stringify(data);
+	pttid++;
 }
 
 /* favorite a tweet */
