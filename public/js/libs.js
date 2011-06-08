@@ -82,3 +82,7 @@ function cloneNodeWithEvents(orgNode){var orgNodeEvenets=orgNode.getElementsByTa
  * display the date as xx seconds / days / etc ago
  */
 var relative_time=function(q){var o=function(){var b=navigator.userAgent;return{ie:b.match(/MSIE\s([^;]*)/)}}();var p=new Date();var m=new Date(q);if(o.ie){m=Date.parse(q.replace(/( \+)/," UTC$1"))}var k=p-m;var j=1000,g=j*60,h=g*60,n=h*24,f=n*7,i=n*30,l=i*12;if(isNaN(k)||k<0){return""}if(k<j*7){return"just now"}if(k<g){return Math.floor(k/j)+" seconds ago"}if(k<g*2){return"a minute ago"}if(k<h){return Math.floor(k/g)+" minutes ago"}if(k<h*2){return"an hour ago"}if(k<n){return Math.floor(k/h)+" hours ago"}if(k>n&&k<n*2){return"a day ago"}if(k<f){return Math.floor(k/n)+" days ago"}if(k>f&&k<f*2){return"last week"}if(k>f&&k<i){return Math.floor(k/f)+" weeks ago"}if(k>i&&k<i*2){return"last month"}if(k>i){return Math.floor(k/i)+" months ago"}if(k>l&&k<l*2){return"last year"}if(k>l){return Math.floor(k/l)+" years ago"}};
+/*
+ * socket.io-sessions clientside stuff
+ */
+io.SessionSocket=function(a,c,b){io.Socket.apply(this,[c,b]);this._sessionId=a;this.on("connect",function(){this.send({__sid:this._sessionId,connect:1})})};io.util.inherit(io.SessionSocket,io.Socket);

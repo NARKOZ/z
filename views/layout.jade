@@ -4,7 +4,8 @@ html
     title= title
     link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Open+Sans')
     link(rel='stylesheet', href='/css/z.css')
-    script(type='text/javascript', src='/js/protoaculous.min.js')
     script(type='text/javascript', src='/socket.io/socket.io.js')
+    script(type='text/javascript', src='/js/libs.js')
+    script= session_script
     script(type='text/javascript', src='/js/z.js')
   body!= body

@@ -5,8 +5,8 @@ var sys = require('sys');
 var twitter = require('./lib/vendor/twitter');
 var url = require('url');
 
-var key = ""; //consumer key
-var secret = ""; //consumer secret
+var key = "c52uegTrRkDob3kRuw"; //consumer key
+var secret = "Vxp5DUSZSM9LSpzNUAUXcH6eWImk4B2eV4Ookt7ak"; //consumer secret
 
 var port = 8080;
 
@@ -16,26 +16,23 @@ var storage_fingerprint = "";
 var storage_secret = "";
 
 var supported_transports = [
-	'websocket', //tested and working in google chrome / chromium, firefox, and opera (cant test ie from here) :D
-	'htmlfile', //untested, might work
-	'xhr-multipart', //untested, should work
-	'xhr-polling' //untested, should work
+	'websocket',
+	'xhr-multipart',
+	'xhr-polling'
 ];
 
 var use_gzip = true;
 
 var server = module.exports = express.createServer();
 
-var socket = io.listen(server,
-{
-	transports: supported_transports
-});
+var storage = new express.session.MemoryStore();
+var socket = sio.enable(io.listen(server, {transports: supported_transports}), storage);
 
 server.configure(function()
 {
 	server.set('views', __dirname + '/views');
 	server.use(express.cookieParser());
-	server.use(express.session({secret: storage_secret, fingerprint: storage_fingerprint, store: new express.session.MemoryStore()}));
+	server.use(express.session({secret: storage_secret, fingerprint: storage_fingerprint, store: storage}));
 	server.use(express.bodyParser());
 	server.use(express.methodOverride());
 	server.use(server.router);
@@ -66,10 +63,12 @@ server.dynamicHelpers(
 server.get('/',function(req, res)
 {
 	gzip.gzip();
+	var script = "var socket = new io.SessionSocket('"+req.sessionID+"');";
 	if (!req.session.oauth)
 	{
 		res.render('index.jade',
 		{
+			session_script: script,
 			title: 'hello, welcome to z!'
 		});
 	}
@@ -77,8 +76,8 @@ server.get('/',function(req, res)
 	{
 		res.render('home.jade',
 		{
-			title: 'hello @'+req.session.oauth._results.screen_name+'!',
-			user: req.session.oauth._results.screen_name
+			session_script: script,
+			title: 'hello @'+req.session.oauth._results.screen_name+'!'
 		});
 	}
 });
@@ -157,73 +156,29 @@ if (use_gzip)
 /*
  * the socket connection event which gets the gears started
  */
-socket.on('connection', function(client)
+socket.on('sconnection', function(client, session)
 {
-	var connected = true;
-	var cookie_string = client.request.headers.cookie;
-	var parsed_cookies = connect.utils.parseCookie(cookie_string);
-	var connect_sid = parsed_cookies['connect.sid'];
-	if (!connect_sid)
+	if (typeof(session) === "undefined")
 	{
-		console.error('client connected with no sid & tokens');
+		console.log("User connected to socket.io without any oauth info, ignoring");
 	}
 	else
 	{
-		storage.get(connect_sid,function(error,this_session)
+		try
 		{
-			if (typeof(this_session) === "undefined")
-			{
-				console.log("User connected to socket.io without any oauth info, ignoring");
-			}
-			else
-			{
-				var tw = new twitter(key,secret,this_session.oauth);
-				client.send({loaded: true});
-				client.send({info: 
-				{
-					oauth_token: this_session.oauth._token,
-					oauth_secret: this_session.oauth._secret,
-					screen_name: this_session.oauth._results.screen_name,
-					user_id: this_session.oauth._results.user_id
-				}});
-				setTimeout(function()
-				{
-					var stream = tw.openUserStream({include_entities: true});
-					stream.setMaxListeners(0); //dont do this
-					stream.on('data', function(data)
-					{
-						try
-						{
-							client.send(data);
-						}
-						catch(e)
-						{
-							console.error('dispatch event ERROR: ' + data);
-						}
-					});
-					stream.on('error', function(data)
-					{
-						console.error('UserStream ERROR: ' + data);
-					});
-					stream.on('end', function()
-					{
-						console.log('UserStream ends successfully');
-					});
-					client.on('disconnect', function()
-					{
-						stream.end();
-					});
-				},5000);
-				client.on('message', function(message)
-				{
-					if(tw)
-					{
-						z_engine_message_handler(this_session, client, message, tw);
-					}
-				});
-			}
-		});
+			var tw = new twitter(key, secret, session.oauth);
+			z_engine_streaming_handler(tw, client, session);
+		}
+		catch(e)
+		{
+			console.error('ERROR: ' + e);
+		}
 	}
+});
+
+ssocket.on('sinvalid', function(client)
+{
+	console.error('Client connected with an invalid session id, ignoring');
 });
 
 /*
@@ -326,6 +281,56 @@ function z_engine_message_handler(this_session, client, message, tw)
 			}
 		});
 	}
+}
+
+/*
+ *
+ */
+function z_engine_streaming_handler(tw, client, session)
+{
+	client.send({loaded: true});
+	client.send({info: 
+	{
+		oauth_token: session.oauth._token,
+		oauth_secret: session.oauth._secret,
+		screen_name: session.oauth._results.screen_name,
+		user_id: session.oauth._results.user_id
+	}});
+	setTimeout(function()
+	{
+		var stream = tw.openUserStream({include_entities: true});
+		stream.setMaxListeners(0); //dont do this
+		stream.on('data', function(data)
+		{
+			try
+			{
+				client.send(data);
+			}
+			catch(e)
+			{
+				console.error('dispatch event ERROR: ' + data);
+			}
+		});
+		stream.on('error', function(data)
+		{
+			console.error('UserStream ERROR: ' + data);
+		});
+		stream.on('end', function()
+		{
+			console.log('UserStream ends successfully');
+		});
+		client.on('disconnect', function()
+		{
+			stream.end();
+		});
+	},5000);
+	client.on('message', function(message)
+	{
+		if(tw)
+		{
+			z_engine_message_handler(this_session, client, message, tw);
+		}
+	});
 }
 
 /*

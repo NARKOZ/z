@@ -14,7 +14,6 @@ var page = 1; //the page we start on (on the home timeline)
 var pttid = 0;
 var reply_id = false;
 var screen_name = "";
-var socket = new io.Socket(); //socket.io, duh
 var tid = 0; //internal counter
 var ts = 0;
 var ttid = 0; //temporary internal counter
@@ -39,19 +38,38 @@ function z_engine_attrition()
 		Event.stop(event);
 		return z_engine_tweet_pause();
 	});
-	if($("new-tweet").getValue() === '')
+	new Event.observe("new-tweet","keyup",function(event)
 	{
-		new Event.observe("new-tweet","keyup",function(event)
+		if($("new-tweet").getValue().length === 0)
 		{
 			dm_to = false; //need to do this another way...if you clear the input you need to hit reply again for now
 			reply_id = false;
-		});
-		new Event.observe("new-tweet","keydown",function(event)
+		}
+		else if($("new-tweet").getValue().length <= 140)
+		{
+			$("new-tweet").setStyle("color: #4d4d4d;");
+		}
+		else if($("new-tweet").getValue().length >= 141)
+		{
+			$("new-tweet").setStyle("color: red;");
+		}
+	});
+	new Event.observe("new-tweet","keydown",function(event)
+	{
+		if($("new-tweet").getValue().length === 0)
 		{
 			//because we autofocus into a blank input, this would break dms if we reset dm_to = false here
 			reply_id = false;
-		});
-	}
+		}
+		else if($("new-tweet").getValue().length <= 140)
+		{
+			$("new-tweet").setStyle("color: #4d4d4d;");
+		}
+		else if($("new-tweet").getValue().length >= 141)
+		{
+			$("new-tweet").setStyle("color: red;");
+		}
+	});
 	socket.connect();
 	socket.on("connect",function()
 	{
@@ -97,12 +115,12 @@ function z_engine_attrition()
 				z_engine_clean_tweets();
 			},30000);
 		}
-		else if (json.delete)
+		else if (json["delete"]) //catch it like this, it can cause errors in other browsers like opera
 		{
-			var id = json.delete.status.id;
-			if (json.delete.status.id_str)
+			var id = json["delete"].status.id;
+			if (json["delete"].status.id_str)
 			{
-				id = json.delete.status.id_str;
+				id = json["delete"].status.id_str;
 			}
 			if ($("comment-"+id))
 			{
@@ -166,6 +184,8 @@ function z_engine_attrition()
 		else if (json.friends)
 		{
 			following = JSON.stringify(json.friends);
+			Cookie.init({name: 'friends', expires: 365});
+			Cookie.setData(JSON.stringify(json.friends), false);
 		}
 		else if (json.info)
 		{
@@ -435,7 +455,7 @@ function z_engine_destroy(id, method)
 		if (method == "rt")
 		{
 			$("rt-"+id).setAttribute("src","img/rt.png");
-			$("tr-"+id).setAttribute("onclick","z_engine_retweet('"+id+"');");
+			$("rt-"+id).setAttribute("onclick","z_engine_retweet('"+id+"');");
 		}
 		socket.send(params);
 	}
@@ -471,9 +491,8 @@ function z_engine_notification(av, head, text)
 		notification.show();
 		window.setTimeout(function()
 		{
-
 			notification.cancel();
-		},5500);
+		},5000);
 	}
 	else if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1)
 	{
@@ -508,7 +527,7 @@ function z_engine_reply(id, author)
 function z_engine_reply_dm(userid)
 {
 	dm_to = userid;
-	$("new-tweet").setValue("");
+	$("new-tweet").setValue("~");
 	$("new-tweet").focus();
 }
 
@@ -525,7 +544,7 @@ function z_engine_retweet(id)
 /* send our tweet */
 function z_engine_send_tweet()
 {
-	if ($("new-tweet").getValue().length > 0)
+	if ($("new-tweet").getValue().length > 0 && $("new-tweet").getValue().length <= 140)
 	{
 		$("new-tweet").disable();
 		$("new-tweet-submit").disable();
@@ -553,6 +572,7 @@ function z_engine_send_tweet()
 			}
 			else if (dm_to != false)
 			{
+				temp_element = temp_element.replace(/~/,"");
 				var send = {
 					direct_message: {
 						text: temp_element,
@@ -769,7 +789,13 @@ function z_engine_tweet(data, output)
 								right2_element.insert({'bottom': rt_img_element});
 								right2_element.insert({'bottom': fave_img_element});
 							}
-							else
+							else if (author == screen_name && output != "dms")
+							{
+								var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': 'img/del.png', 'id': 'del-'+id, 'alt': ''});
+								right2_element.insert({'bottom': del_img_element});
+								new Element.extend(del_img_element);
+							}
+							else if (output == "dms")
 							{
 								if (author != screen_name)
 								{
@@ -834,7 +860,6 @@ function z_engine_tweet(data, output)
 			{
 				z_engine_notification(avatar, author, text);
 				var mentioned_clone = cloneNodeWithEvents(container_element);
-				//var mentioned_clone = $(container_element.cloneNode(true));
 				mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
 				new Element.extend(mentioned_clone);
 				$("mentions-timeline").insert({'top': mentioned_clone});
@@ -874,9 +899,6 @@ function z_engine_tweet(data, output)
 function z_engine_tweet_clear()
 {
 	$("home-timeline").update();
-	$("mentions-timeline").update();
-	$("dms-inbox-timeline").update();
-	$("dms-outbox-timeline").update();
 }
 
 /* see if we were mentioned, this is faster than parsing through the text itself */
