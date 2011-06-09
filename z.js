@@ -1,6 +1,7 @@
 var connect = require('connect');
 var express = require('express');
 var io = require('socket.io');
+var sio = require('socket.io-sessions');
 var sys = require('sys');
 var twitter = require('./lib/vendor/twitter');
 var url = require('url');
@@ -176,7 +177,7 @@ socket.on('sconnection', function(client, session)
 	}
 });
 
-ssocket.on('sinvalid', function(client)
+socket.on('sinvalid', function(client)
 {
 	console.error('Client connected with an invalid session id, ignoring');
 });
@@ -328,7 +329,7 @@ function z_engine_streaming_handler(tw, client, session)
 	{
 		if(tw)
 		{
-			z_engine_message_handler(this_session, client, message, tw);
+			z_engine_message_handler(session, client, message, tw);
 		}
 	});
 }
