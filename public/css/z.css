@@ -174,7 +174,6 @@ li
 	background: #FFF;
 	border: 1px solid #DDD;
 	padding: 1px 12px 0 9px;
-	margin-right: 25px;
 }
 
 .comment-body-mentioned
@@ -188,7 +187,6 @@ li
 	background: #FFF;
 	border: 1px solid #DDD;
 	padding: 1px 12px 0 9px;
-	margin-right: 25px;
 }
 
 .comment-body-me
@@ -202,7 +200,6 @@ li
 	background: #FFF;
 	border: 1px solid #DDD;
 	padding: 1px 12px 0 9px;
-	margin-right: 25px;
 }
 
 .comment-arrow
@@ -514,17 +511,172 @@ body
 	width: 696px;
 }
 
-@media only screen and (min-width: 1224px)
+@media only screen and (max-width: 480px)
+{
+	body
+	{
+		padding: 18px;
+		width: 264px;
+	}
+	#new-tweet-input-li
+	{
+		width: 170px;
+	}
+	.comment-arrow
+	{
+		display: none;
+	}
+	.comment-content-wrapper
+	{
+		float: right;
+		width: 165px;
+	}
+	.comment-profile-wrapper
+	{
+		text-align: center;
+		width: 55px;
+	}
+	.normal, body
+	{
+		font: normal 67% "Open Sans", sans-serif;
+	}
+}
+
+@media only screen and (min-width: 480px) and (max-width: 590px)
+{
+	body
+	{
+		padding: 22px;
+		width: 95%;
+	}
+	#new-tweet-input-li
+	{
+		width:77%;
+	}
+	.comment-content-wrapper
+	{
+		float: right;
+		width: 75%;
+	}
+	.comment-profile-wrapper
+	{
+		text-align: center;
+		width: 105px;
+	}
+	.normal, body
+	{
+		font: normal 73% "Open Sans", sans-serif;
+	}
+}
+
+@media only screen and (min-width: 590px) and (max-width: 800px)
+{
+	body
+	{
+		padding: 22px;
+		width: 95%;
+	}
+	#new-tweet-input-li
+	{
+		width: 83%;
+	}
+	.comment-content-wrapper
+	{
+		float: right;
+		width: 81%;
+	}
+	.comment-profile-wrapper
+	{
+		text-align: center;
+		width: 105px;
+	}
+	.normal, body
+	{
+		font: normal 73% "Open Sans", sans-serif;
+	}
+}
+
+@media only screen and (min-width: 800px) and (max-width: 1024px)
+{
+	body
+	{
+		padding: 22px;
+		width: 95%;
+	}
+	#new-tweet-input-li
+	{
+		width: 86%;
+	}
+	.comment-body, .comment-body-mentioned, .comment-body-me
+	{
+		margin-right: 25px;
+	}
+	.comment-content-wrapper
+	{
+		float: right;
+		width: 84%;
+	}
+	.comment-profile-wrapper
+	{
+		text-align: center;
+		width: 105px;
+	}
+	.normal, body
+	{
+		font: normal 77% "Open Sans", sans-serif;
+	}
+}
+
+@media only screen and (min-width: 1024px) and (max-width: 1152px)
+{
+	body
+	{
+		padding: 22px;
+		width: 95%;
+	}
+	#new-tweet-input-li
+	{
+		width: 89%;
+	}
+	.comment-body, .comment-body-mentioned, .comment-body-me
+	{
+		margin-right: 25px;
+	}
+	.comment-content-wrapper
+	{
+		float: right;
+		width: 86%;
+	}
+	.comment-profile-wrapper
+	{
+		text-align: center;
+		width: 105px;
+	}
+	.normal, body
+	{
+		font: normal 77% "Open Sans", sans-serif;
+	}
+}
+
+@media only screen and (min-width: 1152px) and (max-width: 1350px)
 {
 	body
 	{
 		padding: 28px;
 		width: 95%;
 	}
+	#new-tweet-input-li
+	{
+		width: 91%;
+	}
+	.comment-body, .comment-body-mentioned, .comment-body-me
+	{
+		margin-right: 25px;
+	}
 	.comment-content-wrapper
 	{
 		float: right;
-		width: 92%;
+		width: 89%;
 	}
 	.comment-profile-wrapper
 	{
@@ -537,12 +689,51 @@ body
 	}
 }
 
-@media only screen and (min-width: 1824px)
+@media only screen and (min-width: 1350px) and (max-width: 1600px)
+{
+	body
+	{
+		padding: 28px;
+		width: 95%;
+	}
+	#new-tweet-input-li
+	{
+		width:92%;
+	}
+	.comment-body, .comment-body-mentioned, .comment-body-me
+	{
+		margin-right: 25px;
+	}
+	.comment-content-wrapper
+	{
+		float: right;
+		width: 91%;
+	}
+	.comment-profile-wrapper
+	{
+		text-align: center;
+		width: 105px;
+	}
+	.normal, body
+	{
+		font: normal 80% "Open Sans", sans-serif;
+	}
+}
+
+@media only screen and (min-width: 1600px)
 {
 	body
 	{
 		padding: 48px;
 		width: 95%;
+	}
+	#new-tweet-input-li
+	{
+		width:93%;
+	}
+	.comment-body, .comment-body-mentioned, .comment-body-me
+	{
+		margin-right: 25px;
 	}
 	.comment-content-wrapper
 	{
