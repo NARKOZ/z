@@ -29,6 +29,10 @@ function z_engine_attrition()
 	}
 	new Element.extend("new-tweet-form");
 	new Element.extend("home-timeline");
+	new Element.extend("mentions-timeline");
+	new Element.extend("dms-timeline");
+	new Element.extend("dms-inbox-timeline");
+	new Element.extend("dms-outbox-timeline");
 	new Event.observe("clear","click",function(event)
 	{
 		Event.stop(event);
@@ -164,6 +168,7 @@ function z_engine_attrition()
 		}
 		else if (json.event)
 		{
+			//todo: fix these
 			var data = json.event;
 			if (data.favorite && data.source.user.screen_name != screen_name)
 			{
@@ -185,14 +190,14 @@ function z_engine_attrition()
 		else if (json.friends)
 		{
 			following = JSON.stringify(json.friends);
-			Cookie.init({name: 'friends', expires: 365});
+			Cookie.init({name: 'friends', expires: 365}); //todo
 			Cookie.setData(JSON.stringify(json.friends), false);
 		}
 		else if (json.info)
 		{
 			screen_name = json.info.screen_name;
 			user_id = json.info.user_id;
-			Cookie.init({name: 'info', expires: 365});
+			Cookie.init({name: 'info', expires: 365}); //todo
 			Cookie.setData(JSON.stringify(json.info), false);
 		}
 		else if (json.mentions)
@@ -615,6 +620,7 @@ function z_engine_tweet(data, output)
 			}
 			var locked = data.user.protected;
 			var name = data.user.name;
+			var place = data.place;
 			var reply = data.in_reply_to_screen_name;
 			var replyid = data.in_reply_to_status_id_str;
 			var rtd = false;
@@ -642,6 +648,7 @@ function z_engine_tweet(data, output)
 			}
 			var locked = data.retweeted_status.user.protected;
 			var name = data.retweeted_status.user.name;
+			var place = data.retweeted_status.place;
 			var reply = data.retweeted_status.in_reply_to_screen_name;
 			var replyid = data.retweeted_status.in_reply_to_status_id_str;
 			var rtd = true;
@@ -723,11 +730,6 @@ function z_engine_tweet(data, output)
 							{
 								status_link_element.insert(status_time_element);
 							}
-							if (output != "dms")
-							{
-								var via_source_element = new Element('span');
-								via_source_element.update(' via '+source);
-							}
 							left_element.insert(author_link_element);
 							left_element.insert({'bottom': wrote_this_element});
 							if (output != "dms")
@@ -742,7 +744,15 @@ function z_engine_tweet(data, output)
 									left_element.insert(in_reply_to_element);
 									left_element.insert({'bottom': in_reply_to_link_element});
 								}
+								var via_source_element = new Element('span');
+								via_source_element.update(' via '+source);
 								left_element.insert({'bottom': via_source_element});
+								if (place && place.full_name)
+								{
+									var from_place_element = new Element('span');
+									from_place_element.update(' from <a target="_blank" href="http://maps.google.com?q='+place.full_name+'">'+place.full_name+'</a>');
+									left_element.insert({'bottom': from_place_element});
+								}
 							}
 							else
 							{
@@ -753,8 +763,17 @@ function z_engine_tweet(data, output)
 							if (rtd)
 							{
 								var rtd_element = new Element('span');
-								rtd_element.update('RT\'d by <a target="_blank" href="http://twitter.com/'+author2+'">'+author2+'</a>');
+								rtd_element.update('RT\'d by <a target="_blank" href="http://twitter.com/'+author2+'">'+author2+'</a> ');
 								right_element.insert(rtd_element);
+							}
+							if (output != "dms" && place && place.full_name)
+							{
+								var place_element = new Element('span');
+								var place_link_element = new Element('a', {'target': '_blank', href: 'http://maps.google.com?q='+place.full_name});
+								var place_img_element = new Element('img', {'src': 'img/plc.png', 'alt': ''});
+								place_link_element.update(place_img_element);
+								place_element.update(place_link_element);
+								right_element.insert({'bottom':place_element});
 							}
 						comment_date_element.insert({'bottom': right_element});
 					comment_body_element.insert({'bottom': comment_date_element});
