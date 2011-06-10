@@ -14,6 +14,7 @@ var page = 1; //the page we start on (on the home timeline)
 var pttid = 0;
 var reply_id = false;
 var screen_name = "";
+var socket = new io.SessionSocket();
 var tid = 0; //internal counter
 var ts = 0;
 var ttid = 0; //temporary internal counter
@@ -858,11 +859,11 @@ function z_engine_tweet(data, output)
 		{
 			if (mentioned)
 			{
-				z_engine_notification(avatar, author, text);
 				var mentioned_clone = cloneNodeWithEvents(container_element);
 				mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
 				new Element.extend(mentioned_clone);
 				$("mentions-timeline").insert({'top': mentioned_clone});
+				z_engine_notification(avatar, author, text);
 			}
 			new S2.FX.Parallel(
 			[

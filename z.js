@@ -1,4 +1,3 @@
-var connect = require('connect');
 var express = require('express');
 var io = require('socket.io');
 var sio = require('socket.io-sessions');
@@ -27,7 +26,12 @@ var use_gzip = true;
 var server = module.exports = express.createServer();
 
 var storage = new express.session.MemoryStore();
-var socket = sio.enable(io.listen(server, {transports: supported_transports}), storage);
+var socket = sio.enable(
+{
+	socket: io.listen(server, {transports: supported_transports}),
+	store: storage,
+	parser: express.cookieParser()
+});
 
 server.configure(function()
 {
@@ -64,12 +68,10 @@ server.dynamicHelpers(
 server.get('/',function(req, res)
 {
 	gzip.gzip();
-	var script = "var socket = new io.SessionSocket('"+req.sessionID+"');";
 	if (!req.session.oauth)
 	{
 		res.render('index.jade',
 		{
-			session_script: script,
 			title: 'hello, welcome to z!'
 		});
 	}
@@ -77,7 +79,9 @@ server.get('/',function(req, res)
 	{
 		res.render('home.jade',
 		{
-			session_script: script,
+			locals: { 
+				timestamp: (new Date()).getTime()
+			},
 			title: 'hello @'+req.session.oauth._results.screen_name+'!'
 		});
 	}
