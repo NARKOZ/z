@@ -1,15 +1,12 @@
 1) stop userstream when client disconnects
-2) pull the new id of what is retweeted in (so it can be undone if necessary)
-3) more overall sanity, i have quite a bit in already but i am addicted to putting ifs / else ifs / elses / switches, so deal with it
-4) further simplification of clientside javascript for faster execution
-5) documentation of some sort maybe?
-6) a way to internally hold new tweets as they come in when "paused", and  spit those out when unpaused
-7) deleting tweets is untested, its a rare occasion when i need to do that
-8) possibly a govern of some sort when it spits out too many tweets (eg it slows each outputted tweet down to one per second)
-9) reset the userstream every...1000-2000 or so tweets / hour, whichever comes first
-10) ability to mute individual users, clients (or the source param from the api, eg "Tumblr"), mentions, etc
-11) this one will require more than one sentence to explain because im polarized at both ends for implementing either:
+2) further simplification of clientside javascript for faster execution
+3) documentation of some sort maybe?
+4) deleting tweets and dms works but dms need a little bit more work in order to visually show it was deleted (like deleting your own tweets)
+5) possibly a govern of some sort when it spits out too many tweets (eg it slows each outputted tweet down to one per second)
+6) reset the userstream every...1000-2000 or so tweets / hour, whichever comes first
+7) ability to mute individual users, clients (or the source param from the api, eg "Tumblr"), mentions, etc
+8) this one will require more than one sentence to explain because im polarized at both ends for implementing either:
     - idea #1: implement a "hovercard" style tooltip or something when you hover over a users avatar
     - idea #2: implement an entire page to display a specific users tweets and info when clicking on their avatar
-12) extend the notifications support beyond google chrome / chromium (although you can do this in firefox using: http://code.google.com/p/ff-html5notifications/)
-13) fix mention cloning from the home timeline into the mentions timeline so the buttons work in either timeline
+9) extend the notifications support beyond google chrome / chromium (although you can do this in firefox using: http://code.google.com/p/ff-html5notifications/)
+10) fix mention cloning from the home timeline into the mentions timeline so the buttons work in either timeline
