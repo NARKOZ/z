@@ -13,7 +13,7 @@ var port = 8080;
 var startup_count = 50; //initial amount of tweets to grab before we start streaming
 
 var storage_fingerprint = "";
-var storage_secret = "";
+var storage_secret = "youshouldchangethisvalue";
 
 var supported_transports = [
 	'websocket',
