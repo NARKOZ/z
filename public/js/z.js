@@ -538,12 +538,20 @@ function z_engine_reply_dm(userid)
 }
 
 /* retweet a tweet */
-function z_engine_retweet(id)
+function z_engine_retweet(id, author, text)
 {
-	var confirm_rt = confirm("\nAre you sure you want to retweet this?\n");
-	if (confirm_rt)
+	var confirm_rt1 = confirm("\nare you sure you want to retweet this?\n");
+	if (confirm_rt1)
 	{
-		socket.send({retweet: {status: {id_str: id}}});
+		var confirm_rt2 = confirm("\nclick:\n\tok for normal retweet\n\tcancel for commented retweet\n");
+		if (confirm_rt2)
+		{
+			socket.send({retweet: {status: {id_str: id}}});
+		}
+		else
+		{
+			$("new-tweet").setValue("RT "+author+": "+text);
+		}
 	}
 }
 
@@ -618,7 +626,7 @@ function z_engine_tweet(data, output)
 			{
 				var id = data.id;
 			}
-			var locked = data.user.protected;
+			var locked = data.user["protected"];
 			var name = data.user.name;
 			var place = data.place;
 			var reply = data.in_reply_to_screen_name;
@@ -646,7 +654,7 @@ function z_engine_tweet(data, output)
 			{
 				var id = data.retweeted_status.id;
 			}
-			var locked = data.retweeted_status.user.protected;
+			var locked = data.retweeted_status.user["protected"];
 			var name = data.retweeted_status.user.name;
 			var place = data.retweeted_status.place;
 			var reply = data.retweeted_status.in_reply_to_screen_name;
@@ -664,7 +672,7 @@ function z_engine_tweet(data, output)
 			var avatar = data.sender.profile_image_url;
 			var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,''); //fix some "blank dates"
 			var id = data.id_str;
-			var locked = data.sender.protected;
+			var locked = data.sender["protected"];
 			var name = data.sender.name;
 			var reply = data.in_reply_to_screen_name;
 			var rtd = false;
@@ -747,12 +755,6 @@ function z_engine_tweet(data, output)
 								var via_source_element = new Element('span');
 								via_source_element.update(' via '+source);
 								left_element.insert({'bottom': via_source_element});
-								if (place && place.full_name)
-								{
-									var from_place_element = new Element('span');
-									from_place_element.update(' from <a target="_blank" href="http://maps.google.com?q='+place.full_name+'">'+place.full_name+'</a>');
-									left_element.insert({'bottom': from_place_element});
-								}
 							}
 							else
 							{
@@ -788,7 +790,7 @@ function z_engine_tweet(data, output)
 								var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+id+'", "'+author+'");', 'id': 'reply-'+id, 'alt': ''});
 								if (!locked)
 								{
-									var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id, 'alt': ''});
+									var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'", "'+author+'", "'+text+'");', 'id': 'rt-'+id, 'alt': ''});
 									new Element.extend(rt_img_element);
 								}
 								else
