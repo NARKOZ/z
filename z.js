@@ -1,3 +1,4 @@
+var gzip = require('connect-gzip');
 var express = require('express');
 var io = require('socket.io');
 var sio = require('socket.io-sessions');
@@ -20,8 +21,6 @@ var supported_transports = [
 	'xhr-multipart',
 	'xhr-polling'
 ];
-
-var use_gzip = true;
 
 var server = module.exports = express.createServer();
 
@@ -145,17 +144,13 @@ server.get('/oauth/logout', function(req, res)
 	});
 });
 
+gzip.gzip({matchType: /css/});
+gzip.gzip({matchType: /js/});
+
 if (!module.parent)
 {
 	server.listen(port);
 	console.log('Express server listening on port '+server.address().port);
-}
-
-if (use_gzip)
-{
-	var gzip = require('connect-gzip');
-	gzip.gzip({matchType: /css/});
-	gzip.gzip({matchType: /js/});
 }
 
 /*

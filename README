@@ -12,15 +12,12 @@ and a small section of a free template from arcsin.se
 rquirements:
 
 npm install connect
+npm install connect-gzip
 npm install express
 npm install jade
 npm install oauth
 npm install socket.io
 npm install socket.io-sessions
-
-optional:
-
-npm install connect-gzip
 
 note:
 
