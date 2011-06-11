@@ -1,10 +1,14 @@
-var gzip = require('connect-gzip');
 var express = require('express');
+var gzip = require('connect-gzip');
 var io = require('socket.io');
 var sio = require('socket.io-sessions');
 var sys = require('sys');
 var twitter = require('./lib/vendor/twitter');
 var url = require('url');
+
+/*
+ * start configuration
+ */
 
 var key = "c52uegTrRkDob3kRuw"; //consumer key
 var secret = "Vxp5DUSZSM9LSpzNUAUXcH6eWImk4B2eV4Ookt7ak"; //consumer secret
@@ -17,10 +21,15 @@ var storage_fingerprint = "";
 var storage_secret = "youshouldchangethisvalue";
 
 var supported_transports = [
+	'htmlfile',
 	'websocket',
 	'xhr-multipart',
 	'xhr-polling'
 ];
+
+/*
+ * end configuration
+ */
 
 var server = module.exports = express.createServer();
 
@@ -158,21 +167,14 @@ if (!module.parent)
  */
 socket.on('sconnection', function(client, session)
 {
-	if (typeof(session) === "undefined")
+	try
 	{
-		console.log("User connected to socket.io without any oauth info, ignoring");
+		var tw = new twitter(key, secret, session.oauth);
+		z_engine_streaming_handler(tw, client, session);
 	}
-	else
+	catch(e)
 	{
-		try
-		{
-			var tw = new twitter(key, secret, session.oauth);
-			z_engine_streaming_handler(tw, client, session);
-		}
-		catch(e)
-		{
-			console.error('ERROR: ' + e);
-		}
+		console.error('ERROR: ' + e);
 	}
 });
 
