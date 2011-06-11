@@ -32,7 +32,6 @@ var supported_transports = [
  */
 
 var server = module.exports = express.createServer();
-
 var storage = new express.session.MemoryStore();
 var socket = sio.enable(
 {
@@ -87,9 +86,6 @@ server.get('/',function(req, res)
 	{
 		res.render('home.jade',
 		{
-			locals: { 
-				timestamp: (new Date()).getTime()
-			},
 			title: 'hello @'+req.session.oauth._results.screen_name+'!'
 		});
 	}
@@ -171,6 +167,13 @@ socket.on('sconnection', function(client, session)
 	{
 		var tw = new twitter(key, secret, session.oauth);
 		z_engine_streaming_handler(tw, client, session);
+		client.on('message', function(message)
+		{
+			if(tw)
+			{
+				z_engine_message_handler(session, client, message, tw);
+			}
+		});
 	}
 	catch(e)
 	{
@@ -286,7 +289,7 @@ function z_engine_message_handler(this_session, client, message, tw)
 }
 
 /*
- *
+ * start and handle the userstream
  */
 function z_engine_streaming_handler(tw, client, session)
 {
@@ -300,39 +303,35 @@ function z_engine_streaming_handler(tw, client, session)
 	}});
 	setTimeout(function()
 	{
-		var stream = tw.openUserStream({include_entities: true});
-		stream.setMaxListeners(0); //dont do this
-		stream.on('data', function(data)
-		{
-			try
-			{
-				client.send(data);
-			}
-			catch(e)
-			{
-				console.error('dispatch event ERROR: ' + data);
-			}
-		});
-		stream.on('error', function(data)
-		{
-			console.error('UserStream ERROR: ' + data);
-		});
-		stream.on('end', function()
-		{
-			console.log('UserStream ends successfully');
-		});
-		client.on('disconnect', function()
-		{
-			stream.end();
-		});
-	},5000);
-	client.on('message', function(message)
-	{
 		if(tw)
 		{
-			z_engine_message_handler(session, client, message, tw);
+			var stream = tw.openUserStream({include_entities: true});
+			stream.setMaxListeners(0); //dont do this
+			stream.on('data', function(data)
+			{
+				try
+				{
+					client.send(data);
+				}
+				catch(e)
+				{
+					console.error('dispatch event ERROR: ' + data);
+				}
+			});
+			stream.on('error', function(data)
+			{
+				console.error('UserStream ERROR: ' + data);
+			});
+			stream.on('end', function()
+			{
+				console.log('UserStream ends successfully');
+			});
+			client.on('disconnect', function()
+			{
+				stream.end();
+			});
 		}
-	});
+	},5000);
 }
 
 /*
