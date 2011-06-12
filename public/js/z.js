@@ -131,6 +131,21 @@ function z_engine_attrition()
 			if ($("comment-"+id))
 			{
 				$("comment-"+id).setStyle("text-decoration: line-through;");
+				if ($("del-"+id))
+				{
+					$("del-"+id).setAttribute("onclick","");
+					$("del-"+id).setStyle("cursor: default;");
+				}
+				if ($("fave-"+id))
+				{
+					$("fave-"+id).setAttribute("onclick","");
+					$("fave-"+id).setStyle("cursor: default;");
+				}
+				if ($("rt-"+id))
+				{
+					$("rt-"+id).setAttribute("onclick","");
+					$("rt-"+id).setStyle("cursor: default;");
+				}
 				window.setTimeout(function()
 				{
 					new S2.FX.Parallel(
@@ -147,13 +162,28 @@ function z_engine_attrition()
 						}),
 					],
 					{
-						duration: 1.25
+						duration: 1.25,
 					});
-				},5000);
+				},2500);
 			}
 			if ($("comment-"+id+"-mentioned"))
 			{
 				$("comment-"+id+"-mentioned").setStyle("text-decoration: line-through;");
+				if ($("del-"+id+"-mentioned"))
+				{
+					$("del-"+id+"-mentioned").setAttribute("onclick","");
+					$("del-"+id+"-mentioned").setStyle("cursor: default;");
+				}
+				if ($("fave-"+id+"-mentioned"))
+				{
+					$("fave-"+id+"-mentioned").setAttribute("onclick","");
+					$("fave-"+id+"-mentioned").setStyle("cursor: default;");
+				}
+				if ($("rt-"+id+"-mentioned"))
+				{
+					$("rt-"+id+"-mentioned").setAttribute("onclick","");
+					$("rt-"+id+"-mentioned").setStyle("cursor: default;");
+				}
 				window.setTimeout(function()
 				{
 					new S2.FX.Parallel(
@@ -172,7 +202,7 @@ function z_engine_attrition()
 					{
 						duration: 1.25
 					});
-				},5000);
+				},2500);
 			}
 		}
 		else if (json.direct_message)
@@ -194,17 +224,17 @@ function z_engine_attrition()
 		{
 			//todo: fix these
 			var data = json.event;
-			if (data.favorite && data.source.user.screen_name != screen_name)
+			if (data["favorite"] && data["source"].user.screen_name != screen_name)
 			{
-				z_engine_notification(data.source.user.profile_image_url, data.source.user.screen_name+" favorited your tweet!", data.target_object.text);
+				z_engine_notification(data["source"].user.profile_image_url, data["source"].user.screen_name+" favorited your tweet!", data.target_object.text);
 			}
-			else if (data.follow && data.source.screen_name != screen_name)
+			else if (data["follow"] && data["source"].screen_name != screen_name)
 			{
-				z_engine_notification(data.source.profile_image_url, data.source.screen_name+" started following you!", data.source.description);
+				z_engine_notification(data["source"].profile_image_url, data["source"].screen_name+" started following you!", data["source"].description);
 			}
-			else if (data.list_member_added && json.source.screen_name != screen_name)
+			else if (data["list_member_added"] && json["source"].screen_name != screen_name)
 			{
-				z_engine_notification(json.source.profile_image_url, json.source.screen_name+" put you in "+json.target_object.full_name, json.target_object.description);
+				z_engine_notification(json["source"].profile_image_url, json["source"].screen_name+" put you in "+json.target_object.full_name, json.target_object.description);
 			}
 			else
 			{
@@ -262,6 +292,7 @@ function z_engine_attrition()
 		$("new-tweet").disable();
 		$("new-tweet-submit").disable();
 		$("new-tweet").setValue("lost connection!");
+		z_engine_notification("", "error!", "lost connection to server");
 	});
 }
 
@@ -476,7 +507,7 @@ function z_engine_clean_tweets()
 /* delete a tweet / dm */
 function z_engine_destroy(id, method)
 {
-	var confirm_delete = confirm("\nAre you sure you want to delete this?\n");
+	var confirm_delete = confirm("\nare you sure you want to delete this?\n");
 	if (confirm_delete)
 	{
 		if (method == "tweet" || method == "rt")
@@ -578,7 +609,7 @@ function z_engine_retweet(id, author, text)
 	var confirm_rt1 = confirm("\nare you sure you want to retweet this?\n");
 	if (confirm_rt1)
 	{
-		var confirm_rt2 = confirm("\nclick:\n\tok for normal retweet\n\tcancel for commented retweet\n");
+		var confirm_rt2 = confirm("\n\tok for normal retweet\n\tcancel for commented retweet\n");
 		if (confirm_rt2)
 		{
 			socket.send({retweet: {status: {id_str: id}}});
@@ -1036,13 +1067,14 @@ function z_engine_tweet_mentioned(entities)
 	return mentioned;
 }
 
-/* still a temporary hack to stop the engine from spitting out new tweets into (only) the home timeline */
+/* tweets are temporarily stored and will be displayed when you click unpause */
 function z_engine_tweet_pause()
 {
 	if (!paused)
 	{
 		paused = true;
-		$("pause").update("paused");
+		$("pause").update("unpause");
+		new Effect.Appear("paused-count");
 	}
 	else
 	{
@@ -1050,21 +1082,28 @@ function z_engine_tweet_pause()
 		{
 			if (typeof(content_paused[i]) === "undefined")
 			{
-				//do nothing
+				//do nothing i guess?
 			}
 			else
 			{
 				if (content_paused[i].isJSON())
 				{
 					var data = content_paused[i].evalJSON();
-					z_engine_tweet(data,"home");
+					z_engine_tweet(data, "home");
 				}
 			}
 		}
 		content_paused = Array();
 		paused = false;
 		pttid = 0;
-		$("pause").update("pause");
+		new Effect.Fade("paused-count",
+		{
+			after: function()
+			{
+				$("pause").update("pause");
+				$("paused-count").update("(0)");
+			}
+		});
 	}
 }
 
@@ -1073,6 +1112,7 @@ function z_engine_tweet_pause_handler(data)
 {
 	content_paused[pttid] = JSON.stringify(data);
 	pttid++;
+	$("paused-count").update("("+pttid+")");
 }
 
 /* favorite a tweet */
