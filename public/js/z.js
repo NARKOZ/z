@@ -1064,7 +1064,7 @@ function z_engine_tweet_pause()
 		pttid = 0;
 		new Effect.Fade("paused-count",
 		{
-			finish: function()
+			after: function()
 			{
 				$("pause").update("pause");
 				$("paused-count").update("(0)");
