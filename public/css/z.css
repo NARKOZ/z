@@ -165,11 +165,11 @@ li
 
 .comment-body
 {
-	border-radius: 10px;
+	border-radius: 5px;
 	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
-	-moz-border-radius: 10px;
+	-moz-border-radius: 5px;
 	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
-	-webkit-border-radius: 10px;
+	-webkit-border-radius: 5px;
 	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	background: #FFF;
 	border: 1px solid #DDD;
@@ -178,11 +178,11 @@ li
 
 .comment-body-mentioned
 {
-	border-radius: 10px;
+	border-radius: 5px;
 	box-shadow: 2px 2px 5px #FFB4B8;
-	-moz-border-radius: 10px;
+	-moz-border-radius: 5px;
 	-moz-box-shadow: 2px 2px 5px #FFB4B8;
-	-webkit-border-radius: 10px;
+	-webkit-border-radius: 5px;
 	-webkit-box-shadow: 3px 3px 2px 2px #FFB4B8;
 	background: #FFF;
 	border: 1px solid #DDD;
@@ -191,11 +191,11 @@ li
 
 .comment-body-me
 {
-	border-radius: 10px;
+	border-radius: 5px;
 	box-shadow: 2px 2px 5px #BDC3FF;
-	-moz-border-radius: 10px;
+	-moz-border-radius: 5px;
 	-moz-box-shadow: 2px 2px 5px #BDC3FF;
-	-webkit-border-radius: 10px;
+	-webkit-border-radius: 5px;
 	-webkit-box-shadow: 3px 3px 2px 2px #BDC3FF;
 	background: #FFF;
 	border: 1px solid #DDD;
@@ -215,29 +215,13 @@ li
 
 .comment-list-wrapper
 {
-	border-radius: 10px;
+	border-radius: 5px;
 	box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
-	-moz-border-radius: 10px;
+	-moz-border-radius: 5px;
 	-moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
-	-webkit-border-radius: 10px;
+	-webkit-border-radius: 5px;
 	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	background: #F6F6F6;
-	margin: 10px 0 0;
-	padding: 5px 12px 10px 7px;
-}
-
-.notification
-{
-    position: fixed;
-    right: 10px;
-	bottom: 10px;
-    width: 250px;
-	box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
-	-moz-border-radius: 10px;
-	-moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
-	-webkit-border-radius: 10px;
-	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
-	background: #FFFBA3;
 	margin: 10px 0 0;
 	padding: 5px 12px 10px 7px;
 }
@@ -269,9 +253,9 @@ li
 }
 .comment-gravatar img
 {
-	border-radius: 5px;
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
 }
 
 .comment-content-wrapper
@@ -295,7 +279,7 @@ form
 
 input, textarea
 {
-	border-radius: 5px;
+	border-radius: 4px;
 	box-shadow: 0 0 4px #e2e2e2, inset 0 0 4px #e2e2e2;
 	filter:progid:DXImageTransform.Microsoft.Shadow (color=#e2e2e2, Direction=135, Strength=5);
 	resize: none;
@@ -305,10 +289,10 @@ input, textarea
 	padding: 8px 12px;
 	transition: all .20s ease-in-out;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=#e2e2e2, Direction=135, Strength=5)";
-	-moz-border-radius: 5px;
+	-moz-border-radius: 4px;
 	-moz-box-shadow: 0 0 4px #eee, inset 0 0 4px #eee;
 	-moz-transition: all .20s ease-in-out;
-	-webkit-border-radius: 5px;
+	-webkit-border-radius: 4px;
 	-webkit-box-shadow: 0 0 4px #eee, inset 0 0 4px #eee;
 	-webkit-transition: all .20s ease-in-out;
 }
@@ -362,6 +346,19 @@ input[type="submit"]
 
 input[type="submit"]:hover
 {
+	box-shadow: 0 0 4px #fefefe, inset 0 0 4px #fefefe;
+	background-color: #fefefe;
+	border: 1px solid #c4c4c4;
+	outline: none;
+	transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
+	-moz-box-shadow: 0 0 4px #fefefe, inset 0 0 4px #fefefe;
+	-webkit-box-shadow: 0 0 4px #fefefe, inset 0 0 4px #fefefe;
+	-webkit-transition: all .20s ease-in-out;
+}
+
+input[type="submit"]:focus
+{
 	box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
 	background-color: #fefefe;
 	border: 1px solid #c4c4c4;
@@ -396,7 +393,6 @@ input[type="submit"]:disabled
 
 #sub-nav a
 {
-	font-size: 1.2em;
 	text-decoration: none;
 	padding-top: 3px;
 	padding-bottom: 5px;
@@ -428,13 +424,13 @@ input[type="submit"]:disabled
 
 #sub-nav li a:hover
 {
-	background: rgba(60,60,60,0.1);
+	background: rgba(30,30,30,0.1);
 	color: black;
-	border-radius: 5px;
+	border-radius: 4px;
 	transition: all .20s ease-in-out;
-	-moz-border-radius: 5px;
+	-moz-border-radius: 4px;
 	-moz-transition: all .20s ease-in-out;
-	-webkit-border-radius: 5px;
+	-webkit-border-radius: 4px;
 	-webkit-transition: all .20s ease-in-out;
 }
 
@@ -519,6 +515,7 @@ div.growls div.blue
 
 div.growls div.small
 {
+	border-radius: 5px;
 	width: 200px;
 	min-height: 40px;
 	padding: 5px;
@@ -529,6 +526,7 @@ div.growls div.small
 
 div.growls div.medium
 {
+	border-radius: 10px;
 	width: 250px;
 	min-height: 50px;
 	padding: 10px;
@@ -539,6 +537,7 @@ div.growls div.medium
 
 div.growls div.large
 {
+	border-radius: 15px;
 	width: 300px;
 	min-height: 60px;
 	padding: 15px;
