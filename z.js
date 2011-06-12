@@ -4,7 +4,6 @@ var io = require('socket.io');
 var sio = require('socket.io-sessions');
 var sys = require('sys');
 var twitter = require('./lib/vendor/twitter');
-var url = require('url');
 
 /*
  * start configuration
@@ -149,14 +148,16 @@ server.get('/oauth/logout', function(req, res)
 	});
 });
 
-gzip.gzip({matchType: /css/});
-gzip.gzip({matchType: /js/});
-
 if (!module.parent)
 {
 	server.listen(port);
 	console.log('Express server listening on port '+server.address().port);
 }
+
+gzip.gzip({matchType: /css/});
+gzip.gzip({matchType: /js/});
+
+socket.tid2clt = {};
 
 /*
  * the socket connection event which gets the gears started
@@ -167,13 +168,6 @@ socket.on('sconnection', function(client, session)
 	{
 		var tw = new twitter(key, secret, session.oauth);
 		z_engine_streaming_handler(tw, client, session);
-		client.on('message', function(message)
-		{
-			if(tw)
-			{
-				z_engine_message_handler(session, client, message, tw);
-			}
-		});
 	}
 	catch(e)
 	{
@@ -305,6 +299,14 @@ function z_engine_streaming_handler(tw, client, session)
 	{
 		if(tw)
 		{
+			try
+			{
+				socket.tid2clt[tw._results.user_id] = client;
+			}
+			catch(e)
+			{
+				console.error('socket.tid2sid ERROR: ' + sys.inspect(e));
+			}
 			var stream = tw.openUserStream({include_entities: true});
 			stream.setMaxListeners(0); //dont do this
 			stream.on('data', function(data)
@@ -315,7 +317,7 @@ function z_engine_streaming_handler(tw, client, session)
 				}
 				catch(e)
 				{
-					console.error('dispatch event ERROR: ' + data);
+					console.error('dispatch event ERROR: ' + sys.inspect(e));
 				}
 			});
 			stream.on('error', function(data)
@@ -332,6 +334,13 @@ function z_engine_streaming_handler(tw, client, session)
 			});
 		}
 	},5000);
+	client.on('message', function(message)
+	{
+		if(tw)
+		{
+			z_engine_message_handler(session, client, message, tw);
+		}
+	});
 }
 
 /*
@@ -349,17 +358,16 @@ function z_engine_static_timeline_fetch(this_session, tw, client, params, json)
 			}
 			else
 			{
-				var out = data.reverse();
 				switch (json)
 				{
 					case 'home':
-						client.send(out);
+						client.send(data.reverse());
 					break;
 					case 'mentions':
-						client.send({mentions: out});
+						client.send({mentions: data});
 					break;
 					case 'retweets':
-						client.send({retweets: out});
+						client.send({retweets: data.reverse()});
 					break;
 				}
 			}

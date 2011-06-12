@@ -8,6 +8,7 @@ var content_paused = Array();
 var cutoff = 200; //max amount of tweets to display before pruning occurs
 var dm_to = false;
 var following = Array(); //holds our following id's array
+//var growler = new Growler(); //growler notifications
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var page = 1; //the page we start on (on the home timeline)
@@ -150,6 +151,29 @@ function z_engine_attrition()
 					});
 				},5000);
 			}
+			if ($("comment-"+id+"-mentioned"))
+			{
+				$("comment-"+id+"-mentioned").setStyle("text-decoration: line-through;");
+				window.setTimeout(function()
+				{
+					new S2.FX.Parallel(
+					[
+						new Effect.BlindUp("comment-"+id+"-mentioned",
+						{
+							duration: 1.25,
+							mode: 'relative'
+						}),
+						new Effect.Fade("comment-"+id+"-mentioned",
+						{
+							duration: 1,
+							mode: 'relative'
+						}),
+					],
+					{
+						duration: 1.25
+					});
+				},5000);
+			}
 		}
 		else if (json.direct_message)
 		{
@@ -214,6 +238,11 @@ function z_engine_attrition()
 			{
 				$("rt-"+data.retweeted_status.id_str).writeAttribute("src","img/rtd.png");
 				$("rt-"+data.retweeted_status.id_str).writeAttribute("onclick","z_engine_destroy('"+data.retweeted_status.id_str+"','rt');");
+				if ($("rt-"+data.retweeted_status.id_str+"-mentioned"))
+				{
+					$("rt-"+data.retweeted_status.id_str+"-mentioned").writeAttribute("src","img/rtd.png");
+					$("rt-"+data.retweeted_status.id_str+"-mentioned").writeAttribute("onclick","z_engine_destroy('"+data.retweeted_status.id_str+"','rt');");
+				}
 			}
 		}
 		else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
@@ -473,6 +502,11 @@ function z_engine_favorite(id)
 	socket.send({favorite: {status: {id_str: id}}});
 	$("fave-"+id).writeAttribute("src","img/favd.png");
 	$("fave-"+id).writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
+	if ($("fave-"+id+"-mentioned"))
+	{
+		$("fave-"+id+"-mentioned").writeAttribute("src","img/favd.png");
+		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
+	}
 }
 
 /* starts up the engine */
@@ -491,6 +525,7 @@ function z_engine_kickstart()
 /* send a notification to the client */
 function z_engine_notification(av, head, text)
 {
+	//growler.growl(head, text);
 	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0)
 	{
 		var notification = window.webkitNotifications.createNotification(av, head, text);
@@ -784,51 +819,7 @@ function z_engine_tweet(data, output)
 					comment_body_element.insert({'bottom': clearer_element});
 					var comment_text_element = new Element('div', {'class': 'comment-text'});
 						var comment_text_body_element = new Element('p', {'id': 'comment-'+id+'-text'});
-							var right2_element = new Element('div', {'class': 'right'});
-							if (author != screen_name && output != "dms")
-							{
-								var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+id+'", "'+author+'");', 'id': 'reply-'+id, 'alt': ''});
-								if (!locked)
-								{
-									var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'", "'+author+'", "'+text+'");', 'id': 'rt-'+id, 'alt': ''});
-									new Element.extend(rt_img_element);
-								}
-								else
-								{
-									var rt_img_element = new Element('img', {'src': 'img/lock.png', 'style': 'cursor: default;', 'alt': ''});
-								}
-								if (!faved)
-								{
-									var fave_img_element = new Element('img', {'src': 'img/fav.png', 'onclick': 'z_engine_favorite("'+id+'");', 'id': 'fave-'+id, 'alt': ''});
-								}
-								else
-								{
-									var fave_img_element = new Element('img', {'src': 'img/favd.png', 'onclick': 'z_engine_unfavorite("'+id+'");', 'id': 'fave-'+id, 'alt': ''});
-								}
-								new Element.extend(reply_img_element);
-								new Element.extend(fave_img_element);
-								right2_element.insert(reply_img_element);
-								right2_element.insert({'bottom': rt_img_element});
-								right2_element.insert({'bottom': fave_img_element});
-							}
-							else if (author == screen_name && output != "dms")
-							{
-								var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': 'img/del.png', 'id': 'del-'+id, 'alt': ''});
-								right2_element.insert({'bottom': del_img_element});
-								new Element.extend(del_img_element);
-							}
-							else if (output == "dms")
-							{
-								if (author != screen_name)
-								{
-									var reply_img_element = new Element('img', {'onclick': 'z_engine_reply_dm("'+userid+'");', 'src': 'img/rep.png', 'id': 'reply-'+id, 'alt': ''});
-									right2_element.insert(reply_img_element);
-									new Element.extend(reply_img_element);
-								}
-								var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "dm");', 'src': 'img/del.png', 'id': 'del-'+id, 'alt': ''});
-								right2_element.insert({'bottom': del_img_element});
-								new Element.extend(del_img_element);
-							}
+							var right2_element = new Element('div', {'id': 'right-'+id, 'class': 'right'});
 							comment_text_body_element.insert(linebreak);
 							comment_text_body_element.insert({'bottom': right2_element});
 							var tweet_text = new Element('div', {'id': "text-"+id});
@@ -840,6 +831,7 @@ function z_engine_tweet(data, output)
 			container_element.insert(profile_wrapper_element);
 			container_element.insert({'bottom': comment_content_element});
 			container_element.insert({'bottom': clearer_element});
+		new Element.extend(right2_element);
 		new Element.extend(container_element);
 		switch (output)
 		{
@@ -854,38 +846,21 @@ function z_engine_tweet(data, output)
 				}
 			break;
 			case 'mentions':
-				$("mentions-timeline").insert({'top': container_element});
+				$("mentions-timeline").insert({'bottom': container_element});
 			break;
 			case 'home':
 				$("home-timeline").insert({'top': container_element});
 			break;
 		}
-		new S2.FX.Parallel(
-		[
-			new Effect.Appear('comment-'+id,
-			{
-				duration: 1.25,
-				mode: 'relative'
-			}),
-			new Effect.BlindDown('comment-'+id,
-			{
-				duration: 0.7,
-				mode: 'relative'
-			})
-		],
-		{
-			duration: 1.5
-		});
 		if (mentioned && output != "mentions")
 		{
-			if (mentioned)
-			{
-				var mentioned_clone = cloneNodeWithEvents(container_element);
-				mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
-				new Element.extend(mentioned_clone);
-				$("mentions-timeline").insert({'top': mentioned_clone});
-				z_engine_notification(avatar, author, text);
-			}
+			var mentioned_clone = cloneNodeWithEvents(container_element);
+			mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
+			right2_element.setAttribute("id", "right-"+id+"-mentioned");
+			z_engine_tweet_buttons("mentions", id, author, userid, text, locked, faved);
+			new Element.extend(mentioned_clone);
+			$("mentions-timeline").insert({'top': mentioned_clone});
+			z_engine_notification(avatar, author, text);
 			new S2.FX.Parallel(
 			[
 				new Effect.Appear('comment-'+id+'-mentioned',
@@ -903,6 +878,23 @@ function z_engine_tweet(data, output)
 				duration: 1.5
 			});
 		}
+		z_engine_tweet_buttons(output, id, author, userid, text, locked, faved);
+		new S2.FX.Parallel(
+		[
+			new Effect.Appear('comment-'+id,
+			{
+				duration: 1.25,
+				mode: 'relative'
+			}),
+			new Effect.BlindDown('comment-'+id,
+			{
+				duration: 0.7,
+				mode: 'relative'
+			})
+		],
+		{
+			duration: 1.5
+		});
 	}
 	else
 	{
@@ -914,6 +906,109 @@ function z_engine_tweet(data, output)
 	if (!mentioned)
 	{
 		tid++;
+	}
+}
+
+/* the reply / rt / fave buttons */
+function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved)
+{
+	switch (type)
+	{
+		case 'home':
+			if (author != screen_name)
+			{
+				var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+id+'", "'+author+'");', 'id': 'reply-'+id, 'alt': ''});
+				if (!locked)
+				{
+					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'", "'+author+'", "'+escape_string(text)+'");', 'id': 'rt-'+id, 'alt': ''});
+					new Element.extend(rt_img_element);
+				}
+				else
+				{
+					var rt_img_element = new Element('img', {'src': 'img/lock.png', 'style': 'cursor: default;', 'alt': ''});
+				}
+				if (!faved)
+				{
+					var fave_img_element = new Element('img', {'src': 'img/fav.png', 'onclick': 'z_engine_favorite("'+id+'");', 'id': 'fave-'+id, 'alt': ''});
+				}
+				else
+				{
+					var fave_img_element = new Element('img', {'src': 'img/favd.png', 'onclick': 'z_engine_unfavorite("'+id+'");', 'id': 'fave-'+id, 'alt': ''});
+				}
+				new Element.extend(reply_img_element);
+				new Element.extend(fave_img_element);
+				$("right-"+id).insert(reply_img_element);
+				$("right-"+id).insert({'bottom': rt_img_element});
+				$("right-"+id).insert({'bottom': fave_img_element});
+			}
+			else
+			{
+				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': 'img/del.png', 'id': 'del-'+id, 'alt': ''});
+				$("right-"+id).insert({'bottom': del_img_element});
+				new Element.extend(del_img_element);
+			}
+		break;
+		case 'mentions':
+			if (author != screen_name)
+			{
+				var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+id+'", "'+author+'");', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
+				if (!locked)
+				{
+					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'", "'+author+'", "'+escape_string(text)+'");', 'id': 'rt-'+id+'-mentioned', 'alt': ''});
+					new Element.extend(rt_img_element);
+				}
+				else
+				{
+					var rt_img_element = new Element('img', {'src': 'img/lock.png', 'style': 'cursor: default;', 'alt': ''});
+				}
+				if (!faved)
+				{
+					var fave_img_element = new Element('img', {'src': 'img/fav.png', 'onclick': 'z_engine_favorite("'+id+'");', 'id': 'fave-'+id+'-mentioned', 'alt': ''});
+				}
+				else
+				{
+					var fave_img_element = new Element('img', {'src': 'img/favd.png', 'onclick': 'z_engine_unfavorite("'+id+'");', 'id': 'fave-'+id+'-mentioned', 'alt': ''});
+				}
+				new Element.extend(reply_img_element);
+				new Element.extend(fave_img_element);
+				if ($("right-"+id))
+				{
+					$("right-"+id).insert(reply_img_element);
+					$("right-"+id).insert({'bottom': rt_img_element});
+					$("right-"+id).insert({'bottom': fave_img_element});
+				}
+				if ($("right-"+id+"-mentioned"))
+				{
+					$("right-"+id+"-mentioned").insert(reply_img_element);
+					$("right-"+id+"-mentioned").insert({'bottom': rt_img_element});
+					$("right-"+id+"-mentioned").insert({'bottom': fave_img_element});
+				}
+			}
+			else
+			{
+				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': 'img/del.png', 'id': 'del-'+id+'-mentioned', 'alt': ''});
+				if ($("right-"+id))
+				{
+					$("right-"+id).insert({'bottom': del_img_element});
+				}
+				if ($("right-"+id+"-mentioned"))
+				{
+					$("right-"+id+"-mentioned").insert({'bottom': del_img_element});
+				}
+				new Element.extend(del_img_element);
+			}
+		break;
+		case 'dms':
+			if (author != screen_name)
+			{
+				var reply_img_element = new Element('img', {'onclick': 'z_engine_reply_dm("'+userid+'");', 'src': 'img/rep.png', 'id': 'reply-'+id, 'alt': ''});
+				new Element.extend(reply_img_element);
+				$("right-"+id).insert(reply_img_element);
+			}
+			var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "dm");', 'src': 'img/del.png', 'id': 'del-'+id, 'alt': ''});
+			new Element.extend(del_img_element);
+			$("right-"+id).insert({'bottom': del_img_element});
+		break;
 	}
 }
 
@@ -985,7 +1080,12 @@ function z_engine_unfavorite(id)
 {
 	socket.send({unfavorite: {status: {id_str: id}}});
 	$("fave-"+id).writeAttribute("src","img/fav.png");
-	$("fave-"+id).writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
+	$("fave-"+id).writeAttribute("onclick","z_engine_favorite('"+id+"');");
+	if ($("fave-"+id+"mentioned"))
+	{
+		$("fave-"+id+"-mentioned").writeAttribute("src","img/fav.png");
+		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_favorite('"+id+"');");
+	}
 }
 
 /* update all time elements */

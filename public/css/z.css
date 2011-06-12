@@ -455,6 +455,99 @@ ul.tabbed li
 }
 
 /*
+ * growler clone theming
+ */
+div.growls
+{
+	z-index: 50000;
+	position: fixed;
+}
+
+
+div.growls.bottom-right
+{
+	bottom: 10px;
+	right: 10px;
+}
+
+div.growls div.growl
+{
+	opacity: 0;
+}
+
+div.growls div.growl div.close
+{
+	cursor: pointer;
+	float: right;
+}
+
+div.growls div.growl div.title
+{
+	font-weight: bold;
+	font-size: small;
+}
+
+div.growls div.growl div.message
+{
+	font-weight: normal;
+	font-size: small;
+}
+
+div.growls div.black
+{
+	color: #FFF;
+	background-color: #000;
+}
+
+div.growls div.red
+{
+	color: #FFF;
+	background-color: #900;
+}
+
+div.growls div.green
+{
+	color: #FFF;
+	background-color: #090;
+}
+
+div.growls div.blue
+{
+	color: #FFF;
+	background-color: #009;
+}
+
+div.growls div.small
+{
+	width: 200px;
+	min-height: 40px;
+	padding: 5px;
+	margin: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+}
+
+div.growls div.medium
+{
+	width: 250px;
+	min-height: 50px;
+	padding: 10px;
+	margin: 10px;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+}
+
+div.growls div.large
+{
+	width: 300px;
+	min-height: 60px;
+	padding: 15px;
+	margin: 15px;
+	-moz-border-radius: 15px;
+	-webkit-border-radius: 15px;
+}
+
+/*
  * other
  */
 
