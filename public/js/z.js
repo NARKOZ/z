@@ -588,7 +588,7 @@ function z_engine_retweet(id, author, text)
 	var confirm_rt1 = confirm("\nare you sure you want to retweet this?\n");
 	if (confirm_rt1)
 	{
-		var confirm_rt2 = confirm("ok for normal retweet\ncancel for commented retweet\n");
+		var confirm_rt2 = confirm("ok for normal retweet\ncancel for commented retweet");
 		if (confirm_rt2)
 		{
 			socket.send({retweet: {status: {id_str: id}}});
@@ -1045,6 +1045,7 @@ function z_engine_tweet_pause()
 	if (!paused)
 	{
 		paused = true;
+		$("pause").update("unpause");
 		new Effect.Appear("paused-count");
 		$("paused-count").morph("opacity: 1;");
 	}
