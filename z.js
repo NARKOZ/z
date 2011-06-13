@@ -157,8 +157,6 @@ if (!module.parent)
 gzip.gzip({matchType: /css/});
 gzip.gzip({matchType: /js/});
 
-socket.tid2clt = {};
-
 /*
  * the socket connection event which gets the gears started
  */
@@ -297,16 +295,8 @@ function z_engine_streaming_handler(tw, client, session)
 	}});
 	setTimeout(function()
 	{
-		if(tw && typeof(socket.tid2clt[tw._results.user_id]) === "undefined")
+		if(tw)
 		{
-			try
-			{
-				socket.tid2clt[tw._results.user_id] = client;
-			}
-			catch(e)
-			{
-				console.error('socket.tid2sid ERROR: ' + sys.inspect(e));
-			}
 			tw.stream('user', {include_entities: true}, function(stream)
 			{
 				stream.on('data', function (data)
