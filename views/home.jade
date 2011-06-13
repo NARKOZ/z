@@ -41,3 +41,4 @@ img#loading(src='img/spinner.gif', class='loading')
     ul#dms-outbox-timeline(style='display:none;')
 
 script var growler = new Growler(); //we need this here for the growler to work properly
+script document.observe("dom:loaded",function() { z_engine_attrition(); }); //load engine

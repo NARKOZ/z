@@ -29,12 +29,6 @@ var ts = 0;
 var ttid = 0; //temporary internal counter
 var user_id = 0;
 
-/* start the engine */
-document.observe("dom:loaded",function()
-{
-	z_engine_attrition();
-});
-
 /* the websocket itself */
 function z_engine_attrition()
 {
@@ -127,7 +121,7 @@ function z_engine_attrition()
 			},15000);
 			var prune_old_tweets = window.setInterval(function()
 			{
-				z_engine_clean_tweets();
+				z_engine_prune_tweets();
 			},30000);
 		}
 		else if (json["delete"]) //catch it like this, it can cause errors in other browsers like opera
@@ -440,8 +434,82 @@ function z_engine_dms_clicker(id, this_id)
 	});
 }
 
-/* hopefully this will hopefully trim older tweets later on (when you get around 50 or so logged up) */
-function z_engine_clean_tweets()
+/* delete a tweet / dm */
+function z_engine_destroy(id, method)
+{
+	var confirm_delete = confirm("\nare you sure you want to delete this?\n");
+	if (confirm_delete)
+	{
+		if (method == "tweet" || method == "rt")
+		{
+			var params = {destroy: {status: {id_str: id}}};
+		}
+		else if (method == "dm")
+		{
+			var params = {destroy_dm: {status: {id_str: id}}};
+		}
+		if (method == "rt")
+		{
+			if ($("rt-"+id))
+			{
+				$("rt-"+id).setAttribute("src","img/rt.png");
+				$("rt-"+id).setAttribute("onclick","z_engine_retweet('"+id+"');");
+			}
+			if ($("rt-"+id+"-mentioned"))
+			{
+				$("rt-"+id+"-mentioned").setAttribute("src","img/rt.png");
+				$("rt-"+id+"-mentioned").setAttribute("onclick","z_engine_retweet('"+id+"');");
+			}
+		}
+		socket.send(params);
+	}
+}
+
+/* favorite a tweet */
+function z_engine_favorite(id)
+{
+	socket.send({favorite: {status: {id_str: id}}});
+	if ($("fave-"+id))
+	{
+		$("fave-"+id).writeAttribute("src","img/favd.png");
+		$("fave-"+id).writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
+	}
+	if ($("fave-"+id+"-mentioned"))
+	{
+		$("fave-"+id+"-mentioned").writeAttribute("src","img/favd.png");
+		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
+	}
+}
+
+/* send a notification to the client */
+function z_engine_notification(av, head, text)
+{
+	//todo: support avatars
+	if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser != "MSIE")
+	{
+		audio.volume = 75;
+		audio.play();
+	}
+	growler.growl(z_engine_parse_tweet(head), z_engine_parse_tweet(text));
+}
+
+/* parse and convert all mentions, links, and hashtags appropriately into their respective links */
+function z_engine_parse_tweet(text)
+{
+	if(!text)
+	{
+		return text;
+	}
+	else
+	{
+		text = twttr.txt.autoLink(text, {hashtagUrlBase: 'https://search.twitter.com/search?q=%23'});
+		text = text.replace(/\n\r?/g, '<br />');
+		return text;
+	}
+}
+
+/* prune through older tweets, delay each timelines pruning by 10 seconds so we have a constantly looping without huge overhead */
+function z_engine_prune_tweets(id)
 {
 	var tweet_elements = $("home-timeline").childElements();
 	if (tweet_elements.length > 0)
@@ -496,79 +564,6 @@ function z_engine_clean_tweets()
 			}
 		}
 	},30000);
-}
-
-/* delete a tweet / dm */
-function z_engine_destroy(id, method)
-{
-	var confirm_delete = confirm("\nare you sure you want to delete this?\n");
-	if (confirm_delete)
-	{
-		if (method == "tweet" || method == "rt")
-		{
-			var params = {destroy: {status: {id_str: id}}};
-		}
-		else if (method == "dm")
-		{
-			var params = {destroy_dm: {status: {id_str: id}}};
-		}
-		if (method == "rt")
-		{
-			if ($("rt-"+id))
-			{
-				$("rt-"+id).setAttribute("src","img/rt.png");
-				$("rt-"+id).setAttribute("onclick","z_engine_retweet('"+id+"');");
-			}
-			if ($("rt-"+id+"-mentioned"))
-			{
-				$("rt-"+id+"-mentioned").setAttribute("src","img/rt.png");
-				$("rt-"+id+"-mentioned").setAttribute("onclick","z_engine_retweet('"+id+"');");
-			}
-		}
-		socket.send(params);
-	}
-}
-
-/* favorite a tweet */
-function z_engine_favorite(id)
-{
-	socket.send({favorite: {status: {id_str: id}}});
-	if ($("fave-"+id))
-	{
-		$("fave-"+id).writeAttribute("src","img/favd.png");
-		$("fave-"+id).writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
-	}
-	if ($("fave-"+id+"-mentioned"))
-	{
-		$("fave-"+id+"-mentioned").writeAttribute("src","img/favd.png");
-		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
-	}
-}
-
-/* send a notification to the client */
-function z_engine_notification(av, head, text)
-{
-	//todo: support avatars
-	if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser != "MSIE")
-	{
-		audio.play();
-	}
-	growler.growl(z_engine_parse_tweet(head), z_engine_parse_tweet(text));
-}
-
-/* parse and convert all mentions, links, and hashtags appropriately into their respective links */
-function z_engine_parse_tweet(text)
-{
-	if(!text)
-	{
-		return text;
-	}
-	else
-	{
-		text = twttr.txt.autoLink(text, {hashtagUrlBase: 'https://search.twitter.com/search?q=%23'});
-		text = text.replace(/\n\r?/g, '<br />');
-		return text;
-	}
 }
 
 /* reply to a specific tweet */
