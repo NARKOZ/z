@@ -21,12 +21,6 @@ npm install socket.io-sessions
 
 note:
 
-upon the client disconnecting from the socket, there needs to be a way to stop the userstream properly.
-until this is done, make sure that after you disconnect, you stop the entire server before running in
-your browser again. sorry for this inconviencence!
-
-another note:
-
 keep the above mentioned modules up to date! there is a good chance that if something was updated in
 one of those modules that breaks current code, it will be fixed and committed soon (and break the
 client for you if you dont stay up to date). to do that, just run: npm update
