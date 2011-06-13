@@ -3,6 +3,7 @@
  */
 
 /* initial variables */
+var audio = new Audio("/audio/notify.ogg");
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
 var content_paused = Array();
 var cutoff = 200; //max amount of tweets to display before pruning occurs
@@ -540,8 +541,7 @@ function z_engine_favorite(id)
 function z_engine_notification(av, head, text)
 {
 	//todo: support avatars
-	$("audio-notify").volume = 75;
-	$("audio-notify").play();
+	audio.play();
 	growler.growl(z_engine_parse_tweet(head), z_engine_parse_tweet(text));
 }
 
