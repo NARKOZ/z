@@ -487,7 +487,6 @@ function z_engine_notification(av, head, text)
 	//todo: support avatars
 	if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser != "MSIE")
 	{
-		audio.volume = 75;
 		audio.play();
 	}
 	growler.growl(z_engine_parse_tweet(head), z_engine_parse_tweet(text));
