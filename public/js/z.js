@@ -3,7 +3,15 @@
  */
 
 /* initial variables */
-var audio = new Audio("/audio/notify.ogg");
+var audio = new Audio();
+if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser == "Safari")
+{
+	audio.src = "/audio/notify.mp3";
+}
+else
+{
+	audio.src = "/audio/notify.ogg";
+}
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
 var content_paused = Array();
 var cutoff = 200; //max amount of tweets to display before pruning occurs
@@ -541,7 +549,10 @@ function z_engine_favorite(id)
 function z_engine_notification(av, head, text)
 {
 	//todo: support avatars
-	audio.play();
+	if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser != "MSIE")
+	{
+		audio.play();
+	}
 	growler.growl(z_engine_parse_tweet(head), z_engine_parse_tweet(text));
 }
 
