@@ -588,7 +588,7 @@ function z_engine_retweet(id, author, text)
 	var confirm_rt1 = confirm("\nare you sure you want to retweet this?\n");
 	if (confirm_rt1)
 	{
-		var confirm_rt2 = confirm("\n\tok for normal retweet\n\tcancel for commented retweet\n");
+		var confirm_rt2 = confirm("ok for normal retweet\ncancel for commented retweet\n");
 		if (confirm_rt2)
 		{
 			socket.send({retweet: {status: {id_str: id}}});
