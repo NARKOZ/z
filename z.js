@@ -297,7 +297,7 @@ function z_engine_streaming_handler(tw, client, session)
 	}});
 	setTimeout(function()
 	{
-		if(tw)
+		if(tw && typeof(socket.tid2clt[tw._results.user_id]) === "undefined")
 		{
 			try
 			{
@@ -307,31 +307,36 @@ function z_engine_streaming_handler(tw, client, session)
 			{
 				console.error('socket.tid2sid ERROR: ' + sys.inspect(e));
 			}
-			var stream = tw.openUserStream({include_entities: true});
-			stream.setMaxListeners(0); //dont do this
-			stream.on('data', function(data)
+			tw.stream('user', {include_entities: true}, function(stream)
 			{
-				try
+				stream.on('data', function (data)
 				{
-					client.send(data);
-				}
-				catch(e)
+					try
+					{
+						client.send(data);
+					}
+					catch(e)
+					{
+						console.error('dispatch event ERROR: ' + sys.inspect(e));
+					}
+				});
+				client.on('disconnect', function()
 				{
-					console.error('dispatch event ERROR: ' + sys.inspect(e));
-				}
+					stream.destroy();
+				});
+				stream.on('error', function(data)
+				{
+					console.error('UserStream ERROR: ' + data);
+				});
+				stream.on('end', function()
+				{
+					console.log('UserStream ends successfully');
+				});
 			});
-			stream.on('error', function(data)
-			{
-				console.error('UserStream ERROR: ' + data);
-			});
-			stream.on('end', function()
-			{
-				console.log('UserStream ends successfully');
-			});
-			client.on('disconnect', function()
-			{
-				stream.end();
-			});
+		}
+		else
+		{
+			console.log("userstream is already running, please restart the server!");
 		}
 	},5000);
 	client.on('message', function(message)

@@ -1,6 +1,5 @@
-1) stop userstream when client disconnects
-2) deleting tweets and dms works but dms need a little bit more work in order to visually show it was deleted (like deleting your own tweets)
-3) possibly a govern of some sort when it spits out too many tweets (eg it slows each outputted tweet down to one per second)
-4) reset the userstream every...1000-2000 or so tweets / hour, whichever comes first
-5) ability to mute individual users, clients (or the source param from the api, eg "Tumblr"), mentions, etc
-6) create a public/js/src/ folder with everything in libs.js in their regular form
+1) deleting tweets and dms works but dms need a little bit more work in order to visually show it was deleted (like deleting your own tweets)
+2) possibly a govern of some sort when it spits out too many tweets (eg it slows each outputted tweet down to one per second)
+3) reset the userstream every...1000-2000 or so tweets / hour, whichever comes first
+4) ability to mute individual users, clients (or the source param from the api, eg "Tumblr"), mentions, etc
+5) create a public/js/src/ folder with everything in libs.js in their regular form

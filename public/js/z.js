@@ -215,10 +215,10 @@ function z_engine_attrition()
 		}
 		else if (json.dms) //realtime dms DO NOT come through here, this is the initial 50 that we throw in there
 		{
-			for (i = 0; i < json.dms.length; i++)
+			json.dms.each(function(item)
 			{
-				z_engine_tweet(json.dms[i], "dms");
-			}
+				z_engine_tweet(item, "dms");
+			});
 		}
 		else if (json.event)
 		{
@@ -256,10 +256,10 @@ function z_engine_attrition()
 		}
 		else if (json.mentions) //realtime mentions DO NOT come through here, this is the initial 50 that we throw in there
 		{
-			for (i = 0; i < json.mentions.length; i++)
+			json.mentions.each(function(item)
 			{
-				z_engine_tweet(json.mentions[i], "mentions");
-			}
+				z_engine_tweet(item, "mentions");
+			})
 		}
 		else if (json.retweet_info)  //catch what we just retweeted, change the clicking event and icon
 		{
@@ -540,6 +540,8 @@ function z_engine_favorite(id)
 function z_engine_notification(av, head, text)
 {
 	//todo: support avatars
+	$("audio-notify").volume = 75;
+	$("audio-notify").play();
 	growler.growl(z_engine_parse_tweet(head), z_engine_parse_tweet(text));
 }
 
@@ -1010,7 +1012,22 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved)
 /* clear everything out (view & content var wise) */
 function z_engine_tweet_clear()
 {
-	$("home-timeline").update();
+	if ($("home-timeline").visible())
+	{
+		$("home-timeline").update();
+	}
+	else if ($("mentions-timeline").visible())
+	{
+		$("mentions-timeline").update();
+	}
+	else if ($("dms-inbox-timeline").visible())
+	{
+		$("dms-inbox-timeline").update();
+	}
+	else if ($("dms-outbox-timeline").visible())
+	{
+		$("dms-outbox-timeline").update();
+	}
 }
 
 /* see if we were mentioned, this is faster than parsing through the text itself */
@@ -1043,22 +1060,22 @@ function z_engine_tweet_pause()
 	}
 	else
 	{
-		for (i = 0; i <= content_paused.length; i++)
+		content_paused.each(function(item)
 		{
-			if (typeof(content_paused[i]) === "undefined")
+			if (typeof(item) === "undefined")
 			{
 				//do nothing i guess?
 			}
 			else
 			{
-				if (content_paused[i].isJSON())
+				if (item.isJSON())
 				{
-					var data = content_paused[i].evalJSON();
+					var data = item.evalJSON();
 					z_engine_tweet(data, "home");
 				}
 			}
-		}
-		content_paused = Array();
+		});
+		content_paused.clear();
 		paused = false;
 		pttid = 0;
 		new Effect.Fade("paused-count",
@@ -1100,9 +1117,9 @@ function z_engine_unfavorite(id)
 function z_engine_update_relative_time()
 {
 	var time_elements = $$("time");
-	for (var stamp = time_elements.length; stamp--;)
+	time_elements.each(function(item)
 	{
-		var this_stamp = time_elements[stamp].getAttribute("datetime");
-		time_elements[stamp].update(relative_time(this_stamp));
-	}
+		var this_stamp = item.getAttribute("datetime");
+		item.update(relative_time(this_stamp));
+	});
 }
