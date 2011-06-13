@@ -154,6 +154,7 @@ if (!module.parent)
 	console.log('Express server listening on port '+server.address().port);
 }
 
+gzip.gzip({matchType: /audio/});
 gzip.gzip({matchType: /css/});
 gzip.gzip({matchType: /js/});
 
