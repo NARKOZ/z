@@ -20,6 +20,12 @@ var ts = 0;
 var ttid = 0; //temporary internal counter
 var user_id = 0;
 
+/* start the engine */
+document.observe("dom:loaded",function()
+{
+	z_engine_attrition();
+});
+
 /* the websocket itself */
 function z_engine_attrition()
 {
@@ -530,24 +536,10 @@ function z_engine_favorite(id)
 	}
 }
 
-/* starts up the engine */
-function z_engine_kickstart()
-{
-	if (window.addEventListener)
-	{
-		window.addEventListener("load",z_engine_attrition(),false);
-	}
-	else
-	{
-		window.attachEvent("onload",z_engine_attrition());
-	}
-}
-
 /* send a notification to the client */
 function z_engine_notification(av, head, text)
 {
 	//todo: support avatars
-	var growler = new Growler();
 	growler.growl(z_engine_parse_tweet(head), z_engine_parse_tweet(text));
 }
 
