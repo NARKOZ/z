@@ -509,7 +509,7 @@ function z_engine_parse_tweet(text)
 }
 
 /* prune through older tweets, delay each timelines pruning by 10 seconds so we have a constantly looping without huge overhead */
-function z_engine_prune_tweets(id)
+function z_engine_prune_tweets()
 {
 	var tweet_elements = $("home-timeline").childElements();
 	if (tweet_elements.length > 0)
@@ -1063,6 +1063,7 @@ function z_engine_tweet_pause()
 		$("pause").update("unpause");
 		new Effect.Appear("paused-count");
 		$("paused-count").morph("opacity: 1;");
+		window.clearTimeout(prune_old_tweets);
 	}
 	else
 	{
@@ -1092,6 +1093,10 @@ function z_engine_tweet_pause()
 				$("paused-count").update("(0)");
 			}
 		});
+		var prune_old_tweets = window.setInterval(function()
+		{
+			z_engine_prune_tweets();
+		},30000);
 	}
 }
 

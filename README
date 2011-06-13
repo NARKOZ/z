@@ -7,7 +7,7 @@ you should use http://127.0.0.1:8080/oauth/callback as your callback url. config
 an oauth token and secret has been included which points to everything correctly when ran locally.
 
 it is licensed under the new bsd license, and is partially based on "designo" (search for it on here),
-and a small section of a free template from arcsin.se
+the streaming code from jdub/node-twitter, and a small section of a free template from arcsin.se
 
 rquirements:
 
