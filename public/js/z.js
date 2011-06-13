@@ -142,7 +142,22 @@ function z_engine_attrition()
 				}
 				window.setTimeout(function()
 				{
-					$("comment-"+id).morph("height: 0px; opacity: 0;");
+					new S2.FX.Parallel(
+					[
+						new Effect.BlindUp("comment-"+id,
+						{
+							duration: 1.25,
+							mode: 'relative'
+						}),
+						new Effect.Fade("comment-"+id,
+						{
+							duration: 1,
+							mode: 'relative'
+						}),
+					],
+					{
+						duration: 1.25,
+					});
 				},2500);
 			}
 			if ($("comment-"+id+"-mentioned"))
@@ -165,7 +180,22 @@ function z_engine_attrition()
 				}
 				window.setTimeout(function()
 				{
-					$("comment-"+id).morph("height: 0px; opacity: 0;");
+					new S2.FX.Parallel(
+					[
+						new Effect.BlindUp("comment-"+id+"-mentioned",
+						{
+							duration: 1.25,
+							mode: 'relative'
+						}),
+						new Effect.Fade("comment-"+id+"-mentioned",
+						{
+							duration: 1,
+							mode: 'relative'
+						}),
+					],
+					{
+						duration: 1.25
+					});
 				},2500);
 			}
 		}
