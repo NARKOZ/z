@@ -424,7 +424,7 @@ input[type="submit"]:disabled
 
 #sub-nav li a:hover
 {
-	background: rgba(30,30,30,0.1);
+	background: #FFF;
 	color: black;
 	border-radius: 4px;
 	transition: all .20s ease-in-out;
@@ -491,26 +491,14 @@ div.growls div.growl div.message
 
 div.growls div.black
 {
-	color: #FFF;
-	background-color: #000;
-}
-
-div.growls div.red
-{
-	color: #FFF;
-	background-color: #900;
-}
-
-div.growls div.green
-{
-	color: #FFF;
-	background-color: #090;
-}
-
-div.growls div.blue
-{
-	color: #FFF;
-	background-color: #009;
+	border-radius: 5px;
+	box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	-moz-border-radius: 5px;
+	-moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	-webkit-border-radius: 5px;
+	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	background: #FFF;
+	border: 1px solid #DDD;
 }
 
 div.growls div.small
@@ -529,7 +517,7 @@ div.growls div.medium
 	border-radius: 10px;
 	width: 250px;
 	min-height: 50px;
-	padding: 10px;
+	padding: 10px;	background: #F6F6F6;
 	margin: 10px;
 	-moz-border-radius: 10px;
 	-webkit-border-radius: 10px;

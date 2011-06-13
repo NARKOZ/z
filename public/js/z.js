@@ -8,7 +8,6 @@ var content_paused = Array();
 var cutoff = 200; //max amount of tweets to display before pruning occurs
 var dm_to = false;
 var following = Array(); //holds our following id's array
-//var growler = new Growler(); //growler notifications
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var page = 1; //the page we start on (on the home timeline)
@@ -24,10 +23,6 @@ var user_id = 0;
 /* the websocket itself */
 function z_engine_attrition()
 {
-	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1) //figured id go ahead and use this, why not?
-	{
-		window.webkitNotifications.requestPermission();
-	}
 	new Element.extend("new-tweet-form");
 	new Element.extend("home-timeline");
 	new Element.extend("mentions-timeline");
@@ -48,7 +43,7 @@ function z_engine_attrition()
 	{
 		if($("new-tweet").getValue().length === 0)
 		{
-			dm_to = false; //need to do this another way...if you clear the input you need to hit reply again for now
+			dm_to = false;
 			reply_id = false;
 		}
 		else if($("new-tweet").getValue().length <= 140)
@@ -64,7 +59,6 @@ function z_engine_attrition()
 	{
 		if($("new-tweet").getValue().length === 0)
 		{
-			//because we autofocus into a blank input, this would break dms if we reset dm_to = false here
 			reply_id = false;
 		}
 		else if($("new-tweet").getValue().length <= 140)
@@ -183,7 +177,7 @@ function z_engine_attrition()
 				z_engine_notification(json.direct_message.sender.profile_image_url, json.direct_message.sender.screen_name+" sent a direct message", json.direct_message.text);
 			}
 		}
-		else if (json.dms)
+		else if (json.dms) //realtime dms DO NOT come through here, this is the initial 50 that we throw in there
 		{
 			for (i = 0; i < json.dms.length; i++)
 			{
@@ -194,17 +188,17 @@ function z_engine_attrition()
 		{
 			//todo: fix these
 			var data = json.event;
-			if (data["favorite"] && data["source"].user.screen_name != screen_name)
+			if (data["favorite"] && data.source.user.screen_name != screen_name)
 			{
-				z_engine_notification(data["source"].user.profile_image_url, data["source"].user.screen_name+" favorited your tweet!", data.target_object.text);
+				z_engine_notification(data.source.user.profile_image_url, data.source.user.screen_name+" favorited your tweet!", data.target_object.text);
 			}
-			else if (data["follow"] && data["source"].screen_name != screen_name)
+			else if (data["follow"] && data.source.screen_name != screen_name)
 			{
-				z_engine_notification(data["source"].profile_image_url, data["source"].screen_name+" started following you!", data["source"].description);
+				z_engine_notification(data.source.profile_image_url, data.source.screen_name+" started following you!", data.source.description);
 			}
-			else if (data["list_member_added"] && json["source"].screen_name != screen_name)
+			else if (data["list_member_added"] && json.source.screen_name != screen_name)
 			{
-				z_engine_notification(json["source"].profile_image_url, json["source"].screen_name+" put you in "+json.target_object.full_name, json.target_object.description);
+				z_engine_notification(json.source.profile_image_url, json.source.screen_name+" put you in "+json.target_object.full_name, json.target_object.description);
 			}
 			else
 			{
@@ -224,19 +218,19 @@ function z_engine_attrition()
 			Cookie.init({name: 'info', expires: 365}); //todo
 			Cookie.setData(JSON.stringify(json.info), false);
 		}
-		else if (json.mentions)
+		else if (json.mentions) //realtime mentions DO NOT come through here, this is the initial 50 that we throw in there
 		{
 			for (i = 0; i < json.mentions.length; i++)
 			{
 				z_engine_tweet(json.mentions[i], "mentions");
 			}
 		}
-		else if (json.retweet_info)
+		else if (json.retweet_info)  //catch what we just retweeted, change the clicking event and icon
 		{
 			var data = json.retweet_info;
 			if ($("comment-"+data.retweeted_status.id_str))
 			{
-				if ($("rt-"+data.retweeted_status.id_str+"-mentioned"))
+				if ($("rt-"+data.retweeted_status.id_str))
 				{
 					$("rt-"+data.retweeted_status.id_str).writeAttribute("src","img/rtd.png");
 					$("rt-"+data.retweeted_status.id_str).writeAttribute("onclick","z_engine_destroy('"+data.retweeted_status.id_str+"','rt');");
@@ -309,17 +303,17 @@ function z_engine_clicker(id, this_id)
 				[
 					new Effect.Fade("dms-outbox-timeline-click",
 					{
-						duration: 0.25,
+						duration: 0.15,
 						mode: 'relative'
 					}),
 					new Effect.Fade("dms-inbox-timeline-click",
 					{
-						duration: 0.25,
+						duration: 0.15,
 						mode: 'relative'
 					}),
 					new Effect.Appear("dms-timeline-click",
 					{
-						delay: 0.25,
+						delay: 0.15,
 						duration: 0.25,
 						mode: 'relative'
 					})
@@ -347,13 +341,13 @@ function z_engine_clicker(id, this_id)
 			[
 				new Effect.Fade(hide,
 				{
-					duration: 0.5,
+					duration: 0.4,
 					mode: 'relative'
 				}),
 				new Effect.Appear(this_id,
 				{
-					delay: 0.5,
-					duration: 0.5,
+					delay: 0.35,
+					duration: 0.4,
 					mode: 'relative'
 				})
 			],
@@ -384,13 +378,13 @@ function z_engine_dms_clicker(id, this_id)
 			[
 				new Effect.Fade(hide,
 				{
-					duration: 0.5,
+					duration: 0.4,
 					mode: 'relative'
 				}),
 				new Effect.Appear(this_id,
 				{
-					delay: 0.5,
-					duration: 0.5,
+					delay: 0.35,
+					duration: 0.4,
 					mode: 'relative'
 				})
 			],
@@ -480,10 +474,10 @@ function z_engine_destroy(id, method)
 				$("rt-"+id).setAttribute("src","img/rt.png");
 				$("rt-"+id).setAttribute("onclick","z_engine_retweet('"+id+"');");
 			}
-			if ($("rt-"+id+"-mentoined"))
+			if ($("rt-"+id+"-mentioned"))
 			{
-				$("rt-"+id+"-mentoined").setAttribute("src","img/rt.png");
-				$("rt-"+id+"-mentoined").setAttribute("onclick","z_engine_retweet('"+id+"');");
+				$("rt-"+id+"-mentioned").setAttribute("src","img/rt.png");
+				$("rt-"+id+"-mentioned").setAttribute("onclick","z_engine_retweet('"+id+"');");
 			}
 		}
 		socket.send(params);
@@ -522,20 +516,9 @@ function z_engine_kickstart()
 /* send a notification to the client */
 function z_engine_notification(av, head, text)
 {
-	//growler.growl(head, text);
-	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0)
-	{
-		var notification = window.webkitNotifications.createNotification(av, head, text);
-		notification.show();
-		window.setTimeout(function()
-		{
-			notification.cancel();
-		},5000);
-	}
-	else if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1)
-	{
-		window.webkitNotifications.requestPermission();
-	}
+	//todo: support avatars
+	var growler = new Growler();
+	growler.growl(z_engine_parse_tweet(head), z_engine_parse_tweet(text));
 }
 
 /* parse and convert all mentions, links, and hashtags appropriately into their respective links */
@@ -618,7 +601,7 @@ function z_engine_send_tweet()
 			}
 			else if (dm_to != false)
 			{
-				temp_element = temp_element.replace(/~/,"");
+				temp_element = temp_element.replace(/~/,""); //removes the ~ prefix from a dm before sending
 				var send = {
 					direct_message: {
 						text: temp_element,
@@ -647,7 +630,7 @@ function z_engine_tweet(data, output)
 			var author2 = false;
 			var avatar = data.user.profile_image_url;
 			var avatar2 = false;
-			var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,''); //fix some "blank dates"
+			var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,''); //convert all days properly
 			var entities = data.entities;
 			var faved = data.favorited;
 			if (output != "dms")
@@ -658,7 +641,7 @@ function z_engine_tweet(data, output)
 			{
 				var id = data.id;
 			}
-			var locked = data.user["protected"];
+			var locked = data.user["protected"]; //prevent an issue in ie
 			var name = data.user.name;
 			var place = data.place;
 			var reply = data.in_reply_to_screen_name;
@@ -678,15 +661,8 @@ function z_engine_tweet(data, output)
 			var date = new Date(data.retweeted_status.created_at).toLocaleString().replace(/GMT.+/,''); //fix some "blank dates"
 			var entities = data.retweeted_status.entities;
 			var faved = data.retweeted_status.favorited;
-			if (output != "dms")
-			{
-				var id = data.retweeted_status.id_str;
-			}
-			else
-			{
-				var id = data.retweeted_status.id;
-			}
-			var locked = data.retweeted_status.user["protected"];
+			var id = data.retweeted_status.id_str;
+			var locked = data.retweeted_status.user["protected"]; //prevent an issue in ie
 			var name = data.retweeted_status.user.name;
 			var place = data.retweeted_status.place;
 			var reply = data.retweeted_status.in_reply_to_screen_name;
@@ -704,7 +680,7 @@ function z_engine_tweet(data, output)
 			var avatar = data.sender.profile_image_url;
 			var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,''); //fix some "blank dates"
 			var id = data.id_str;
-			var locked = data.sender["protected"];
+			var locked = data.sender["protected"]; //prevent an issue in ie
 			var name = data.sender.name;
 			var reply = data.in_reply_to_screen_name;
 			var rtd = false;
