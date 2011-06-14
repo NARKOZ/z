@@ -568,8 +568,8 @@ div.growls div.large
 
 ::-webkit-scrollbar
 {
-	width: 8px;
-	height: 8px;
+	width: 10px;
+	height: 10px;
 }
 
 ::-webkit-scrollbar-track-piece
@@ -579,16 +579,13 @@ div.growls div.large
 
 ::-webkit-scrollbar-track-piece:horizontal
 {
-	width: 20px;
+	width: 25px;
 }
 
 ::-webkit-scrollbar-thumb
 {
-	background-color: #666666;
-	border-radius: 6px;
-	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
-	margin-left: 5px;
-	margin-right: 5px;
+	background-color: #5F5F5F;
+	border-radius: 4px;
 }
 
 /*

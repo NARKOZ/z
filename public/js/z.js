@@ -86,210 +86,229 @@ function z_engine_attrition()
 	});
 	socket.on("message", function(json)
 	{
-		if (json.loaded)
+		var string = JSON.stringify(json);
+		if (string.isJSON() && string.evalJSON(true)) //quick sanity check before we begin
 		{
-			$("new-tweet").setValue("");
-			$("new-tweet").enable();
-			$("new-tweet-submit").enable();
-			$("loading").fade();
-			new Event.observe("new-tweet-form", "submit", function(event)
+			if (json.loaded)
 			{
-				Event.stop(event);
-				z_engine_send_tweet();
-			});
-			z_engine_clicker("home-timeline-click", "home-timeline"); //home
-			z_engine_clicker("mentions-timeline-click", "mentions-timeline"); //mentions
-			z_engine_clicker("dms-timeline-click", "dms-timeline"); //dms
-			z_engine_dms_clicker("dms-inbox-timeline-click", "dms-inbox-timeline");
-			z_engine_dms_clicker("dms-outbox-timeline-click", "dms-outbox-timeline");
-			socket.send({fetch: "home"});
-			var populate_mentions_tab = window.setTimeout(function()
-			{
-				socket.send({fetch: "mentions"});
-			},10000);
-			var populate_dms_inbox_tab = window.setTimeout(function()
-			{
-				socket.send({fetch: "dms-inbox"});
-			},15000);
-			var populate_dms_outbox_tab = window.setTimeout(function()
-			{
-				socket.send({fetch: "dms-outbox"});
-			},20000);
-			var update_relative_time = window.setInterval(function()
-			{
-				this.z_engine_update_relative_time()
-			},15000);
-			var prune_old_tweets = window.setInterval(function()
-			{
-				z_engine_prune_tweets();
-			},30000);
-		}
-		else if (json["delete"]) //catch it like this, it can cause errors in other browsers like opera
-		{
-			var id = json["delete"].status.id;
-			if (json["delete"].status.id_str)
-			{
-				id = json["delete"].status.id_str;
+				$("new-tweet").setValue("");
+				$("new-tweet").enable();
+				$("new-tweet-submit").enable();
+				$("loading").fade();
+				new Event.observe("new-tweet-form", "submit", function(event)
+				{
+					Event.stop(event);
+					z_engine_send_tweet();
+				});
+				z_engine_clicker("home-timeline-click", "home-timeline"); //home
+				z_engine_clicker("mentions-timeline-click", "mentions-timeline"); //mentions
+				z_engine_clicker("dms-timeline-click", "dms-timeline"); //dms
+				z_engine_dms_clicker("dms-inbox-timeline-click", "dms-inbox-timeline");
+				z_engine_dms_clicker("dms-outbox-timeline-click", "dms-outbox-timeline");
+				socket.send({fetch: "home"});
+				/*var populate_mentions_tab = window.setTimeout(function()
+				{
+					socket.send({fetch: "mentions"});
+				},10000);
+				var populate_dms_inbox_tab = window.setTimeout(function()
+				{
+					socket.send({fetch: "dms-inbox"});
+				},15000);
+				var populate_dms_outbox_tab = window.setTimeout(function()
+				{
+					socket.send({fetch: "dms-outbox"});
+				},20000);*/
+				var update_relative_time = window.setInterval(function()
+				{
+					this.z_engine_update_relative_time()
+				},15000);
+				var prune_old_tweets = window.setInterval(function()
+				{
+					z_engine_prune_tweets();
+				},30000);
 			}
-			if ($("comment-"+id))
+			else if (json["delete"]) //catch it like this, it can cause errors in other browsers like opera
 			{
-				$("comment-"+id).setStyle("text-decoration: line-through;");
-				if ($("del-"+id))
+				var id = json["delete"].status.id;
+				if (json["delete"].status.id_str)
 				{
-					$("del-"+id).setAttribute("onclick","");
-					$("del-"+id).setStyle("cursor: default;");
+					id = json["delete"].status.id_str;
 				}
-				if ($("fave-"+id))
+				if ($("comment-"+id))
 				{
-					$("fave-"+id).setAttribute("onclick","");
-					$("fave-"+id).setStyle("cursor: default;");
-				}
-				if ($("rt-"+id))
-				{
-					$("rt-"+id).setAttribute("onclick","");
-					$("rt-"+id).setStyle("cursor: default;");
-				}
-				window.setTimeout(function()
-				{
-					new S2.FX.Parallel(
-					[
-						new Effect.BlindUp("comment-"+id,
+					$("comment-"+id).setStyle("text-decoration: line-through;");
+					if ($("del-"+id))
+					{
+						$("del-"+id).setAttribute("onclick","");
+						$("del-"+id).setStyle("cursor: default;");
+					}
+					if ($("fave-"+id))
+					{
+						$("fave-"+id).setAttribute("onclick","");
+						$("fave-"+id).setStyle("cursor: default;");
+					}
+					if ($("rt-"+id))
+					{
+						$("rt-"+id).setAttribute("onclick","");
+						$("rt-"+id).setStyle("cursor: default;");
+					}
+					window.setTimeout(function()
+					{
+						new S2.FX.Parallel(
+						[
+							new Effect.BlindUp("comment-"+id,
+							{
+								duration: 1.25,
+								mode: 'relative'
+							}),
+							new Effect.Fade("comment-"+id,
+							{
+								duration: 1,
+								mode: 'relative'
+							}),
+						],
 						{
 							duration: 1.25,
-							mode: 'relative'
-						}),
-						new Effect.Fade("comment-"+id,
-						{
-							duration: 1,
-							mode: 'relative'
-						}),
-					],
+						});
+					},2500);
+				}
+				if ($("comment-"+id+"-mentioned"))
+				{
+					$("comment-"+id+"-mentioned").setStyle("text-decoration: line-through;");
+					if ($("del-"+id+"-mentioned"))
 					{
-						duration: 1.25,
-					});
-				},2500);
-			}
-			if ($("comment-"+id+"-mentioned"))
-			{
-				$("comment-"+id+"-mentioned").setStyle("text-decoration: line-through;");
-				if ($("del-"+id+"-mentioned"))
-				{
-					$("del-"+id+"-mentioned").setAttribute("onclick","");
-					$("del-"+id+"-mentioned").setStyle("cursor: default;");
-				}
-				if ($("fave-"+id+"-mentioned"))
-				{
-					$("fave-"+id+"-mentioned").setAttribute("onclick","");
-					$("fave-"+id+"-mentioned").setStyle("cursor: default;");
-				}
-				if ($("rt-"+id+"-mentioned"))
-				{
-					$("rt-"+id+"-mentioned").setAttribute("onclick","");
-					$("rt-"+id+"-mentioned").setStyle("cursor: default;");
-				}
-				window.setTimeout(function()
-				{
-					new S2.FX.Parallel(
-					[
-						new Effect.BlindUp("comment-"+id+"-mentioned",
-						{
-							duration: 1.25,
-							mode: 'relative'
-						}),
-						new Effect.Fade("comment-"+id+"-mentioned",
-						{
-							duration: 1,
-							mode: 'relative'
-						}),
-					],
+						$("del-"+id+"-mentioned").setAttribute("onclick","");
+						$("del-"+id+"-mentioned").setStyle("cursor: default;");
+					}
+					if ($("fave-"+id+"-mentioned"))
 					{
-						duration: 1.25
-					});
-				},2500);
+						$("fave-"+id+"-mentioned").setAttribute("onclick","");
+						$("fave-"+id+"-mentioned").setStyle("cursor: default;");
+					}
+					if ($("rt-"+id+"-mentioned"))
+					{
+						$("rt-"+id+"-mentioned").setAttribute("onclick","");
+						$("rt-"+id+"-mentioned").setStyle("cursor: default;");
+					}
+					window.setTimeout(function()
+					{
+						new S2.FX.Parallel(
+						[
+							new Effect.BlindUp("comment-"+id+"-mentioned",
+							{
+								duration: 1.25,
+								mode: 'relative'
+							}),
+							new Effect.Fade("comment-"+id+"-mentioned",
+							{
+								duration: 1,
+								mode: 'relative'
+							}),
+						],
+						{
+							duration: 1.25
+						});
+					},2500);
+				}
+			}
+			else if (json.direct_message)
+			{
+				z_engine_tweet(json.direct_message, "dms");
+				if (json.direct_message.sender.screen_name != screen_name)
+				{
+					z_engine_notification(json.direct_message.sender.profile_image_url, json.direct_message.sender.screen_name+" sent a direct message", json.direct_message.text);
+				}
+			}
+			else if (json.dms) //realtime dms DO NOT come through here, this is the initial 50 that we throw in there
+			{
+				json.dms.each(function(item)
+				{
+					z_engine_tweet(item, "dms");
+				});
+			}
+			else if (json.event)
+			{
+				//todo: fix these
+				var data = json.event;
+				if (data["favorite"] && data.source.user.screen_name != screen_name)
+				{
+					z_engine_notification(data.source.user.profile_image_url, data.source.user.screen_name+" favorited your tweet!", data.target_object.text);
+				}
+				else if (data["follow"] && data.source.screen_name != screen_name)
+				{
+					z_engine_notification(data.source.profile_image_url, data.source.screen_name+" started following you!", data.source.description);
+				}
+				else if (data["list_member_added"] && json.source.screen_name != screen_name)
+				{
+					z_engine_notification(json.source.profile_image_url, json.source.screen_name+" put you in "+json.target_object.full_name, json.target_object.description);
+				}
+				else
+				{
+					console.log(JSON.stringify(json.event));
+				}
+			}
+			else if (json.friends)
+			{
+				following = JSON.stringify(json.friends);
+				Cookie.init({name: 'friends', expires: 365}); //todo
+				Cookie.setData(JSON.stringify(json.friends), false);
+			}
+			else if (json.info)
+			{
+				screen_name = json.info.screen_name;
+				user_id = json.info.user_id;
+				Cookie.init({name: 'info', expires: 365}); //todo
+				Cookie.setData(JSON.stringify(json.info), false);
+			}
+			else if (json.mentions) //realtime mentions DO NOT come through here, this is the initial 50 that we throw in there
+			{
+				json.mentions.each(function(item)
+				{
+					z_engine_tweet(item, "mentions");
+				})
+			}
+			else if (json.retweet_info)  //catch what we just retweeted, change the clicking event and icon
+			{
+				var data = json.retweet_info;
+				if ($("comment-"+data.retweeted_status.id_str))
+				{
+					if ($("rt-"+data.retweeted_status.id_str))
+					{
+						$("rt-"+data.retweeted_status.id_str).writeAttribute("src","img/rtd.png");
+						$("rt-"+data.retweeted_status.id_str).writeAttribute("onclick","z_engine_destroy('"+data.retweeted_status.id_str+"','rt');");
+					}
+					if ($("rt-"+data.retweeted_status.id_str+"-mentioned"))
+					{
+						$("rt-"+data.retweeted_status.id_str+"-mentioned").writeAttribute("src","img/rtd.png");
+						$("rt-"+data.retweeted_status.id_str+"-mentioned").writeAttribute("onclick","z_engine_destroy('"+data.retweeted_status.id_str+"','rt');");
+					}
+				}
+			}
+			else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
+			{
+				if (!paused)
+				{
+					z_engine_tweet(json, "home");
+				}
+				else
+				{
+					z_engine_tweet_pause_handler(json);
+				}
 			}
 		}
-		else if (json.direct_message)
+		else
 		{
-			z_engine_tweet(json.direct_message, "dms");
-			if (json.direct_message.sender.screen_name != screen_name)
+			if (!string.isJSON())
 			{
-				z_engine_notification(json.direct_message.sender.profile_image_url, json.direct_message.sender.screen_name+" sent a direct message", json.direct_message.text);
+				console.log("not json, skipping");
 			}
-		}
-		else if (json.dms) //realtime dms DO NOT come through here, this is the initial 50 that we throw in there
-		{
-			json.dms.each(function(item)
+			else if (!string.evalJSON(true))
 			{
-				z_engine_tweet(item, "dms");
-			});
-		}
-		else if (json.event)
-		{
-			//todo: fix these
-			var data = json.event;
-			if (data["favorite"] && data.source.user.screen_name != screen_name)
-			{
-				z_engine_notification(data.source.user.profile_image_url, data.source.user.screen_name+" favorited your tweet!", data.target_object.text);
-			}
-			else if (data["follow"] && data.source.screen_name != screen_name)
-			{
-				z_engine_notification(data.source.profile_image_url, data.source.screen_name+" started following you!", data.source.description);
-			}
-			else if (data["list_member_added"] && json.source.screen_name != screen_name)
-			{
-				z_engine_notification(json.source.profile_image_url, json.source.screen_name+" put you in "+json.target_object.full_name, json.target_object.description);
+				console.log("json could not be properly evaluated, skipping");
 			}
 			else
 			{
-				console.log(JSON.stringify(json.event));
-			}
-		}
-		else if (json.friends)
-		{
-			following = JSON.stringify(json.friends);
-			Cookie.init({name: 'friends', expires: 365}); //todo
-			Cookie.setData(JSON.stringify(json.friends), false);
-		}
-		else if (json.info)
-		{
-			screen_name = json.info.screen_name;
-			user_id = json.info.user_id;
-			Cookie.init({name: 'info', expires: 365}); //todo
-			Cookie.setData(JSON.stringify(json.info), false);
-		}
-		else if (json.mentions) //realtime mentions DO NOT come through here, this is the initial 50 that we throw in there
-		{
-			json.mentions.each(function(item)
-			{
-				z_engine_tweet(item, "mentions");
-			})
-		}
-		else if (json.retweet_info)  //catch what we just retweeted, change the clicking event and icon
-		{
-			var data = json.retweet_info;
-			if ($("comment-"+data.retweeted_status.id_str))
-			{
-				if ($("rt-"+data.retweeted_status.id_str))
-				{
-					$("rt-"+data.retweeted_status.id_str).writeAttribute("src","img/rtd.png");
-					$("rt-"+data.retweeted_status.id_str).writeAttribute("onclick","z_engine_destroy('"+data.retweeted_status.id_str+"','rt');");
-				}
-				if ($("rt-"+data.retweeted_status.id_str+"-mentioned"))
-				{
-					$("rt-"+data.retweeted_status.id_str+"-mentioned").writeAttribute("src","img/rtd.png");
-					$("rt-"+data.retweeted_status.id_str+"-mentioned").writeAttribute("onclick","z_engine_destroy('"+data.retweeted_status.id_str+"','rt');");
-				}
-			}
-		}
-		else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
-		{
-			if (!paused)
-			{
-				z_engine_tweet(json, "home");
-			}
-			else
-			{
-				z_engine_tweet_pause_handler(json);
+				console.log("unknown error, output: "+string);
 			}
 		}
 	});
@@ -566,10 +585,18 @@ function z_engine_prune_tweets()
 }
 
 /* reply to a specific tweet */
-function z_engine_reply(id, author)
+function z_engine_reply(id, author, entities)
 {
 	reply_id = id;
-	$("new-tweet").setValue("@"+author+" ");
+	var mentions = "@"+author+" ";
+	if (entities)
+	{
+		entities.user_mentions.each(function(item)
+		{
+			mentions += "@"+item.screen_name+" ";
+		});
+	}
+	$("new-tweet").setValue(mentions);
 	$("new-tweet").focus();
 }
 
@@ -859,7 +886,7 @@ function z_engine_tweet(data, output)
 			var mentioned_clone = cloneNodeWithEvents(container_element);
 			mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
 			right2_element.setAttribute("id", "right-"+id+"-mentioned");
-			z_engine_tweet_buttons("mentions", id, author, userid, text, locked, faved);
+			z_engine_tweet_buttons("mentions", id, author, userid, text, locked, faved, entities);
 			new Element.extend(mentioned_clone);
 			$("mentions-timeline").insert({'top': mentioned_clone});
 			z_engine_notification(avatar, author, text);
@@ -880,7 +907,7 @@ function z_engine_tweet(data, output)
 				duration: 1.5
 			});
 		}
-		z_engine_tweet_buttons(output, id, author, userid, text, locked, faved);
+		z_engine_tweet_buttons(output, id, author, userid, text, locked, faved, entities);
 		new S2.FX.Parallel(
 		[
 			new Effect.Appear('comment-'+id,
@@ -912,14 +939,14 @@ function z_engine_tweet(data, output)
 }
 
 /* the reply / rt / fave buttons */
-function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved)
+function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, entities)
 {
 	switch (type)
 	{
 		case 'home':
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+id+'", "'+author+'");', 'id': 'reply-'+id, 'alt': ''});
+				var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+id+'", "'+author+'",'+entities+');', 'id': 'reply-'+id, 'alt': ''});
 				if (!locked)
 				{
 					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'", "'+author+'", "'+escape_string(text)+'");', 'id': 'rt-'+id, 'alt': ''});
@@ -1076,7 +1103,7 @@ function z_engine_tweet_pause()
 			{
 				if (item.isJSON())
 				{
-					var data = item.evalJSON();
+					var data = item.evalJSON(true); //double check
 					z_engine_tweet(data, "home");
 				}
 			}
