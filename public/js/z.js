@@ -106,7 +106,7 @@ function z_engine_attrition()
 				z_engine_dms_clicker("dms-inbox-timeline-click", "dms-inbox-timeline");
 				z_engine_dms_clicker("dms-outbox-timeline-click", "dms-outbox-timeline");
 				socket.send({fetch: "home"});
-				/*var populate_mentions_tab = window.setTimeout(function()
+				var populate_mentions_tab = window.setTimeout(function()
 				{
 					socket.send({fetch: "mentions"});
 				},10000);
@@ -117,7 +117,7 @@ function z_engine_attrition()
 				var populate_dms_outbox_tab = window.setTimeout(function()
 				{
 					socket.send({fetch: "dms-outbox"});
-				},20000);*/
+				},20000);
 				var update_relative_time = window.setInterval(function()
 				{
 					this.z_engine_update_relative_time()
