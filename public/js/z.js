@@ -89,6 +89,7 @@ function z_engine_attrition()
 		var string = JSON.stringify(json);
 		if (string.isJSON() && string.evalJSON(true)) //quick sanity check before we begin
 		{
+			string = ""; //dont need it anymore
 			if (json.loaded)
 			{
 				$("new-tweet").setValue("");
@@ -113,44 +114,52 @@ function z_engine_attrition()
 				var populate_dms_inbox_tab = window.setTimeout(function()
 				{
 					socket.send({fetch: "dms-inbox"});
-				},15000);
+				},20000);
 				var populate_dms_outbox_tab = window.setTimeout(function()
 				{
 					socket.send({fetch: "dms-outbox"});
-				},20000);
-				var update_relative_time = window.setInterval(function()
+				},30000);
+				var update_relative_home = window.setInterval(function()
 				{
-					this.z_engine_update_relative_time()
+					this.z_engine_update_relative_time("time.home");
 				},15000);
+				var update_relative_mentions = window.setInterval(function()
+				{
+					this.z_engine_update_relative_time("time.mentions");
+				},30000);
+				var update_relative_dms = window.setInterval(function()
+				{
+					this.z_engine_update_relative_time("time.dms");
+				},60000);
 				var prune_old_tweets = window.setInterval(function()
 				{
 					z_engine_prune_tweets();
-				},30000);
+				},60000);
 			}
 			else if (json["delete"]) //catch it like this, it can cause errors in other browsers like opera
 			{
-				var id = json["delete"].status.id;
-				if (json["delete"].status.id_str)
+				try
 				{
-					id = json["delete"].status.id_str;
+					var id = json["delete"].status.id_str;
+				}
+				catch(e)
+				{
+					var id = json["delete"].direct_message.id;
 				}
 				if ($("comment-"+id))
 				{
 					$("comment-"+id).setStyle("text-decoration: line-through;");
 					if ($("del-"+id))
 					{
-						$("del-"+id).setAttribute("onclick","");
-						$("del-"+id).setStyle("cursor: default;");
+						$("del-"+id).fade();
 					}
 					if ($("fave-"+id))
 					{
-						$("fave-"+id).setAttribute("onclick","");
-						$("fave-"+id).setStyle("cursor: default;");
+						$("fave-"+id).fade();
 					}
 					if ($("rt-"+id))
 					{
-						$("rt-"+id).setAttribute("onclick","");
-						$("rt-"+id).setStyle("cursor: default;");
+						$("rt-"+id).fade();
 					}
 					window.setTimeout(function()
 					{
@@ -170,25 +179,21 @@ function z_engine_attrition()
 						{
 							duration: 1.25,
 						});
-					},2500);
+					},3000);
 				}
 				if ($("comment-"+id+"-mentioned"))
 				{
-					$("comment-"+id+"-mentioned").setStyle("text-decoration: line-through;");
 					if ($("del-"+id+"-mentioned"))
 					{
-						$("del-"+id+"-mentioned").setAttribute("onclick","");
-						$("del-"+id+"-mentioned").setStyle("cursor: default;");
+						$("del-"+id+"-mentioned").fade();
 					}
 					if ($("fave-"+id+"-mentioned"))
 					{
-						$("fave-"+id+"-mentioned").setAttribute("onclick","");
-						$("fave-"+id+"-mentioned").setStyle("cursor: default;");
+						$("fave-"+id+"-mentioned").fade();
 					}
 					if ($("rt-"+id+"-mentioned"))
 					{
-						$("rt-"+id+"-mentioned").setAttribute("onclick","");
-						$("rt-"+id+"-mentioned").setStyle("cursor: default;");
+						$("rt-"+id+"-mentioned").fade();
 					}
 					window.setTimeout(function()
 					{
@@ -208,7 +213,7 @@ function z_engine_attrition()
 						{
 							duration: 1.25
 						});
-					},2500);
+					},3000);
 				}
 			}
 			else if (json.direct_message)
@@ -679,17 +684,10 @@ function z_engine_tweet(data, output)
 			var author2 = false;
 			var avatar = data.user.profile_image_url;
 			var avatar2 = false;
-			var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,''); //convert all days properly
+			var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,'');
 			var entities = data.entities;
 			var faved = data.favorited;
-			if (output != "dms")
-			{
-				var id = data.id_str;
-			}
-			else
-			{
-				var id = data.id;
-			}
+			var id = data.id_str;
 			var locked = data.user["protected"]; //prevent an issue in ie
 			var name = data.user.name;
 			var place = data.place;
@@ -707,7 +705,7 @@ function z_engine_tweet(data, output)
 			var author2 = data.user.screen_name;
 			var avatar = data.retweeted_status.user.profile_image_url;
 			var avatar2 = data.user.profile_image_url;
-			var date = new Date(data.retweeted_status.created_at).toLocaleString().replace(/GMT.+/,''); //fix some "blank dates"
+			var date = new Date(data.retweeted_status.created_at).toLocaleString().replace(/GMT.+/,'');
 			var entities = data.retweeted_status.entities;
 			var faved = data.retweeted_status.favorited;
 			var id = data.retweeted_status.id_str;
@@ -725,17 +723,18 @@ function z_engine_tweet(data, output)
 	}
 	else
 	{
-			var author = data.sender.screen_name;
-			var avatar = data.sender.profile_image_url;
-			var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,''); //fix some "blank dates"
-			var id = data.id_str;
-			var locked = data.sender["protected"]; //prevent an issue in ie
-			var name = data.sender.name;
-			var reply = data.in_reply_to_screen_name;
-			var rtd = false;
-			var text = data.text;
-			var userid = data.sender_id;
-			var verified = data.sender.verified;
+		var author = data.sender.screen_name;
+		var avatar = data.sender.profile_image_url;
+		var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,'');
+		var entities = false;
+		var id = data.id_str;
+		var locked = data.sender["protected"]; //prevent an issue in ie
+		var name = data.sender.name;
+		var reply = data.in_reply_to_screen_name;
+		var rtd = false;
+		var text = data.text;
+		var userid = data.sender_id;
+		var verified = data.sender.verified;
 	}
 	if (!content[id]) //this probably looks funny at first but it is very important because it delimits every tweet by its id
 	{                 //the reason being is because retweet data works in _literal_ manner via the streaming api
@@ -789,7 +788,7 @@ function z_engine_tweet(data, output)
 							{
 								var status_link_element = new Element('a', {'target': '_blank', 'id': 'comment-'+id+'-relative-date', href: 'http://twitter.com/'+author+'/status/'+id});
 							}
-							var status_time_element = new Element('time', {'datetime': date});
+							var status_time_element = new Element('time', {'datetime': date, 'class': output});
 							status_time_element.update(relative_time(date));
 							if (output != "dms")
 							{
@@ -1144,9 +1143,9 @@ function z_engine_unfavorite(id)
 }
 
 /* update all time elements */
-function z_engine_update_relative_time()
+function z_engine_update_relative_time(elements)
 {
-	var time_elements = $$("time");
+	var time_elements = $$(elements);
 	time_elements.each(function(item)
 	{
 		var this_stamp = item.getAttribute("datetime");
