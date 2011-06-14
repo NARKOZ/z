@@ -585,17 +585,10 @@ function z_engine_prune_tweets()
 }
 
 /* reply to a specific tweet */
-function z_engine_reply(id, author, entities)
+function z_engine_reply(id, author)
 {
 	reply_id = id;
 	var mentions = "@"+author+" ";
-	if (entities)
-	{
-		entities.user_mentions.each(function(item)
-		{
-			mentions += "@"+item.screen_name+" ";
-		});
-	}
 	$("new-tweet").setValue(mentions);
 	$("new-tweet").focus();
 }
@@ -886,7 +879,7 @@ function z_engine_tweet(data, output)
 			var mentioned_clone = cloneNodeWithEvents(container_element);
 			mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
 			right2_element.setAttribute("id", "right-"+id+"-mentioned");
-			z_engine_tweet_buttons("mentions", id, author, userid, text, locked, faved, entities);
+			z_engine_tweet_buttons("mentions", id, author, userid, text, locked, faved);
 			new Element.extend(mentioned_clone);
 			$("mentions-timeline").insert({'top': mentioned_clone});
 			z_engine_notification(avatar, author, text);
@@ -907,7 +900,7 @@ function z_engine_tweet(data, output)
 				duration: 1.5
 			});
 		}
-		z_engine_tweet_buttons(output, id, author, userid, text, locked, faved, entities);
+		z_engine_tweet_buttons(output, id, author, userid, text, locked, faved);
 		new S2.FX.Parallel(
 		[
 			new Effect.Appear('comment-'+id,
