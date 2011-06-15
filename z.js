@@ -174,15 +174,11 @@ socket.on('sconnection', function(client, session)
 			screen_name: session.oauth._results.screen_name,
 			user_id: session.oauth._results.user_id
 		}});
-		setTimeout(function()
-		{
-			z_engine_streaming_handler(tw, client, session)
-		}, 5000);
 		client.on('message', function(message)
 		{
 			if(tw)
 			{
-				z_engine_message_handler(session, client, message, tw);
+				z_engine_message_handler(tw, session, client, message);
 			}
 		});
 	}
@@ -200,7 +196,7 @@ socket.on('sinvalid', function(client)
 /*
  * callback function to handle message based events coming from our client via websocket
  */
-function z_engine_message_handler(this_session, client, message, tw)
+function z_engine_message_handler(tw, session, client, message)
 {
 	if (message.status)
 	{
@@ -247,19 +243,25 @@ function z_engine_message_handler(this_session, client, message, tw)
 		switch (message.fetch)
 		{
 			case 'dms-inbox':
-				z_engine_static_timeline_fetch(this_session, tw, client, {count: startup_count, include_entities: true}, "dms-inbox");
+				z_engine_static_timeline_fetch(tw, client, session, {count: startup_count, include_entities: true}, "dms-inbox");
 			break;
 			case 'dms-outbox':
-				z_engine_static_timeline_fetch(this_session, tw, client, {count: startup_count, include_entities: true}, "dms-outbox");
+				z_engine_static_timeline_fetch(tw, client, session, {count: startup_count, include_entities: true}, "dms-outbox");
 			break;
 			case 'home':
-				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'home_timeline', count: startup_count, include_entities: true}, "home");
+				z_engine_static_timeline_fetch(tw, client, session, {type: 'home_timeline', count: startup_count, include_entities: true}, "home");
 			break;
 			case 'mentions':
-				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'mentions', count: startup_count, include_entities: true}, "mentions");
+				z_engine_static_timeline_fetch(tw, client, session, {type: 'mentions', count: startup_count, include_entities: true}, "mentions");
 			break;
 			case 'retweets':
-				z_engine_static_timeline_fetch(this_session, tw, client, {type: 'retweeted_of_me', count: startup_count, include_entities: true}, "retweets");
+				z_engine_static_timeline_fetch(tw, client, session, {type: 'retweeted_of_me', count: startup_count, include_entities: true}, "retweets");
+			break;
+			case 'userstream':
+				z_engine_streaming_handler(tw, client, session);
+			break;
+			default:
+				z_engine_static_timeline_fetch(tw, client, session, {type: 'home_timeline', count: startup_count, include_entities: true}, "home");
 			break;
 		}
 	}
@@ -325,10 +327,12 @@ function z_engine_streaming_handler(tw, client, session)
 			});
 			stream.on('error', function(data)
 			{
+				client.send({server_event: 'error'});
 				console.error('UserStream ERROR: ' + data);
 			});
 			stream.on('end', function()
 			{
+				client.send({server_event: 'end'});
 				console.log('UserStream ends successfully');
 			});
 		});
@@ -342,7 +346,7 @@ function z_engine_streaming_handler(tw, client, session)
 /*
  * callback function to send static resources via websocket to client
  */
-function z_engine_static_timeline_fetch(this_session, tw, client, params, json)
+function z_engine_static_timeline_fetch(tw, client, session, params, json)
 {
 	if (json != "dms-inbox" && json != "dms-outbox")
 	{

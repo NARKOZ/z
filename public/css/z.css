@@ -222,16 +222,6 @@ li
 
 .comment-list-wrapper
 {
-	border-radius: 5px;
-	box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
-	-khtml-border-radius: 5px;
-	-khtml-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
-	-moz-border-radius: 5px;
-	-moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
-	-webkit-border-radius: 5px;
-	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
-	background: #F6F6F6;
-	margin: 10px 0 0;
 	padding: 5px 12px 10px 7px;
 	behavior: url(border-radius.htc);
 }
@@ -553,6 +543,11 @@ div.growls div.large
  * other
  */
 
+.login-inner
+{
+	display: inline;
+}
+
 .loading
 {
 	top: 15px;
@@ -578,7 +573,7 @@ div.growls div.large
 
 ::-webkit-scrollbar-track-piece
 {
-	background-color: #888888;
+	background-color: #DDD
 }
 
 ::-webkit-scrollbar-track-piece:horizontal
@@ -599,15 +594,15 @@ div.growls div.large
 /* global body stuff */
 body
 {
-	font-smoothing: subpixel-antialiased;
+	background: #F6F6F6;
 	font: normal 75% "Open Sans", sans-serif;
-	line-height: 1.5;
+	font-smoothing: subpixel-antialiased;
 	height: 100%;
-	margin: 0;
-	background: #888888;
-	position: relative;
+	line-height: 1.5;
 	margin: 0 auto;
-	width: 696px;
+	position: relative;
+	user-select: none;
+	width: width 100%;
 	-khtml-font-smoothing: subpixel-antialiased;
 	-khtml-user-select: none;
 	-moz-font-smoothing: subpixel-antialiased;
@@ -616,48 +611,11 @@ body
 	-o-user-select: none;
 	-webkit-font-smoothing: subpixel-antialiased;
 	-webkit-user-select: none;
-	user-select: none;
 }
 
 /* from here on out we are doing to set stuff specifically by the users viewport width */
-@media only screen and (max-width: 480px)
-{
-	body
-	{
-		padding: 18px;
-		width: 264px;
-	}
-	#new-tweet-input-li
-	{
-		width: 120px;
-	}
-	.comment-arrow
-	{
-		display: none;
-	}
-	.comment-content-wrapper
-	{
-		float: right;
-		width: 165px;
-	}
-	.comment-profile-wrapper
-	{
-		text-align: center;
-		width: 55px;
-	}
-	.normal, body
-	{
-		font: normal 68% "Open Sans", sans-serif;
-	}
-}
-
 @media only screen and (min-width: 480px) and (max-width: 590px)
 {
-	body
-	{
-		padding: 22px;
-		width: 95%;
-	}
 	#new-tweet-input-li
 	{
 		width:77%;
@@ -680,11 +638,6 @@ body
 
 @media only screen and (min-width: 590px) and (max-width: 800px)
 {
-	body
-	{
-		padding: 22px;
-		width: 95%;
-	}
 	#new-tweet-input-li
 	{
 		width: 83%;
@@ -707,11 +660,6 @@ body
 
 @media only screen and (min-width: 800px) and (max-width: 1024px)
 {
-	body
-	{
-		padding: 22px;
-		width: 95%;
-	}
 	#new-tweet-input-li
 	{
 		width: 86%;
@@ -738,11 +686,6 @@ body
 
 @media only screen and (min-width: 1024px) and (max-width: 1152px)
 {
-	body
-	{
-		padding: 22px;
-		width: 95%;
-	}
 	#new-tweet-input-li
 	{
 		width: 89%;
@@ -769,11 +712,6 @@ body
 
 @media only screen and (min-width: 1152px) and (max-width: 1350px)
 {
-	body
-	{
-		padding: 28px;
-		width: 95%;
-	}
 	#new-tweet-input-li
 	{
 		width: 91%;
@@ -800,11 +738,6 @@ body
 
 @media only screen and (min-width: 1350px) and (max-width: 1600px)
 {
-	body
-	{
-		padding: 28px;
-		width: 95%;
-	}
 	#new-tweet-input-li
 	{
 		width:92%;
@@ -831,11 +764,6 @@ body
 
 @media only screen and (min-width: 1600px)
 {
-	body
-	{
-		padding: 28px;
-		width: 95%;
-	}
 	#new-tweet-input-li
 	{
 		width:93%;

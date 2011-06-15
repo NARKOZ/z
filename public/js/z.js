@@ -27,6 +27,12 @@ var tid = 0; //internal counter
 var ttid = 0; //temporary internal counter
 var user_id = 0;
 
+/* set up some of our effects */
+new S2.FX.Base(
+{
+	fps: 30
+});
+
 /* the websocket itself */
 function z_engine_attrition()
 {
@@ -336,11 +342,12 @@ function z_engine_attrition()
 			}
 			else if (json.home) //realtime tweets DO NOT come through here, this is the initial 50 that we throw in there
 			{
-				$("loading").fade();
 				json.home.each(function(item)
 				{
 					z_engine_tweet(item, "home");
-				})
+				});
+				socket.send({fetch: "userstream"});
+				$("loading").fade();
 			}
 			else if (json.mentions) //realtime mentions DO NOT come through here, this is the initial 50 that we throw in there
 			{
@@ -364,6 +371,19 @@ function z_engine_attrition()
 						$("rt-"+data.retweeted_status.id_str+"-mentioned").writeAttribute("src","img/rtd.png");
 						$("rt-"+data.retweeted_status.id_str+"-mentioned").writeAttribute("onclick","z_engine_destroy('"+data.retweeted_status.id_str+"','rt');");
 					}
+				}
+			}
+			else if (json.server_event)
+			{
+				switch (json.server_event)
+				{
+					case 'end':
+						z_engine_notification("", "notice!", "lost connection to the userstream, reconnecting...");
+						socket.send({fetch: "userstream"});
+					break;
+					case 'error':
+						//handle errors somehow
+					break;
 				}
 			}
 			else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
@@ -971,13 +991,15 @@ function z_engine_tweet(data, output)
 			[
 				new Effect.Appear('comment-'+id+'-mentioned',
 				{
-					duration: 1.25,
-					mode: 'relative'
+					duration: 0.75,
+					mode: 'relative',
+					transition: 'easeOutSine'
 				}),
 				new Effect.BlindDown('comment-'+id+'-mentioned',
 				{
-					duration: 0.7,
-					mode: 'relative'
+					duration: 1,
+					mode: 'relative',
+					transition: 'easeOutSine'
 				})
 			],
 			{
@@ -990,12 +1012,14 @@ function z_engine_tweet(data, output)
 			new Effect.Appear('comment-'+id,
 			{
 				duration: 1.25,
-				mode: 'relative'
+				mode: 'relative',
+				transition: 'easeOutSine'
 			}),
 			new Effect.BlindDown('comment-'+id,
 			{
-				duration: 0.7,
-				mode: 'relative'
+				duration: 0.75,
+				mode: 'relative',
+				transition: 'easeOutSine'
 			})
 		],
 		{

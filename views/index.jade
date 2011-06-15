@@ -1,9 +1,5 @@
-.comment-list-wrapper
-  ul#home-timeline
-    li(style='text-align:center;')
-      br
-      br
-      a(href='/oauth/login')
-        img(src='img/signin.png', alt='')
-      br
-      br
+.login-inner(id='login')
+  a(href='/oauth/login')
+    img(src='img/signin.png', alt='')
+
+script $("login").center();
