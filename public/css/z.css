@@ -273,6 +273,11 @@ li
  * form related stuff
  */
 
+#new-tweet-input-li
+{
+	width: 99%;
+}
+
 form
 {
 	padding: 1px;
@@ -303,8 +308,7 @@ input, textarea
 	behavior: url(border-radius.htc);
 }
 
-input[type="text"], input[type="text"]:hover, input[type="text"]:focus, input[type="text"]:disabled,
-input[type="submit"], input[type="submit"]:hover, input[type="submit"]:focus, input[type="submit"]:disabled
+input[type="text"], input[type="text"]:hover, input[type="text"]:focus, input[type="text"]:disabled
 {
 	outline: none;
 	transition: all .20s ease-in-out;
@@ -338,36 +342,6 @@ input[type="text"]:focus
 }
 
 input[type="text"]:disabled
-{
-	box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
-	background-color: rgba(255,0,0,0.05);
-	border: 1px solid rgba(255,0,0,0.25);
-	-khtml-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
-	-moz-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
-	-webkit-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
-	filter:progid:DXImageTransform.Microsoft.Shadow (color=red, Direction=135, Strength=5);
-	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=red, Direction=135, Strength=5)";
-}
-
-input[type="submit"]
-{
-	cursor: pointer;
-	font-weight: bold;
-}
-
-input[type="submit"]:hover
-{
-	box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
-	background-color: #fefefe;
-	border: 1px solid #c4c4c4;
-	-khtml-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
-	-moz-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
-	-webkit-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
-	filter:progid:DXImageTransform.Microsoft.Shadow (color=rgba(81, 203, 238, 0.75), Direction=135, Strength=5);
-	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=rgba(81, 203, 238, 0.75), Direction=135, Strength=5)";
-}
-
-input[type="submit"]:disabled
 {
 	box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
 	background-color: rgba(255,0,0,0.05);
@@ -626,12 +600,30 @@ body
 }
 
 /* from here on out we are doing to set stuff specifically by the users viewport width */
+@media only screen and (max-width: 480px)
+{
+	.comment-arrow 	
+	{
+		display: none;
+	}
+	.comment-content-wrapper
+	{
+		float: right;
+		width: 165px;
+	}
+	.comment-profile-wrapper
+	{
+		text-align: center;
+		width: 55px;
+	}
+	.normal, body
+	{
+		font: normal % "Open Sans", sans-serif;
+	}
+}
+
 @media only screen and (min-width: 480px) and (max-width: 590px)
 {
-	#new-tweet-input-li
-	{
-		width:77%;
-	}
 	.comment-content-wrapper
 	{
 		float: right;
@@ -650,10 +642,6 @@ body
 
 @media only screen and (min-width: 590px) and (max-width: 800px)
 {
-	#new-tweet-input-li
-	{
-		width: 83%;
-	}
 	.comment-content-wrapper
 	{
 		float: right;
@@ -672,10 +660,6 @@ body
 
 @media only screen and (min-width: 800px) and (max-width: 1024px)
 {
-	#new-tweet-input-li
-	{
-		width: 86%;
-	}
 	.comment-body, .comment-body-mentioned, .comment-body-me
 	{
 		margin-right: 25px;
@@ -698,10 +682,6 @@ body
 
 @media only screen and (min-width: 1024px) and (max-width: 1152px)
 {
-	#new-tweet-input-li
-	{
-		width: 89%;
-	}
 	.comment-body, .comment-body-mentioned, .comment-body-me
 	{
 		margin-right: 25px;
@@ -724,10 +704,6 @@ body
 
 @media only screen and (min-width: 1152px) and (max-width: 1350px)
 {
-	#new-tweet-input-li
-	{
-		width: 91%;
-	}
 	.comment-body, .comment-body-mentioned, .comment-body-me
 	{
 		margin-right: 25px;
@@ -750,10 +726,6 @@ body
 
 @media only screen and (min-width: 1350px) and (max-width: 1600px)
 {
-	#new-tweet-input-li
-	{
-		width:92%;
-	}
 	.comment-body, .comment-body-mentioned, .comment-body-me
 	{
 		margin-right: 25px;
@@ -776,10 +748,6 @@ body
 
 @media only screen and (min-width: 1600px)
 {
-	#new-tweet-input-li
-	{
-		width:93%;
-	}
 	.comment-body, .comment-body-mentioned, .comment-body-me
 	{
 		margin-right: 25px;

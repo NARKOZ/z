@@ -108,7 +108,6 @@ function z_engine_attrition()
 			{
 				$("new-tweet").setValue("");
 				$("new-tweet").enable();
-				$("new-tweet-submit").enable();
 				new Event.observe("new-tweet-form", "submit", function(event)
 				{
 					Event.stop(event);
@@ -447,7 +446,6 @@ function z_engine_attrition()
 	socket.on('disconnect', function()
 	{
 		$("new-tweet").disable();
-		$("new-tweet-submit").disable();
 		$("new-tweet").setValue("lost connection!");
 		z_engine_notification("", "error!", "lost connection to server");
 	});
@@ -765,7 +763,6 @@ function z_engine_send_tweet()
 	if ($("new-tweet").getValue().length > 0 && $("new-tweet").getValue().length <= 140)
 	{
 		$("new-tweet").disable();
-		$("new-tweet-submit").disable();
 		var temp_element = $("new-tweet").getValue();
 		if (!reply_id && !dm_to)
 		{
@@ -804,7 +801,6 @@ function z_engine_send_tweet()
 		dm_to = false;
 		$("new-tweet").setValue("");
 		$("new-tweet").enable();
-		$("new-tweet-submit").enable();
 	}
 }
 
