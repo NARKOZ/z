@@ -158,6 +158,10 @@ function z_engine_attrition()
 					{
 						$("fave-"+id).fade();
 					}
+					if ($("reply-"+id))
+					{
+						$("reply-"+id).fade();
+					}
 					if ($("rt-"+id))
 					{
 						$("rt-"+id).fade();
@@ -191,6 +195,10 @@ function z_engine_attrition()
 					if ($("fave-"+id+"-mentioned"))
 					{
 						$("fave-"+id+"-mentioned").fade();
+					}
+					if ($("reply-"+id+"-mentioned"))
+					{
+						$("reply-"+id+"-mentioned").fade();
 					}
 					if ($("rt-"+id+"-mentioned"))
 					{
