@@ -1,3 +1,12 @@
+// originally from http://widgets.twimg.com/j/1/widget.js
+var K = function ()
+{
+	var a = navigator.userAgent;
+	return{
+		ie: a.match(/MSIE\s([^;]*)/)
+	}
+}();
+
 var relative_time = function (a)
 {
 	var b = new Date();
@@ -10,7 +19,7 @@ var relative_time = function (a)
 	var e = 1000, minute = e * 60, hour = minute * 60, day = hour * 24, week = day * 7, month = day * 30, year = month * 12;
 	if (isNaN(d) || d < 0)
 	{
-		return "";
+		return "just now"; //display just now rather than nothing i guess =\
 	}
 	if (d < e * 7)
 	{
@@ -56,7 +65,7 @@ var relative_time = function (a)
 	{
 		return "last month";
 	}
-	if (d > month)
+	if (d > month && d < year)
 	{
 		return Math.floor(d / month) + " months ago";
 	}

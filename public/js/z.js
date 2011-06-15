@@ -222,7 +222,7 @@ function z_engine_attrition()
 				z_engine_tweet(json.direct_message, "dms");
 				if (json.direct_message.sender.screen_name != screen_name)
 				{
-					z_engine_notification(json.direct_message.sender.profile_image_url, json.direct_message.sender.screen_name+" sent a direct message", json.direct_message.text);
+					z_engine_notification(json.direct_message.sender.profile_image_url, "@"+json.direct_message.sender.screen_name+" sent a direct message", json.direct_message.text);
 				}
 			}
 			else if (json.dms) //realtime dms DO NOT come through here, this is the initial 50 that we throw in there
@@ -246,32 +246,32 @@ function z_engine_attrition()
 					case 'favorite':
 						if (json.source.screen_name != screen_name)
 						{
-							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" faved your tweet!", json.target_object.text);
+							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" faved your tweet!", json.target_object.text);
 						}
 					break;
 					case 'unfavorite':
 						if (json.source.user.screen_name != screen_name)
 						{
-							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" unfaved your tweet!", json.target_object.text);
+							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" unfaved your tweet!", json.target_object.text);
 						}
 					break;
 					case 'follow':
 						if (json.source.screen_name != screen_name)
 						{
-							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" started following you!", json.source.description);
+							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" started following you!", json.source.description);
 						}
 					break;
 					/*case 'unfollow':
 						//currently this event does not exist but it is here in case they decide to support it
 						if (json.source.screen_name != screen_name)
 						{
-							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" unfollowed you!", json.source.description);
+							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" unfollowed you!", json.source.description);
 						}
 					break;*/
 					case 'list_member_added':
 						if (json.source.screen_name != screen_name)
 						{
-							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" put you in "+json.target_object.full_name+"!", json.target_object.description);
+							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" put you in "+json.target_object.full_name+"!", json.target_object.description);
 						}
 					break;
 					case 'list_created':
@@ -283,7 +283,7 @@ function z_engine_attrition()
 					case 'list_member_removed':
 						if (json.source.screen_name != screen_name)
 						{
-							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" removed you from "+json.target_object.full_name+"!", json.target_object.description);
+							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" removed you from "+json.target_object.full_name+"!", json.target_object.description);
 						}
 					break;
 					case 'list_updated':
@@ -292,13 +292,13 @@ function z_engine_attrition()
 					case 'list_user_subscribed':
 						if (json.source.screen_name != screen_name)
 						{
-							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" subscribed to "+json.target_object.full_name+"!", json.target_object.description);
+							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" subscribed to "+json.target_object.full_name+"!", json.target_object.description);
 						}
 					break;
 					case 'list_user_unsubscribed':
 						if (json.source.screen_name != screen_name)
 						{
-							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" unsubscribed from "+json.target_object.full_name+"!", json.target_object.description);
+							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" unsubscribed from "+json.target_object.full_name+"!", json.target_object.description);
 						}
 					break;
 					case 'scrub_geo':
