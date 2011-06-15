@@ -477,12 +477,6 @@ div.growls div.growl
 	opacity: 0;
 }
 
-div.growls div.growl div.close
-{
-	cursor: pointer;
-	float: right;
-}
-
 div.growls div.growl div.title
 {
 	font-weight: bold;
@@ -497,16 +491,17 @@ div.growls div.growl div.message
 
 div.growls div.black
 {
+	background: #FFF;
+	border: 1px solid #DDD;
 	border-radius: 5px;
 	box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	cursor: pointer;
 	-khtml-border-radius: 4px;
 	-khtml-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	-moz-border-radius: 5px;
 	-moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	-webkit-border-radius: 5px;
 	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
-	background: #FFF;
-	border: 1px solid #DDD;
 }
 
 div.growls div.small

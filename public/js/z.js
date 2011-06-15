@@ -14,18 +14,16 @@ else
 }
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
 var content_paused = Array();
-var cutoff = 200; //max amount of tweets to display before pruning occurs
+var cutoff = 100; //max amount of tweets to display before pruning occurs
 var dm_to = false;
 var following = Array(); //holds our following id's array
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
-var page = 1; //the page we start on (on the home timeline)
 var pttid = 0;
 var reply_id = false;
 var screen_name = "";
 var socket = new io.SessionSocket();
 var tid = 0; //internal counter
-var ts = 0;
 var ttid = 0; //temporary internal counter
 var user_id = 0;
 
@@ -95,7 +93,6 @@ function z_engine_attrition()
 				$("new-tweet").setValue("");
 				$("new-tweet").enable();
 				$("new-tweet-submit").enable();
-				$("loading").fade();
 				new Event.observe("new-tweet-form", "submit", function(event)
 				{
 					Event.stop(event);
@@ -133,18 +130,22 @@ function z_engine_attrition()
 				},60000);
 				var prune_old_tweets = window.setInterval(function()
 				{
-					z_engine_prune_tweets();
+					this.z_engine_prune_tweets();
 				},60000);
 			}
 			else if (json["delete"]) //catch it like this, it can cause errors in other browsers like opera
 			{
-				try
+				if (typeof(json["delete"].status) == 'object')
 				{
 					var id = json["delete"].status.id_str;
 				}
-				catch(e)
+				else if (typeof(json["delete"].direct_message) == 'object')
 				{
 					var id = json["delete"].direct_message.id;
+				}
+				else
+				{
+					var id = 0; //something else we havent tested yet?
 				}
 				if ($("comment-"+id))
 				{
@@ -233,23 +234,83 @@ function z_engine_attrition()
 			}
 			else if (json.event)
 			{
-				//todo: fix these
-				var data = json.event;
-				if (data["favorite"] && data.source.user.screen_name != screen_name)
+				var event = json.event;
+				switch (event)
 				{
-					z_engine_notification(data.source.user.profile_image_url, data.source.user.screen_name+" favorited your tweet!", data.target_object.text);
-				}
-				else if (data["follow"] && data.source.screen_name != screen_name)
-				{
-					z_engine_notification(data.source.profile_image_url, data.source.screen_name+" started following you!", data.source.description);
-				}
-				else if (data["list_member_added"] && json.source.screen_name != screen_name)
-				{
-					z_engine_notification(json.source.profile_image_url, json.source.screen_name+" put you in "+json.target_object.full_name, json.target_object.description);
-				}
-				else
-				{
-					console.log(JSON.stringify(json.event));
+					case 'block':
+						//todo: handle our muting function directly through here in a later commit (eg if a user is retweeted by someone else)
+					break;
+					case 'unblock':
+						//todo: undo the above cookie
+					break;
+					case 'favorite':
+						if (json.source.screen_name != screen_name)
+						{
+							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" faved your tweet!", json.target_object.text);
+						}
+					break;
+					case 'unfavorite':
+						if (json.source.user.screen_name != screen_name)
+						{
+							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" unfaved your tweet!", json.target_object.text);
+						}
+					break;
+					case 'follow':
+						if (json.source.screen_name != screen_name)
+						{
+							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" started following you!", json.source.description);
+						}
+					break;
+					/*case 'unfollow':
+						//currently this event does not exist but it is here in case they decide to support it
+						if (json.source.screen_name != screen_name)
+						{
+							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" unfollowed you!", json.source.description);
+						}
+					break;*/
+					case 'list_member_added':
+						if (json.source.screen_name != screen_name)
+						{
+							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" put you in "+json.target_object.full_name+"!", json.target_object.description);
+						}
+					break;
+					case 'list_created':
+						//todo: possibly handle this event?
+					break;
+					case 'list_destroyed':
+						//todo: possibly handle this event?
+					break;
+					case 'list_member_removed':
+						if (json.source.screen_name != screen_name)
+						{
+							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" removed you from "+json.target_object.full_name+"!", json.target_object.description);
+						}
+					break;
+					case 'list_updated':
+						//todo: possibly handle this event?
+					break;
+					case 'list_user_subscribed':
+						if (json.source.screen_name != screen_name)
+						{
+							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" subscribed to "+json.target_object.full_name+"!", json.target_object.description);
+						}
+					break;
+					case 'list_user_unsubscribed':
+						if (json.source.screen_name != screen_name)
+						{
+							z_engine_notification(json.source.profile_image_url, json.source.screen_name+" unsubscribed from "+json.target_object.full_name+"!", json.target_object.description);
+						}
+					break;
+					case 'scrub_geo':
+						//todo: possibly handle this event (aka erase all geo information from a users tweets up to a given id)
+					break;
+					case 'user_update':
+						//todo: possibly handle this event much, much later on (i noticed this event on accident, right now we can maybe cookie the info, thats it)
+					break;
+					default:
+						console.log(JSON.stringify(json.event)); //spit out the event name for quick reference...
+						console.log(JSON.stringify(json)); //..then spit out the data itself so we can study it
+					break;
 				}
 			}
 			else if (json.friends)
@@ -264,6 +325,14 @@ function z_engine_attrition()
 				user_id = json.info.user_id;
 				Cookie.init({name: 'info', expires: 365}); //todo
 				Cookie.setData(JSON.stringify(json.info), false);
+			}
+			else if (json.home) //realtime tweets DO NOT come through here, this is the initial 50 that we throw in there
+			{
+				$("loading").fade();
+				json.home.each(function(item)
+				{
+					z_engine_tweet(item, "home");
+				})
 			}
 			else if (json.mentions) //realtime mentions DO NOT come through here, this is the initial 50 that we throw in there
 			{
@@ -590,10 +659,18 @@ function z_engine_prune_tweets()
 }
 
 /* reply to a specific tweet */
-function z_engine_reply(id, author)
+function z_engine_reply(id, author, entities)
 {
 	reply_id = id;
 	var mentions = "@"+author+" ";
+	if (entities)
+	{
+		var mentions_array = entities;
+		mentions_array.each(function(item)
+		{
+			mentions += "@"+item.screen_name+" ";
+		});
+	}
 	$("new-tweet").setValue(mentions);
 	$("new-tweet").focus();
 }
@@ -1113,8 +1190,8 @@ function z_engine_tweet_pause()
 		});
 		var prune_old_tweets = window.setInterval(function()
 		{
-			z_engine_prune_tweets();
-		},30000);
+			this.z_engine_prune_tweets();
+		},60000);
 	}
 }
 

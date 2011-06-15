@@ -151,7 +151,7 @@ server.get('/oauth/logout', function(req, res)
 if (!module.parent)
 {
 	server.listen(port);
-	console.log('Express server listening on port '+server.address().port);
+	console.log('z is listening on port '+server.address().port);
 }
 
 gzip.gzip({matchType: /audio/});
@@ -166,7 +166,25 @@ socket.on('sconnection', function(client, session)
 	try
 	{
 		var tw = new twitter(key, secret, session.oauth);
-		z_engine_streaming_handler(tw, client, session);
+		client.send({loaded: true});
+		client.send({info: 
+		{
+			oauth_token: session.oauth._token,
+			oauth_secret: session.oauth._secret,
+			screen_name: session.oauth._results.screen_name,
+			user_id: session.oauth._results.user_id
+		}});
+		setTimeout(function()
+		{
+			z_engine_streaming_handler(tw, client, session)
+		}, 5000);
+		client.on('message', function(message)
+		{
+			if(tw)
+			{
+				z_engine_message_handler(session, client, message, tw);
+			}
+		});
 	}
 	catch(e)
 	{
@@ -286,57 +304,39 @@ function z_engine_message_handler(this_session, client, message, tw)
  */
 function z_engine_streaming_handler(tw, client, session)
 {
-	client.send({loaded: true});
-	client.send({info: 
+	if(tw)
 	{
-		oauth_token: session.oauth._token,
-		oauth_secret: session.oauth._secret,
-		screen_name: session.oauth._results.screen_name,
-		user_id: session.oauth._results.user_id
-	}});
-	setTimeout(function()
-	{
-		if(tw)
+		tw.stream('user', {include_entities: true}, function(stream)
 		{
-			tw.stream('user', {include_entities: true}, function(stream)
+			stream.on('data', function (data)
 			{
-				stream.on('data', function (data)
+				try
 				{
-					try
-					{
-						client.send(data);
-					}
-					catch(e)
-					{
-						console.error('dispatch event ERROR: ' + sys.inspect(e));
-					}
-				});
-				client.on('disconnect', function()
+					client.send(data);
+				}
+				catch(e)
 				{
-					stream.destroy();
-				});
-				stream.on('error', function(data)
-				{
-					console.error('UserStream ERROR: ' + data);
-				});
-				stream.on('end', function()
-				{
-					console.log('UserStream ends successfully');
-				});
+					console.error('dispatch event ERROR: ' + sys.inspect(e));
+				}
 			});
-		}
-		else
-		{
-			console.log("userstream is already running, please restart the server!");
-		}
-	},5000);
-	client.on('message', function(message)
+			client.on('disconnect', function()
+			{
+				stream.destroy();
+			});
+			stream.on('error', function(data)
+			{
+				console.error('UserStream ERROR: ' + data);
+			});
+			stream.on('end', function()
+			{
+				console.log('UserStream ends successfully');
+			});
+		});
+	}
+	else
 	{
-		if(tw)
-		{
-			z_engine_message_handler(session, client, message, tw);
-		}
-	});
+		console.log("userstream is already running, please restart the server!");
+	}
 }
 
 /*
@@ -357,10 +357,10 @@ function z_engine_static_timeline_fetch(this_session, tw, client, params, json)
 				switch (json)
 				{
 					case 'home':
-						client.send(data.reverse());
+						client.send({home: data.reverse()});
 					break;
 					case 'mentions':
-						client.send({mentions: data});
+						client.send({mentions: data}); //dont reverse this, we handle mentions differently than all current timelines at the moment
 					break;
 					case 'retweets':
 						client.send({retweets: data.reverse()});
