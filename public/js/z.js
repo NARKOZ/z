@@ -250,10 +250,10 @@ function z_engine_attrition()
 						}
 					break;
 					case 'unfavorite':
-						if (json.source.user.screen_name != screen_name)
+						/*if (json.source.user.screen_name != screen_name)
 						{
 							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" unfaved your tweet!", json.target_object.text);
-						}
+						}*/
 					break;
 					case 'follow':
 						if (json.source.screen_name != screen_name)
@@ -296,10 +296,10 @@ function z_engine_attrition()
 						}
 					break;
 					case 'list_user_unsubscribed':
-						if (json.source.screen_name != screen_name)
+						/*if (json.source.screen_name != screen_name)
 						{
 							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" unsubscribed from "+json.target_object.full_name+"!", json.target_object.description);
-						}
+						}*/
 					break;
 					case 'scrub_geo':
 						//todo: possibly handle this event (aka erase all geo information from a users tweets up to a given id)
