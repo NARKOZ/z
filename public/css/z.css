@@ -275,7 +275,7 @@ li
 
 #new-tweet-input-li
 {
-	width: 99%;
+	width: 98%;
 }
 
 form
@@ -409,15 +409,15 @@ input[type="text"]:disabled
 
 #sub-nav li a:hover
 {
-	box-shadow: 0 0 5px 5px #FFF;
+	box-shadow: 0 0 2px 2px #FFF;
 	background-color: #FFF;
 	color: black;
 	transition: all .20s ease-in-out;
-	-khtml-box-shadow: 0 0 5px 5px #FFF;
+	-khtml-box-shadow: 0 0 2px 2px #FFF;
 	-khtml-transition: all .20s ease-in-out;
-	-moz-box-shadow: 0 0 5px 5px #FFF;
+	-moz-box-shadow: 0 0 2px 2px #FFF;
 	-moz-transition: all .20s ease-in-out;
-	-webkit-box-shadow: 0 0 5px 5px #FFF;
+	-webkit-box-shadow: 0 0 2px 2px #FFF;
 	-webkit-transition: all .20s ease-in-out;
 	behavior: url(border-radius.htc);
 }

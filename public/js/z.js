@@ -19,6 +19,8 @@ var dms_loaded = 0;
 var dm_to = false;
 var following = Array(); //holds our following id's array
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
+var latitude = false;
+var longitude = false;
 var max_fps = 40; //limit all effects to no more than this amount of fps so we dont have hanging / chopping
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var pttid = 0;
@@ -42,6 +44,10 @@ new S2.FX.Base(
 /* the websocket itself */
 function z_engine_attrition()
 {
+	if (navigator.geolocation)
+	{
+		navigator.geolocation.getCurrentPosition(z_engine_get_geolocation);
+	}
 	$("loading-home").center(8);
 	$("loading-mentions").center(8);
 	$("loading-inbox").center(8);
@@ -628,6 +634,13 @@ function z_engine_favorite(id)
 		$("fave-"+id+"-mentioned").writeAttribute("src","img/favd.png");
 		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
 	}
+}
+
+/* get geolocation */
+function z_engine_get_geolocation(position)
+{
+	latitutde = position.coords.latitude;
+	longitude = position.coords.longitude;
 }
 
 /* send a notification to the client */
