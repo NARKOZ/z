@@ -372,9 +372,11 @@ input[type="submit"]:disabled
 	box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
 	background-color: rgba(255,0,0,0.05);
 	border: 1px solid rgba(255,0,0,0.25);
-	-khtml-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
+	-khtml-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
 	-moz-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
 	-webkit-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
+	filter:progid:DXImageTransform.Microsoft.Shadow (color=red, Direction=135, Strength=5);
+	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=red, Direction=135, Strength=5)";
 }
 
 /*
@@ -389,15 +391,25 @@ input[type="submit"]:disabled
 
 #sub-nav a
 {
+	border-radius: 4px;
+	box-shadow: 0 0 5px 5px #F6F6F6;
+	background-color: #F6F6F6;
 	text-decoration: none;
 	padding-top: 3px;
 	padding-bottom: 5px;
 	padding-left: 5px;
 	padding-right: 7px;
 	transition: all .20s ease-in-out;
+	-khtml-border-radius: 4px;
+	-khtml-box-shadow: 0 0 5px 5px #F6F6F6;
 	-khtml-transition: all .20s ease-in-out;
+	-moz-border-radius: 4px;
+	-moz-box-shadow: 0 0 5px 5px #F6F6F6;
 	-moz-transition: all .20s ease-in-out;
+	-webkit-border-radius: 4px;
+	-webkit-box-shadow: 0 0 5px 5px #F6F6F6;
 	-webkit-transition: all .20s ease-in-out;
+	behavior: url(border-radius.htc);
 }
 
 #sub-nav li
@@ -413,24 +425,25 @@ input[type="submit"]:disabled
 
 #sub-av li a
 {
+	background-color: #F6F6F6;
+	color: #039;
 	transition: all .20s ease-in-out;
 	-khtml-transition: all .20s ease-in-out;
 	-moz-transition: all .20s ease-in-out;
 	-webkit-transition: all .20s ease-in-out;
-	color: #039;
 }
 
 #sub-nav li a:hover
 {
-	background: #FFF;
+	box-shadow: 0 0 5px 5px #FFF;
+	background-color: #FFF;
 	color: black;
-	border-radius: 4px;
 	transition: all .20s ease-in-out;
-	-khtml-border-radius: 4px;
+	-khtml-box-shadow: 0 0 5px 5px #FFF;
 	-khtml-transition: all .20s ease-in-out;
-	-moz-border-radius: 4px;
+	-moz-box-shadow: 0 0 5px 5px #FFF;
 	-moz-transition: all .20s ease-in-out;
-	-webkit-border-radius: 4px;
+	-webkit-box-shadow: 0 0 5px 5px #FFF;
 	-webkit-transition: all .20s ease-in-out;
 	behavior: url(border-radius.htc);
 }

@@ -19,7 +19,7 @@ var dms_loaded = 0;
 var dm_to = false;
 var following = Array(); //holds our following id's array
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
-var max_fps = 35; //limit all effects to no more than this amount of fps so we dont have hanging / chopping
+var max_fps = 40; //limit all effects to no more than this amount of fps so we dont have hanging / chopping
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var pttid = 0;
 var prune_tweets_interval = 60000;
@@ -411,19 +411,19 @@ function z_engine_attrition()
 			}
 			else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
 			{
-				if (!paused)
+				if (typeof(json.retweeted_status) == "object" && json.retweeted_status.user.screen_name == screen_name && json.user.screen_name != screen_name)
 				{
-					z_engine_tweet(json, "home");
+					z_engine_notification(json.user.profile_image_url, "@"+json.user.screen_name+" retweeted you!", json.retweeted_status.text);
 				}
 				else
 				{
-					z_engine_tweet_pause_handler(json);
-				}
-				if (typeof(json.retweeted_status) == "object")
-				{
-					if (json.retweeted_status.user.screen_name == screen_name && json.user.screen_name != screen_name)
+					if (!paused)
 					{
-						z_engine_notification(json.user.profile_image_url, "@"+json.user.screen_name+" retweeted you!", json.retweeted_status.text);
+						z_engine_tweet(json, "home");
+					}
+					else
+					{
+						z_engine_tweet_pause_handler(json);
 					}
 				}
 			}
@@ -950,6 +950,13 @@ function z_engine_tweet(data, output)
 							else
 							{
 								left_element.insert({'bottom':status_time_element});
+							}
+							if (verified)
+							{
+								var verified_element = new Element('span');
+								var verified_img_element = new Element('img', {'src': 'img/ver.png', 'alt': ''});
+								verified_element.update(" "+verified_img_element);
+								left_element.insert({'bottom': verified_element});
 							}
 						comment_date_element.insert(left_element);
 						var right_element = new Element('div', {'class': 'right'});
