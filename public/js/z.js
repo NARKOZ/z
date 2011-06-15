@@ -958,7 +958,7 @@ function z_engine_tweet(data, output)
 			z_engine_tweet_buttons("mentions", id, author, userid, text, locked, faved);
 			new Element.extend(mentioned_clone);
 			$("mentions-timeline").insert({'top': mentioned_clone});
-			z_engine_notification(avatar, author, text);
+			z_engine_notification(avatar, "@"+author+" mentioned you!", text);
 			new S2.FX.Parallel(
 			[
 				new Effect.Appear('comment-'+id+'-mentioned',
@@ -998,7 +998,7 @@ function z_engine_tweet(data, output)
 	{
 		if (author == screen_name && author2 != screen_name)
 		{
-			z_engine_notification(avatar2, author2+" retweeted you!", text);
+			z_engine_notification(avatar2, "@"+author2+" retweeted you!", text);
 		}
 	}
 	if (!mentioned)
