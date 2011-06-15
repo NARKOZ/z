@@ -100,4 +100,4 @@ var BrowserDetect={init:function(){this.browser=this.searchString(this.dataBrows
 /*
  * help to vertically center an element
  */
-ElementExtensions={center:function(a,h,e){a=$(a);var c=a.getDimensions();var g=document.viewport.getDimensions();var b=document.viewport.getScrollOffsets();var f=g.width/2+b.left-c.width/2-82;var d=g.height/2+b.top-c.height/2;if(h&&f<h){f=parseInt(h)}if(e&&d<e){d=parseInt(e)}a.setStyle({position:"absolute",top:Math.floor(d)+"px",left:Math.floor(f)+"px"});return a}};Element.addMethods(ElementExtensions);
+ElementExtensions={center:function(g,e,b,a){g=$(g);var h=g.getDimensions();var i=document.viewport.getDimensions();var c=document.viewport.getScrollOffsets();var f=i.width/2+c.left-h.width/2-e;var d=i.height/2+c.top-h.height/2;if(b&&f<b){f=parseInt(b)}if(a&&d<a){d=parseInt(a)}g.setStyle({position:"absolute",top:Math.floor(d)+"px",left:Math.floor(f)+"px"});return g}};Element.addMethods(ElementExtensions);

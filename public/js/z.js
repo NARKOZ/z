@@ -15,27 +15,37 @@ else
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
 var content_paused = Array();
 var cutoff = 100; //max amount of tweets to display before pruning occurs
+var dms_loaded = 0;
 var dm_to = false;
 var following = Array(); //holds our following id's array
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
+var max_fps = 35; //limit all effects to no more than this amount of fps so we dont have hanging / chopping
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var pttid = 0;
+var prune_tweets_interval = 60000;
 var reply_id = false;
 var screen_name = "";
 var socket = new io.SessionSocket();
 var tid = 0; //internal counter
 var ttid = 0; //temporary internal counter
+var update_relative_dms_interval = 60000; //once a minute
+var update_relative_home_interval = 15000; //every 15 seconds
+var update_relative_mentions_interval = 30000; //every 30 seconds
 var user_id = 0;
 
 /* set up some of our effects */
 new S2.FX.Base(
 {
-	fps: 30
+	fps: max_fps
 });
 
 /* the websocket itself */
 function z_engine_attrition()
 {
+	$("loading-home").center(8);
+	$("loading-mentions").center(8);
+	$("loading-inbox").center(8);
+	$("loading-outbox").center(8);
 	new Element.extend("new-tweet-form");
 	new Element.extend("home-timeline");
 	new Element.extend("mentions-timeline");
@@ -125,19 +135,19 @@ function z_engine_attrition()
 				var update_relative_home = window.setInterval(function()
 				{
 					this.z_engine_update_relative_time("time.home");
-				},15000);
+				},update_relative_home_interval);
 				var update_relative_mentions = window.setInterval(function()
 				{
 					this.z_engine_update_relative_time("time.mentions");
-				},30000);
+				},update_relative_mentions_interval);
 				var update_relative_dms = window.setInterval(function()
 				{
 					this.z_engine_update_relative_time("time.dms");
-				},60000);
+				},update_relative_dms_interval);
 				var prune_old_tweets = window.setInterval(function()
 				{
 					this.z_engine_prune_tweets();
-				},60000);
+				},prune_tweets_interval);
 			}
 			else if (json["delete"]) //catch it like this, it can cause errors in other browsers like opera
 			{
@@ -241,10 +251,21 @@ function z_engine_attrition()
 			}
 			else if (json.dms) //realtime dms DO NOT come through here, this is the initial 50 that we throw in there
 			{
+				dms_loaded++;
 				json.dms.each(function(item)
 				{
 					z_engine_tweet(item, "dms");
+
 				});
+				switch (dms_loaded)
+				{
+					case 1:
+						$("loading-inbox").fade();
+					break;
+					case 2:
+						$("loading-outbox").fade();
+					break;
+				}
 			}
 			else if (json.event)
 			{
@@ -347,14 +368,15 @@ function z_engine_attrition()
 					z_engine_tweet(item, "home");
 				});
 				socket.send({fetch: "userstream"});
-				$("loading").fade();
+				$("loading-home").fade();
 			}
 			else if (json.mentions) //realtime mentions DO NOT come through here, this is the initial 50 that we throw in there
 			{
 				json.mentions.each(function(item)
 				{
 					z_engine_tweet(item, "mentions");
-				})
+				});
+				$("loading-mentions").fade();
 			}
 			else if (json.retweet_info)  //catch what we just retweeted, change the clicking event and icon
 			{
@@ -375,11 +397,12 @@ function z_engine_attrition()
 			}
 			else if (json.server_event)
 			{
+				console.log(JSON.stringify(json));
 				switch (json.server_event)
 				{
 					case 'end':
 						z_engine_notification("", "notice!", "lost connection to the userstream, reconnecting...");
-						socket.send({fetch: "userstream"});
+						//socket.send({fetch: "userstream"});
 					break;
 					case 'error':
 						//handle errors somehow
@@ -395,6 +418,13 @@ function z_engine_attrition()
 				else
 				{
 					z_engine_tweet_pause_handler(json);
+				}
+				if (typeof(json.retweeted_status) == "object")
+				{
+					if (json.retweeted_status.user.screen_name == screen_name && json.user.screen_name != screen_name)
+					{
+						z_engine_notification(json.user.profile_image_url, "@"+json.user.screen_name+" retweeted you!", json.retweeted_status.text);
+					}
 				}
 			}
 		}
@@ -991,13 +1021,13 @@ function z_engine_tweet(data, output)
 			[
 				new Effect.Appear('comment-'+id+'-mentioned',
 				{
-					duration: 0.75,
+					duration: 1.25,
 					mode: 'relative',
 					transition: 'easeOutSine'
 				}),
 				new Effect.BlindDown('comment-'+id+'-mentioned',
 				{
-					duration: 1,
+					duration: 0.7,
 					mode: 'relative',
 					transition: 'easeOutSine'
 				})
@@ -1017,7 +1047,7 @@ function z_engine_tweet(data, output)
 			}),
 			new Effect.BlindDown('comment-'+id,
 			{
-				duration: 0.75,
+				duration: 0.7,
 				mode: 'relative',
 				transition: 'easeOutSine'
 			})
@@ -1025,13 +1055,6 @@ function z_engine_tweet(data, output)
 		{
 			duration: 1.5
 		});
-	}
-	else
-	{
-		if (author == screen_name && author2 != screen_name)
-		{
-			z_engine_notification(avatar2, "@"+author2+" retweeted you!", text);
-		}
 	}
 	if (!mentioned)
 	{
@@ -1223,7 +1246,7 @@ function z_engine_tweet_pause()
 		var prune_old_tweets = window.setInterval(function()
 		{
 			this.z_engine_prune_tweets();
-		},60000);
+		},prune_tweets_interval);
 	}
 }
 

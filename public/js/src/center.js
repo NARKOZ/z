@@ -1,11 +1,11 @@
 ElementExtensions = {
-	center: function(element, limitX, limitY)
+	center: function(element, offset, limitX, limitY)
 	{
 		element = $(element);
 		var elementDims = element.getDimensions();
 		var viewPort = document.viewport.getDimensions();
 		var offsets = document.viewport.getScrollOffsets();
-		var centerX = viewPort.width / 2 + offsets.left - elementDims.width / 2 - 82;
+		var centerX = viewPort.width / 2 + offsets.left - elementDims.width / 2 - offset;
 		var centerY = viewPort.height / 2 + offsets.top - elementDims.height / 2;
 		if (limitX && centerX < limitX)
 		{

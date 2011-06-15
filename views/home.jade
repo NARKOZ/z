@@ -1,5 +1,3 @@
-img#loading(src='img/spinner.gif', class='loading')
-
 .comment-list-wrapper
   #sub-nav(class='navigation')
     ul.tabbed
@@ -33,12 +31,20 @@ img#loading(src='img/spinner.gif', class='loading')
   .hr
 
   ul#home-timeline
+    li
+      img#loading-home(src='img/spinner.gif', class='loading')
 
   ul#mentions-timeline(style='display:none;')
+    li
+      img#loading-mentions(src='img/spinner.gif', class='loading')
 
   ul#dms-timeline(style='display:none;')
     ul#dms-inbox-timeline
+      li
+        img#loading-inbox(src='img/spinner.gif', class='loading')
     ul#dms-outbox-timeline(style='display:none;')
+      li
+        img#loading-outbox(src='img/spinner.gif', class='loading')
 
 script var growler = new Growler(); //we need this here for the growler to work properly
 script document.observe("dom:loaded",function() { z_engine_attrition(); }); //load engine

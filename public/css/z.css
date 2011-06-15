@@ -545,14 +545,13 @@ div.growls div.large
 
 .login-inner
 {
-	display: inline;
+	display: inline-block;
 }
 
 .loading
 {
-	top: 15px;
-	right: 0px;
-	position: absolute;
+	display: inline-block;
+	margin: auto;
 }
 
 ::selection
@@ -573,7 +572,7 @@ div.growls div.large
 
 ::-webkit-scrollbar-track-piece
 {
-	background-color: #DDD
+	background-color: #F6F6F6;
 }
 
 ::-webkit-scrollbar-track-piece:horizontal

@@ -83,10 +83,17 @@ server.get('/',function(req, res)
 	}
 	else
 	{
-		res.render('home.jade',
+		if (typeof(req.session.oauth._results) == "object")
 		{
-			title: 'hello @'+req.session.oauth._results.screen_name+'!'
-		});
+			res.render('home.jade',
+			{
+				title: 'hello @'+req.session.oauth._results.screen_name+'!'
+			});
+		}
+		else
+		{
+			res.redirect("/oauth/logout");
+		}
 	}
 });
 
@@ -306,7 +313,7 @@ function z_engine_message_handler(tw, session, client, message)
  */
 function z_engine_streaming_handler(tw, client, session)
 {
-	if(tw)
+	if(tw && client && session)
 	{
 		tw.stream('user', {include_entities: true}, function(stream)
 		{
@@ -336,10 +343,6 @@ function z_engine_streaming_handler(tw, client, session)
 				console.log('UserStream ends successfully');
 			});
 		});
-	}
-	else
-	{
-		console.log("userstream is already running, please restart the server!");
 	}
 }
 
