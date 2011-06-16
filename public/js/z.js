@@ -206,7 +206,7 @@ function z_engine_attrition()
 							}),
 							new Effect.BlindUp('comment-'+id,
 							{
-								duration: 0.7,
+								duration: 1,
 								mode: 'relative',
 								transition: 'easeOutSine'
 							})
@@ -246,7 +246,7 @@ function z_engine_attrition()
 							}),
 							new Effect.BlindUp('comment-'+id+'-mentioned',
 							{
-								duration: 0.7,
+								duration: 1,
 								mode: 'relative',
 								transition: 'easeOutSine'
 							})
@@ -642,7 +642,7 @@ function z_engine_destroy(id, method)
 					}),
 					new Effect.BlindUp('comment-'+id,
 					{
-						duration: 0.7,
+						duration: 1,
 						mode: 'relative',
 						transition: 'easeOutSine'
 					})
