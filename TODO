@@ -1,3 +1,3 @@
 1) possibly a govern of some sort when it spits out too many tweets (eg it slows each outputted tweet down to one per second)
 2) ability to mute individual users, clients (or the source param from the api, eg "Tumblr"), mentions, etc
-3) when paused, if a tweet is deleted before we unpause, make sure to drop that from the array
+3) fix the clipping issue with some tweets as they come in get displayed

@@ -15,33 +15,33 @@ else
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
 var content_paused = Array(); //an array to hold paused tweets
 var cutoff = 100; //max amount of tweets to display before pruning occurs
-var dms_loaded = 0;
-var dm_to = false;
+var dms_loaded = 0; //quick method to hide each dm timelines loading image without needing to write a ton of code to do it
+var dm_to = false; //catch dm reply
 var following = Array(); //holds our following id's array
 var geolocation_timeout = 12000; //give to two minutes to figure out where you are
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
-var latit = false;
-var longit = false;
+var latit = false; //hold our latitude
+var longit = false; //hold our longitude
 if (!S2.Extensions.HardwareAcceleratedCSSTransitions)
 {
 	var max_fps = 40; //limit all effects to no more than this amount of fps so we dont have hanging / chopping
 }
 else
 {
-	var max_fpx = 120;
+	var max_fpx = 120; //otherwise open the throttle all the way for effects
 }
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
-var pttid = 0;
+var pttid = 0; //this serves as the (#) amount displayed when paused
 var prune_tweets_interval = 60000; //start the pruning loop over again every minute
-var reply_id = false;
-var screen_name = "";
+var reply_id = false; //catch reply
+var screen_name = ""; //our own screen name
 var socket = new io.SessionSocket();
 var tid = 0; //internal counter
 var ttid = 0; //temporary internal counter
 var update_relative_dms_interval = 60000; //once a minute
 var update_relative_home_interval = 15000; //every 15 seconds
 var update_relative_mentions_interval = 30000; //every 30 seconds
-var user_id = 0;
+var user_id = 0; //our own user id
 
 /* set up some of our effects */
 new S2.FX.Base(
@@ -175,6 +175,25 @@ function z_engine_attrition()
 				{
 					var id = 0; //we will only handle normal tweets from here, dms are handled elsewhere
 				}
+				content_paused.each(function(item, index)
+				{
+					var data = item.evalJSON(true);
+					if (!data.retweeted_status)
+					{
+						var paused_id = data.retweeted_status.id_str;
+					}
+					else
+					{
+						var paused_id = data.id_str;
+					}
+					if (paused_id == id)
+					{
+						content_paused = content_paused.without(index);
+						pttid--;
+						$("paused-count").update("("+pttid+")");
+						$break;
+					}
+				});
 				if ($("comment-"+id))
 				{
 					$("comment-"+id).setStyle("text-decoration: line-through;");
@@ -822,7 +841,7 @@ function z_engine_reply_dm(id, user)
 	dm_to = id;
 	$("new-tweet").setValue("~");
 	$("new-tweet").focus();
-	z_engine_notification("", "sending dm to @"+user, "the ~ is not sent with the dm, it is used as a placeholder before a bug occurs");
+	//z_engine_notification("", "sending dm to @"+user, "the ~ is not sent with the dm, it is used as a placeholder before a bug occurs");
 }
 
 /* retweet a tweet */
@@ -850,68 +869,40 @@ function z_engine_send_tweet()
 	{
 		$("new-tweet").disable();
 		var temp_element = $("new-tweet").getValue();
-		if (!reply_id && !dm_to)
+		var send = new Hash();
+		if (!dm_to) //handle regular tweet
 		{
-			if (!latit && !longit)
+			var send = {
+				status: {
+					status: temp_element,
+					include_entities: true
+				}
+			};
+			if (latit && longit)
 			{
-				var send = {
-					status: {
-						status: temp_element,
-						include_entities: true
-					}
+				var geo = {
+					display_coordinates: true,
+					lat: latit,
+					'long': longit
 				};
+				new Object.extend(send.status, geo);
 			}
-			else
+			if (reply_id)
 			{
-				var send = {
-					status: {
-						status: temp_element,
-						include_entities: true,
-						display_coordinates: true,
-						lat: latit,
-						'long': longit
-					}
-				};
+				var in_reply_to_status = {
+					in_reply_to_status_id: reply_id,
+				}
+				new Object.extend(send.status, in_reply_to_status);
 			}
 		}
-		else
+		else //handle direct message
 		{
-			if (reply_id != false)
-			{
-				if (!latit && !longit)
-				{
-					var send = {
-						status: {
-							status: temp_element,
-							in_reply_to_status_id: reply_id,
-							include_entities: true
-						}
-					};
+			var send = {
+				direct_message: {
+					text: temp_element,
+					user_id: dm_to
 				}
-				else
-				{
-					var send = {
-						status: {
-							status: temp_element,
-							in_reply_to_status_id: reply_id,
-							include_entities: true,
-							display_coordinates: true,
-							lat: latit,
-							'long': longit
-						}
-					};
-				}
-			}
-			else if (dm_to != false)
-			{
-				temp_element = temp_element.replace(/~/,""); //removes the ~ prefix from a dm before sending
-				var send = {
-					direct_message: {
-						text: temp_element,
-						user_id: dm_to
-					}
-				};
-			}
+			};
 		}
 		socket.send(send);
 		reply_id = false;
