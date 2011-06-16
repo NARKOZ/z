@@ -813,20 +813,35 @@ function z_engine_send_tweet()
 						'long': longit
 					}
 				};
-
 			}
 		}
 		else
 		{
 			if (reply_id != false)
 			{
-				var send = {
-					status: {
-						status: temp_element,
-						in_reply_to_status_id: reply_id,
-						include_entities: true
-					}
-				};
+				if (!latit && !longit)
+				{
+					var send = {
+						status: {
+							status: temp_element,
+							in_reply_to_status_id: reply_id,
+							include_entities: true
+						}
+					};
+				}
+				else
+				{
+					var send = {
+						status: {
+							status: temp_element,
+							in_reply_to_status_id: reply_id,
+							include_entities: true,
+							display_coordinates: true,
+							lat: latit,
+							'long': longit
+						}
+					};
+				}
 			}
 			else if (dm_to != false)
 			{
