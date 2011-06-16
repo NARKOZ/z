@@ -328,7 +328,7 @@ function z_engine_attrition()
 					case 'follow':
 						if (json.source.screen_name != screen_name)
 						{
-							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" started following you!", json.source.description);
+							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" is following you!", json.source.description);
 						}
 					break;
 					/*case 'unfollow':
@@ -437,7 +437,7 @@ function z_engine_attrition()
 				{
 					case 'end':
 						z_engine_notification("", "notice!", "lost connection to the userstream, reconnecting...");
-						//socket.send({fetch: "userstream"});
+						socket.send({fetch: "userstream"});
 					break;
 					case 'error':
 						//handle errors somehow
@@ -711,6 +711,7 @@ function z_engine_get_geolocation(position)
 	longit = position.coords.longitude;
 }
 
+/* if we have some bizarre error, handle it down here (currently just keeps everything set to false) */
 function z_engine_geolocation_error(err)
 {
 	switch (err.code)
@@ -733,6 +734,10 @@ function z_engine_notification(av, head, text)
 		audio.play();
 	}
 	//todo: support avatars in growler
+	if (text == null)
+	{
+		text = "";
+	}
 	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) //we can access webkit notifications
 	{
 		var notification = window.webkitNotifications.createNotification(av, head, text);
@@ -762,8 +767,8 @@ function z_engine_parse_tweet(text)
 	}
 	else
 	{
-		text = twttr.txt.autoLink(text, {hashtagUrlBase: 'https://search.twitter.com/search?q=%23'});
-		text = text.replace(/\n\r?/g, '<br />');
+		text = twttr.txt.autoLink(text, {hashtagUrlBase: 'https://search.twitter.com/search?q=%23'}); //autolink everything
+		text = text.replace(/\n\r?/g, '<br />'); //convert linebreaks into html linebreaks
 		return text;
 	}
 }
