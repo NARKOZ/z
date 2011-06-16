@@ -1069,7 +1069,7 @@ function z_engine_tweet(data, output)
 				$("home-timeline").insert({'top': container_element});
 			break;
 		}
-		if (mentioned && output != "mentions")
+		if (mentioned && output != "mentions" && author != screen_name)
 		{
 			var mentioned_clone = cloneNodeWithEvents(container_element);
 			mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
