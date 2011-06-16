@@ -18,6 +18,7 @@ var startup_count = 50; //initial amount of tweets to grab before we start strea
 
 var storage_fingerprint = "";
 var storage_secret = "youshouldchangethisvalue";
+var storage_type = "memory";
 
 var supported_transports = [
 	'htmlfile',
@@ -31,7 +32,16 @@ var supported_transports = [
  */
 
 var server = module.exports = express.createServer();
-var storage = new express.session.MemoryStore();
+switch (storage_type)
+{
+	case 'memory':
+		var storage = new express.session.MemoryStore();
+	break;
+	case 'redis':
+		var RedisStore = require('connect-redis')(express);
+		var storage = new RedisStore;
+	break;
+}
 var socket = sio.enable(
 {
 	socket: io.listen(server, {transports: supported_transports}),

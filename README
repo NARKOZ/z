@@ -20,6 +20,10 @@ npm install oauth
 npm install socket.io
 npm install socket.io-sessions
 
+optional:
+
+npm install connect-redis (use redis to handle sessions)
+
 note:
 
 keep the above mentioned modules up to date! there is a good chance that if something was updated in
