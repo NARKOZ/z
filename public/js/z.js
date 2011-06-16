@@ -1192,7 +1192,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, e
 		case 'mentions':
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+id+'", "'+author+'");', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
+				var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+entities+'");', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
 				if (!locked)
 				{
 					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'", "'+author+'", "'+escape_string(text)+'");', 'id': 'rt-'+id+'-mentioned', 'alt': ''});
@@ -1289,6 +1289,7 @@ function z_engine_tweet_mentioned(entities)
 	return mentioned;
 }
 
+/* returns a premade string from all mentions in entities.user_mentions */
 function z_engine_tweet_mentioned_string(entities)
 {
 	var mentioned = "";
