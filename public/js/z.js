@@ -171,13 +171,9 @@ function z_engine_attrition()
 				{
 					var id = json["delete"].status.id_str;
 				}
-				else if (typeof(json["delete"].direct_message) == 'object')
-				{
-					var id = json["delete"].direct_message.id;
-				}
 				else
 				{
-					var id = 0; //something else we havent tested yet?
+					var id = 0; //we will only handle normal tweets from here, dms are handled elsewhere
 				}
 				if ($("comment-"+id))
 				{
@@ -617,6 +613,44 @@ function z_engine_destroy(id, method)
 		else if (method == "dm")
 		{
 			var params = {destroy_dm: {status: {id_str: id}}};
+			$("comment-"+id).setStyle("text-decoration: line-through;"); //we will just drop the element ourselves since it gets deleted on twitters end
+			if ($("del-"+id))
+			{
+				$("del-"+id).fade();
+			}
+			if ($("fave-"+id))
+			{
+				$("fave-"+id).fade();
+			}
+			if ($("reply-"+id))
+			{
+				$("reply-"+id).fade();
+			}
+			if ($("rt-"+id))
+			{
+				$("rt-"+id).fade();
+			}
+			window.setTimeout(function()
+			{
+				new S2.FX.Parallel(
+				[
+					new Effect.Fade('comment-'+id,
+					{
+						duration: 1.25,
+						mode: 'relative',
+						transition: 'easeOutSine'
+					}),
+					new Effect.BlindUp('comment-'+id,
+					{
+						duration: 0.7,
+						mode: 'relative',
+						transition: 'easeOutSine'
+					})
+				],
+				{
+					duration: 1.5
+				});
+			},3000);
 		}
 		if (method == "rt")
 		{
@@ -944,7 +978,7 @@ function z_engine_tweet(data, output)
 		var id = data.id_str;
 		var locked = data.sender["protected"]; //prevent an issue in ie
 		var name = data.sender.name;
-		var reply = data.in_reply_to_screen_name;
+		var reply = data.recipient.screen_name;
 		var rtd = false;
 		var text = data.text;
 		var userid = data.sender_id;
@@ -1031,12 +1065,21 @@ function z_engine_tweet(data, output)
 							else
 							{
 								left_element.insert({'bottom':status_time_element});
+								if (reply)
+								{
+									var in_reply_to_element = new Element('span');
+									in_reply_to_element.update(' in reply to ');
+									var in_reply_to_link_element = new Element('a', {'target': '_blank', 'href': 'http://twitter.com/'+reply});
+									in_reply_to_link_element.update(reply+' ');
+									left_element.insert(in_reply_to_element);
+									left_element.insert({'bottom': in_reply_to_link_element});
+								}
 							}
 							if (verified)
 							{
 								var verified_element = new Element('span');
 								var verified_img_element = new Element('img', {'src': 'img/ver.png', 'alt': ''});
-								verified_element.update(" "+verified_img_element);
+								verified_element.update(verified_img_element);
 								left_element.insert({'bottom': verified_element});
 							}
 						comment_date_element.insert(left_element);
