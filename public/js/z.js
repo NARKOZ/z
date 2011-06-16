@@ -6,25 +6,26 @@
 var audio = new Audio();
 if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser == "Safari")
 {
-	audio.src = "/audio/notify.mp3";
+	audio.src = "/audio/notify.mp3"; //use mp3 for ie and safari
 }
 else
 {
-	audio.src = "/audio/notify.ogg";
+	audio.src = "/audio/notify.ogg"; //and ogg for anyone else who supports the audio api
 }
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
-var content_paused = Array();
+var content_paused = Array(); //an array to hold paused tweets
 var cutoff = 100; //max amount of tweets to display before pruning occurs
 var dms_loaded = 0;
 var dm_to = false;
 var following = Array(); //holds our following id's array
+var geolocation_timeout = 12000; //give to two minutes to figure out where you are
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
-var latitude = false;
-var longitude = false;
+var latit = false;
+var longit = false;
 var max_fps = 40; //limit all effects to no more than this amount of fps so we dont have hanging / chopping
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var pttid = 0;
-var prune_tweets_interval = 60000;
+var prune_tweets_interval = 60000; //start the pruning loop over again every minute
 var reply_id = false;
 var screen_name = "";
 var socket = new io.SessionSocket();
@@ -46,18 +47,17 @@ function z_engine_attrition()
 {
 	if (navigator.geolocation)
 	{
-		navigator.geolocation.getCurrentPosition(z_engine_get_geolocation);
+		navigator.geolocation.getCurrentPosition(z_engine_get_geolocation, z_engine_geolocation_error,
+		{
+			enableHighAccuracy: false,
+			maximumAge: 0,
+			timeout: geolocation_timeout
+		});
 	}
 	$("loading-home").center(8);
 	$("loading-mentions").center(8);
 	$("loading-inbox").center(8);
 	$("loading-outbox").center(8);
-	new Element.extend("new-tweet-form");
-	new Element.extend("home-timeline");
-	new Element.extend("mentions-timeline");
-	new Element.extend("dms-timeline");
-	new Element.extend("dms-inbox-timeline");
-	new Element.extend("dms-outbox-timeline");
 	new Event.observe("clear","click",function(event)
 	{
 		Event.stop(event);
@@ -636,11 +636,25 @@ function z_engine_favorite(id)
 	}
 }
 
-/* get geolocation */
+/* get geolocation, set vars */
 function z_engine_get_geolocation(position)
 {
-	latitutde = position.coords.latitude;
-	longitude = position.coords.longitude;
+	latit = position.coords.latitude;
+	longit = position.coords.longitude;
+}
+
+function z_engine_geolocation_error(err)
+{
+	switch (err.code)
+	{
+		case 0: //unknown error
+		case 1: //denied
+		case 2: //unavailable
+		case 3: //timeout
+			latit = false;
+			longit = false;
+		break;
+	}
 }
 
 /* send a notification to the client */
@@ -779,12 +793,28 @@ function z_engine_send_tweet()
 		var temp_element = $("new-tweet").getValue();
 		if (!reply_id && !dm_to)
 		{
-			var send = {
-				status: {
-					status: temp_element,
-					include_entities: true
-				}
-			};
+			if (!latit && !longit)
+			{
+				var send = {
+					status: {
+						status: temp_element,
+						include_entities: true
+					}
+				};
+			}
+			else
+			{
+				var send = {
+					status: {
+						status: temp_element,
+						include_entities: true,
+						display_coordinates: true,
+						lat: latit,
+						'long': longit
+					}
+				};
+
+			}
 		}
 		else
 		{
