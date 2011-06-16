@@ -1292,20 +1292,28 @@ function z_engine_tweet_clear()
 {
 	if ($("home-timeline").visible())
 	{
-		$("home-timeline").update();
+		var timeline = "home-timeline";
 	}
 	else if ($("mentions-timeline").visible())
 	{
-		$("mentions-timeline").update();
+		var timeline = "mentions-timeline";
 	}
 	else if ($("dms-inbox-timeline").visible())
 	{
-		$("dms-inbox-timeline").update();
+		var timeline = "dms-inbox-timeline";
 	}
 	else if ($("dms-outbox-timeline").visible())
 	{
-		$("dms-outbox-timeline").update();
+		var timeline = "dms-outbox-timeline";
 	}
+	$(timeline).fade(
+	{
+		after: function()
+		{
+			$(timeline).update();
+			$(timeline).appear();
+		}
+	});
 }
 
 /* see if we were mentioned, this is faster than parsing through the text itself */
@@ -1368,7 +1376,7 @@ function z_engine_tweet_pause()
 		content_paused.clear();
 		paused = false;
 		pttid = 0;
-		new Effect.Fade("paused-count",
+		$("paused-count").fade(
 		{
 			after: function()
 			{
