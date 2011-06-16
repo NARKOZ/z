@@ -6,10 +6,11 @@ it is meant to be ran with only a single user (eg localhost, NOT the internet) a
 you should use http://127.0.0.1:8080/oauth/callback as your callback url. configure in z,js.
 an oauth token and secret has been included which points to everything correctly when ran locally.
 
-it is licensed under the new bsd license, and is partially based on "designo" (search for it on here),
-the streaming code from jdub/node-twitter, and a small section of a free template from arcsin.se
+it is licensed under the new bsd / freebsd styled / simplified bsd license, and is partially based on 
+"designo" (search for it on here), the streaming code from jdub/node-twitter, and a small section of a
+free template from arcsin.se.
 
-rquirements:
+requirements:
 
 npm install connect
 npm install connect-gzip
