@@ -97,4 +97,4 @@ var BrowserDetect={init:function(){this.browser=this.searchString(this.dataBrows
 /*
  * help to vertically center an element
  */
-ElementExtensions={center:function(g,e,b,a){g=$(g);var h=g.getDimensions();var i=document.viewport.getDimensions();var c=document.viewport.getScrollOffsets();var f=i.width/2+c.left-h.width/2-e;var d=i.height/2+c.top-h.height/2;if(b&&f<b){f=parseInt(b)}if(a&&d<a){d=parseInt(a)}g.setStyle({position:"absolute",top:Math.floor(d)+"px",left:Math.floor(f)+"px"});return g}};Element.addMethods(ElementExtensions);
+ElementExtensions={center:function(g,e,b,a){g=$(g);var h=g.getDimensions();var i=document.viewport.getDimensions();var c=document.viewport.getScrollOffsets();var f=i.width/2+c.left-h.width/2;if(BrowserDetect.browser!="Firefox"){f=f-e}var d=i.height/2+c.top-h.height/2;if(b&&f<b){f=parseInt(b)}if(a&&d<a){d=parseInt(a)}g.setStyle({position:"absolute",top:Math.floor(d)+"px",left:Math.floor(f)+"px"});return g}};Element.addMethods(ElementExtensions);

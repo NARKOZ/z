@@ -1,7 +1,3 @@
-/*
- * z engine stuff
- */
-
 /* initial variables */
 var audio = new Audio();
 if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser == "Safari")
@@ -17,13 +13,18 @@ if (!store.get('blocks'))
 	store.set('blocks', "");
 }
 var blocks = store.get('blocks');
+if (!store.get('connect_id'))
+{
+	store.set('connect_id', CONNECT_SID);
+}
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
 var content_paused = Array(); //an array to hold paused tweets
 var cutoff = 100; //max amount of tweets to display before pruning occurs
 var dms_loaded = 0; //quick method to hide each dm timelines loading image without needing to write a ton of code to do it
 var dm_to = false; //catch dm reply
 var following = Array(); //holds our following id's array
-var geolocation_timeout = 12000; //give to two minutes to figure out where you are
+var geo_high_accuracy = false; //disable high accuracy on geo readings
+var geo_timeout = 12000; //give to two minutes to figure out where you are
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
 var latit = false; //hold our latitude
 var longit = false; //hold our longitude
@@ -63,9 +64,9 @@ function z_engine_attrition()
 	{
 		navigator.geolocation.getCurrentPosition(z_engine_get_geolocation, z_engine_geolocation_error,
 		{
-			enableHighAccuracy: false,
+			enableHighAccuracy: geo_high_accuracy,
 			maximumAge: 0,
-			timeout: geolocation_timeout
+			timeout: geo_timeout
 		});
 	}
 	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1)
@@ -480,13 +481,18 @@ function z_engine_attrition()
 				{
 					case 'end':
 						z_engine_notification("", "notice!", "lost connection to the userstream, reconnecting...");
-						socket.disconnect();
+						socket.disconnect(false);
+						$("new-tweet").disable();
 						socket.connect();
+						$("new-tweet").enable();
 						socket.send({fetch: "userstream"});
 					break;
 					case 'error':
 						z_engine_notification("", "notice!", "userstream error occurred, reconnecting...");
-						socket.send({fetch: "userstream"});
+						socket.disconnect(false);
+						$("new-tweet").disable();
+						socket.connect();
+						$("new-tweet").enable();
 					break;
 				}
 			}
@@ -525,11 +531,14 @@ function z_engine_attrition()
 			}
 		}
 	});
-	socket.on('disconnect', function()
+	socket.on('disconnect', function(alert)
 	{
+		if (alert)
+		{
+			z_engine_notification("", "error!", "lost connection to server");
+		}
 		$("new-tweet").disable();
 		$("new-tweet").setValue("lost connection!");
-		z_engine_notification("", "error!", "lost connection to server");
 	});
 }
 
@@ -776,7 +785,8 @@ function z_engine_geolocation_error(err)
 function z_engine_logout()
 {
 	//keep our blocks
-	store.remove('accout');
+	store.remove('account');
+	store.remove('connect_id');
 	store.remove('friends');
 	store.remove('oauth_secret');
 	store.remove('oauth_token');
