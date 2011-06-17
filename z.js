@@ -16,7 +16,7 @@ var klout = require('klout-js')('your_klout_api_key_here'); //klout var & key
 
 var port = 8080;
 
-var startup_count = 50; //initial amount of tweets to grab before we start streaming
+var startup_count = 100; //initial amount of tweets to grab before we start streaming
 
 var storage_fingerprint = "";
 var storage_secret = "you_should_change_this";
