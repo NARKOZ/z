@@ -892,7 +892,7 @@ function z_engine_prune_tweets()
 	},20000);
 	window.setTimeout(function()
 	{
-		var dm_elements = $("dms-outbox-timeline").childElements();
+		var dm_sent_elements = $("dms-outbox-timeline").childElements();
 		dm_sent_elements.each(function(item, index)
 		{
 			if (index > cutoff)
