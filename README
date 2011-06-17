@@ -16,16 +16,12 @@ npm install connect
 npm install connect-gzip
 npm install express
 npm install jade
+npm install klout-js
 npm install oauth
 npm install socket.io
 npm install socket.io-sessions
 
 optional:
 
-npm install connect-redis (use redis to handle sessions)
+npm install connect-redis (use redis to handle sessions, remember to set storage_type to "redis")
 
-note:
-
-keep the above mentioned modules up to date! there is a good chance that if something was updated in
-one of those modules that breaks current code, it will be fixed and committed soon (and break the
-client for you if you dont stay up to date). to do that, just run: npm update

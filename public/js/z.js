@@ -33,8 +33,6 @@ else
 {
 	var max_fpx = 120; //otherwise open the throttle all the way for effects
 }
-var oauth_token = ""; //oauth token
-var oauth_secret = ""; //oauth secret
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var pttid = 0; //this serves as the (#) amount displayed when paused
 var prune_tweets_interval = 60000; //start the pruning loop over again every minute
@@ -358,10 +356,6 @@ function z_engine_attrition()
 						}
 					break;
 					case 'unfavorite':
-						/*if (json.source.user.screen_name != screen_name)
-						{
-							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" unfaved your tweet!", json.target_object.text);
-						}*/
 					break;
 					case 'follow':
 						if (json.source.screen_name != screen_name)
@@ -369,13 +363,6 @@ function z_engine_attrition()
 							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" is following you!", json.source.description);
 						}
 					break;
-					/*case 'unfollow':
-						//currently this event does not exist but it is here in case they decide to support it
-						if (json.source.screen_name != screen_name)
-						{
-							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" unfollowed you!", json.source.description);
-						}
-					break;*/
 					case 'list_member_added':
 						if (json.source.screen_name != screen_name)
 						{
@@ -383,10 +370,8 @@ function z_engine_attrition()
 						}
 					break;
 					case 'list_created':
-						//todo: possibly handle this event?
 					break;
 					case 'list_destroyed':
-						//todo: possibly handle this event?
 					break;
 					case 'list_member_removed':
 						if (json.source.screen_name != screen_name)
@@ -395,7 +380,6 @@ function z_engine_attrition()
 						}
 					break;
 					case 'list_updated':
-						//todo: possibly handle this event?
 					break;
 					case 'list_user_subscribed':
 						if (json.source.screen_name != screen_name)
@@ -404,16 +388,10 @@ function z_engine_attrition()
 						}
 					break;
 					case 'list_user_unsubscribed':
-						/*if (json.source.screen_name != screen_name)
-						{
-							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" unsubscribed from "+json.target_object.full_name+"!", json.target_object.description);
-						}*/
 					break;
 					case 'scrub_geo':
-						//todo: possibly handle this event (aka erase all geo information from a users tweets up to a given id)
 					break;
 					case 'user_update':
-						//todo: possibly handle this event much, much later on (i noticed this event on accident, right now we can maybe cookie the info, thats it)
 					break;
 					default:
 						console.log(JSON.stringify(json.event)); //spit out the event name for quick reference...
@@ -437,12 +415,42 @@ function z_engine_attrition()
 			}
 			else if (json.info)
 			{
-				oauth_secret = json.info.oauth_secret;
-				oauth_token = json.info.oauth_token;
 				screen_name = json.info.screen_name;
 				user_id = json.info.user_id;
 				store.set('screen_name', screen_name);
 				store.set('user_id', user_id);
+			}
+			else if (json.klout)
+			{
+				var data = json.klout.users;
+				var id = json.id_str;
+				if (data.length > 0 && typeof(id) == "string")
+				{
+					var amp = Math.round(data[0].score.amplification_score);
+					var one_day = data[0].score.delta_1day;
+					var description = data[0].score.description;
+					var five_days = data[0].score.delta_5day;
+					var kclass = data[0].score.kclass;
+					var kclass_description = data[0].score.kclass_description;
+					var kscore = Math.round(data[0].score.kscore);
+					var kscore_description = data[0].score.kscore_description;
+					var net = Math.round(data[0].score.network_score);
+					var reach = Math.round(data[0].score.true_reach);
+					if ($("klout-"+id))
+					{
+						$("klout-"+id).setStyle('cursor: default;');
+						$("klout-"+id).setAttribute('onclick', '');
+						$("klout-"+id).setAttribute('src', 'img/kltd.png');
+						$("klout-"+id).setAttribute('title', kclass+':\n'+description+'\n\\tnscore: '+kscore+'\n\tamp: '+amp+'\n\tnetwork: '+net+'\n\treach: '+reach+'\n\t1 day: '+one_day+'\n\t5 days: '+five_days);
+					}
+				}
+				else if (data.length == 0)
+				{
+					if ($("klout-"+id))
+					{
+						$("klout-"+id).setAttribute('title', 'seems that we couldnt fetch any klout for this user');
+					}
+				}
 			}
 			else if (json.mentions) //realtime mentions DO NOT come through here, this is the initial 50 that we throw in there
 			{
@@ -792,6 +800,12 @@ function z_engine_highlight(id)
 	}
 }
 
+/* get a users klout score */
+function z_engine_get_klout(author, id)
+{
+	socket.send({fetch: "klout", screen_name: author, id_str: id});
+}
+
 /* properly log out a user */
 function z_engine_logout()
 {
@@ -1109,7 +1123,7 @@ function z_engine_tweet(data, output)
 					var comment_arrow_element = new Element('div', {'class': 'comment-arrow'});
 					comment_body_element.insert(comment_arrow_element);
 					var comment_date_element = new Element('div', {'class': 'post-date'});
-						var left_element = new Element('div', {'class': 'left'});
+						var left_element = new Element('div', {'class': 'left', 'id': 'left-'+id});
 							var author_link_element = new Element('a', {'target': '_blank', href: 'http://twitter.com/'+author});
 							author_link_element.update('@'+author+' ');
 							var wrote_this_element = new Element('span');
@@ -1224,6 +1238,7 @@ function z_engine_tweet(data, output)
 		{
 			var mentioned_clone = cloneNodeWithEvents(container_element);
 			mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
+			left_element.setAttribute("id", "left-"+id+"-mentioned");
 			right2_element.setAttribute("id", "right-"+id+"-mentioned");
 			z_engine_tweet_buttons("mentions", id, author, userid, text, locked, faved, mentions_string);
 			new Element.extend(mentioned_clone);
@@ -1312,6 +1327,11 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, e
 				$("right-"+id).insert({'bottom': del_img_element});
 				new Element.extend(del_img_element);
 			}
+			var klout_element = new Element('span');
+			klout_element.update(" ");
+			var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
+			klout_element.insert({'bottom': klout_img_element});
+			$("left-"+id).insert({'bottom': klout_element})
 		break;
 		case 'mentions':
 			if (author != screen_name)

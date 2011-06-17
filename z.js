@@ -12,13 +12,15 @@ var twitter = require('./lib/vendor/twitter');
 var key = "c52uegTrRkDob3kRuw"; //consumer key
 var secret = "Vxp5DUSZSM9LSpzNUAUXcH6eWImk4B2eV4Ookt7ak"; //consumer secret
 
+var klout = require('klout-js')('your_klout_api_key_here'); //klout var & key
+
 var port = 8080;
 
 var startup_count = 50; //initial amount of tweets to grab before we start streaming
 
 var storage_fingerprint = "";
-var storage_secret = "youshouldchangethisvalue";
-var storage_type = "memory";
+var storage_secret = "you_should_change_this";
+var storage_type = "memory"; //can be "meory", or "redis" currently
 
 /*
  * end configuration
@@ -256,6 +258,9 @@ function z_engine_message_handler(tw, session, client, message)
 			case 'home':
 				z_engine_static_timeline_fetch(tw, client, session, {type: 'home_timeline', count: startup_count, include_entities: true}, "home");
 			break;
+			case 'klout':
+				z_engine_static_timeline_fetch(tw, client, session, {user: [message.screen_name], id_str: message.id_str}, "klout");
+			break;
 			case 'mentions':
 				z_engine_static_timeline_fetch(tw, client, session, {type: 'mentions', count: startup_count, include_entities: true}, "mentions");
 			break;
@@ -387,6 +392,19 @@ function z_engine_static_timeline_fetch(tw, client, session, params, json)
 				else
 				{
 					client.send({dms: data.reverse()});
+				}
+			});
+		break;
+		case 'klout':
+			klout.show(params.user, function(error, data)
+			{
+				if(error)
+				{
+					console.error('KLOUT ERROR: '+error);
+				}
+				else
+				{
+					client.send({klout: data, id_str: params.id_str});
 				}
 			});
 		break;
