@@ -441,7 +441,7 @@ function z_engine_attrition()
 						$("klout-"+id).setStyle('cursor: default;');
 						$("klout-"+id).setAttribute('onclick', '');
 						$("klout-"+id).setAttribute('src', 'img/kltd.png');
-						$("klout-"+id).setAttribute('title', 'according to klout, '+data[0].twitter_screen_name+' '+description+'\n\n'+kclass+': '+kclass_description+'\n\n\t- score: '+kscore+'\n\t- amp: '+amp+'\n\t- network: '+net+'\n\t- reach: '+reach+'\n\t- 1 day: '+one_day+'\n\t- 5 days: '+five_days);
+						$("klout-"+id).setAttribute('title', 'according to klout, @'+data[0].twitter_screen_name+' '+description+'\n\n\t- score: '+kscore+'\n\t- amp: '+amp+'\n\t- network: '+net+'\n\t- reach: '+reach+'\n\t- 1 day: '+one_day+'\n\t- 5 days: '+five_days);
 					}
 				}
 				else if (data.length == 0)
