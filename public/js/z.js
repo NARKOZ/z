@@ -13,10 +13,7 @@ if (!store.get('blocks'))
 	store.set('blocks', "");
 }
 var blocks = store.get('blocks');
-if (!store.get('connect_id'))
-{
-	store.set('connect_id', CONNECT_SID);
-}
+store.set('connect_id', CONNECT_SID);
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
 var content_paused = Array(); //an array to hold paused tweets
 var cutoff = 100; //max amount of tweets to display before pruning occurs
