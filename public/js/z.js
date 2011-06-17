@@ -12,6 +12,11 @@ else
 {
 	audio.src = "/audio/notify.ogg"; //and ogg for anyone else who supports the audio api
 }
+if (!store.get('blocks'))
+{
+	store.set('blocks', "");
+}
+var blocks = store.get('blocks');
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
 var content_paused = Array(); //an array to hold paused tweets
 var cutoff = 100; //max amount of tweets to display before pruning occurs
@@ -73,6 +78,11 @@ function z_engine_attrition()
 	{
 		Event.stop(event);
 		return z_engine_tweet_clear();
+	});
+	new Event.observe("logout","click",function(event)
+	{
+		Event.stop(event);
+		return z_engine_logout();
 	});
 	new Event.observe("pause","click",function(event)
 	{
@@ -308,10 +318,34 @@ function z_engine_attrition()
 				switch (event)
 				{
 					case 'block':
-						//todo: handle our muting function directly through here in a later commit (eg if a user is retweeted by someone else)
+						var current_blocks = $w(store.get('blocks')).uniq();
+						var already_blocked = false;
+						current_blocks.each(function(item)
+						{
+							if (item == json.target.id)
+							{
+								already_blocked = true;
+								$break;
+							}
+						});
+						if (!already_blocked)
+						{
+							var new_block = json.target.id;
+							var blocks = current_blocks.join(" ")+" "+new_block;
+							store.set('blocks', blocks);
+						}
 					break;
 					case 'unblock':
-						//todo: undo the above cookie
+						var current_blocks = $w(store.get('blocks')).uniq();
+						var new_blocks = "";
+						$w(current_blocks).each(function(item)
+						{
+							if (item != json.target.id)
+							{
+								new_blocks += item+" ";
+							}
+						});
+						store.set('blocks', new_blocks);
 					break;
 					case 'favorite':
 						if (json.source.screen_name != screen_name)
@@ -385,16 +419,14 @@ function z_engine_attrition()
 			}
 			else if (json.friends)
 			{
-				following = JSON.stringify(json.friends);
-				Cookie.init({name: 'friends', expires: 365}); //todo
-				Cookie.setData(JSON.stringify(json.friends), false);
+				store.set('friends', json.friends);
 			}
 			else if (json.info)
 			{
 				screen_name = json.info.screen_name;
 				user_id = json.info.user_id;
-				Cookie.init({name: 'info', expires: 365}); //todo
-				Cookie.setData(JSON.stringify(json.info), false);
+				store.set('screen_name', screen_name);
+				store.set('user_id', user_id);
 			}
 			else if (json.home) //realtime tweets DO NOT come through here, this is the initial 50 that we throw in there
 			{
@@ -726,6 +758,13 @@ function z_engine_geolocation_error(err)
 	}
 }
 
+/* properly log out a user */
+function z_engine_logout()
+{
+	store.clear();
+	window.location = "/oauth/logout";
+}
+
 /* send a notification to the client */
 function z_engine_notification(av, head, text)
 {
@@ -920,6 +959,7 @@ function z_engine_send_tweet()
 /* the engine that handles, sorts, and displays our data */
 function z_engine_tweet(data, output)
 {
+	var blocked = false;
 	if (output != "dms")
 	{
 		if (!data.retweeted_status)
@@ -980,8 +1020,17 @@ function z_engine_tweet(data, output)
 		var userid = data.sender_id;
 		var verified = data.sender.verified;
 	}
-	if (!content[id]) //this probably looks funny at first but it is very important because it delimits every tweet by its id
-	{                 //the reason being is because retweet data works in _literal_ manner via the streaming api
+	$w(blocks).each(function(item)
+	{
+		if (item == userid)
+		{
+			console.log("blocked tweet from "+author);
+			blocked = true;
+			$break;
+		}
+	});
+	if (!content[id] && !blocked)
+	{
 		if (output != "mentions")
 		{
 			ids[tid] = id;
@@ -1075,7 +1124,7 @@ function z_engine_tweet(data, output)
 							{
 								var verified_element = new Element('span');
 								var verified_img_element = new Element('img', {'src': 'img/ver.png', 'alt': ''});
-								verified_element.update(verified_img_element);
+								verified_element.update(" "+verified_img_element);
 								left_element.insert({'bottom': verified_element});
 							}
 						comment_date_element.insert(left_element);
