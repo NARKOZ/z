@@ -133,6 +133,7 @@ function z_engine_attrition()
 			{
 				$("new-tweet").setValue("");
 				$("new-tweet").enable();
+				$("loading-home").appear();
 				new Event.observe("new-tweet-form", "submit", function(event)
 				{
 					Event.stop(event);
@@ -308,6 +309,7 @@ function z_engine_attrition()
 				{
 					case 1:
 						$("loading-inbox").fade();
+						$("loading-outbox").appear();
 					break;
 					case 2:
 						$("loading-outbox").fade();
@@ -412,6 +414,7 @@ function z_engine_attrition()
 				});
 				socket.send({fetch: "userstream"});
 				$("loading-home").fade();
+				$("loading-mentions").appear();
 			}
 			else if (json.info)
 			{
@@ -459,6 +462,7 @@ function z_engine_attrition()
 					z_engine_tweet(item, "mentions");
 				});
 				$("loading-mentions").fade();
+				$("loading-inbox").appear();
 			}
 			else if (json.retweet_info)  //catch what we just retweeted, change the clicking event and icon
 			{
@@ -1018,9 +1022,13 @@ function z_engine_tweet(data, output)
 			var avatar = data.user.profile_image_url;
 			var avatar2 = false;
 			var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,'');
+			var description = data.user.description;
 			var entities = data.entities;
 			var faved = data.favorited;
+			var followers = data.user.followers_count;
+			var following = data.user.friends_count;
 			var id = data.id_str;
+			var location = data.user.location;
 			var locked = data.user["protected"]; //prevent an issue in ie
 			var name = data.user.name;
 			var place = data.place;
@@ -1029,6 +1037,7 @@ function z_engine_tweet(data, output)
 			var rtd = false;
 			var source = data.source;
 			var text = data.text;
+			var tweets = data.user.statuses_count;
 			var userid = data.user.id;
 			var verified = data.user.verified;
 		}
@@ -1039,9 +1048,13 @@ function z_engine_tweet(data, output)
 			var avatar = data.retweeted_status.user.profile_image_url;
 			var avatar2 = data.user.profile_image_url;
 			var date = new Date(data.retweeted_status.created_at).toLocaleString().replace(/GMT.+/,'');
+			var description = data.retweeted_status.user.description;
 			var entities = data.retweeted_status.entities;
 			var faved = data.retweeted_status.favorited;
+			var followers = data.retweeted_status.user.followers_count;
+			var following = data.retweeted_status.user.friends_count;
 			var id = data.retweeted_status.id_str;
+			var location = data.retweeted_status.user.location;
 			var locked = data.retweeted_status.user["protected"]; //prevent an issue in ie
 			var name = data.retweeted_status.user.name;
 			var place = data.retweeted_status.place;
@@ -1050,7 +1063,9 @@ function z_engine_tweet(data, output)
 			var rtd = true;
 			var source = data.retweeted_status.source;
 			var text = data.retweeted_status.text;
+			var tweets = data.retweeted_status.user.statuses_count;
 			var userid = data.retweeted_status.user.id;
+			var userid2 = data.user.id;
 			var verified = data.retweeted_status.user.verified;
 		}
 	}
@@ -1061,8 +1076,7 @@ function z_engine_tweet(data, output)
 		var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,'');
 		var entities = false;
 		var id = data.id_str;
-		var locked = data.sender["protected"]; //prevent an issue in ie
-		var name = data.sender.name;
+		var locked = false;
 		var reply = data.recipient.screen_name;
 		var rtd = false;
 		var text = data.text;
@@ -1100,7 +1114,14 @@ function z_engine_tweet(data, output)
 			var profile_wrapper_element = new Element('div', {'class': 'comment-profile-wrapper left'});
 				var gravatar_element = new Element('div', {'class': 'comment-gravatar'});
 					var gravatar_author_link_element = new Element('a', {'target': '_blank', href: 'http://twitter.com/'+author});
-						var gravatar_author_img_element = new Element('img', {'src': avatar, 'style': 'height:50px;width:50px', 'alt': ''});
+						if (output != "dms")
+						{
+							var gravatar_author_img_element = new Element('img', {'src': avatar, 'style': 'height:50px;width:50px', 'alt': '', 'title': '@'+author+'\'s information:\n'+description+'\n\n\t- name: '+name+'\n\t- location: '+location+'\n\t- tweets: '+tweets+'\n\t- following: '+following+'\n\t- followers: '+followers});
+						}
+						else
+						{
+							var gravatar_author_img_element = new Element('img', {'src': avatar, 'style': 'height:50px;width:50px', 'alt': ''});
+						}
 						gravatar_author_link_element.insert(gravatar_author_img_element);
 					gravatar_element.insert(gravatar_author_link_element);
 				profile_wrapper_element.insert(gravatar_element);
@@ -1173,7 +1194,7 @@ function z_engine_tweet(data, output)
 							{
 								var verified_element = new Element('span');
 								verified_element.update(" ");
-								var verified_img_element = new Element('img', {'src': 'img/ver.png', 'alt': 'verified user'});
+								var verified_img_element = new Element('img', {'src': 'img/ver.png', 'alt': '', 'title': 'verified user'});
 								verified_element.insert({'bottom': verified_img_element});
 								left_element.insert({'bottom': verified_element});
 							}
@@ -1182,8 +1203,11 @@ function z_engine_tweet(data, output)
 							if (rtd)
 							{
 								var rtd_element = new Element('span');
-								rtd_element.update('RT\'d by <a target="_blank" href="http://twitter.com/'+author2+'">'+author2+'</a> ');
-								right_element.insert(rtd_element);
+								rtd_element.update(" ");
+								var rtd_img_element = new Element('img', {'src': 'img/rtd2.png', 'alt': ''});
+								rtd_element.insert({'top': rtd_img_element});
+								rtd_element.insert({'bottom': 'by <a target="_blank" href="http://twitter.com/'+author2+'">'+author2+'</a> '});
+								right_element.insert({'bottom': rtd_element});
 							}
 							if (output != "dms" && place && place.full_name)
 							{

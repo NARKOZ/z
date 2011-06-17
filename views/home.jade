@@ -30,19 +30,19 @@
 
   ul#home-timeline
     li
-      img#loading-home(src='img/spinner.gif', class='loading')
+      img#loading-home(src='img/spinner.gif', class='loading', style='display:none;')
 
   ul#mentions-timeline(style='display:none;')
     li
-      img#loading-mentions(src='img/spinner.gif', class='loading')
+      img#loading-mentions(src='img/spinner.gif', class='loading', style='display:none;')
 
   ul#dms-timeline(style='display:none;')
     ul#dms-inbox-timeline
       li
-        img#loading-inbox(src='img/spinner.gif', class='loading')
+        img#loading-inbox(src='img/spinner.gif', class='loading', style='display:none;')
     ul#dms-outbox-timeline(style='display:none;')
       li
-        img#loading-outbox(src='img/spinner.gif', class='loading')
+        img#loading-outbox(src='img/spinner.gif', class='loading', style='display:none;')
 
 script var growler = new Growler(); //we need this here for the growler to work properly
 script document.observe("dom:loaded",function() { z_engine_attrition(); }); //load engine
