@@ -9,8 +9,8 @@ var twitter = require('./lib/vendor/twitter');
  * start configuration
  */
 
-var key = "c52uegTrRkDob3kRuw"; //consumer key
-var secret = "Vxp5DUSZSM9LSpzNUAUXcH6eWImk4B2eV4Ookt7ak"; //consumer secret
+var key = "your_consumer_key_here"; //consumer key
+var secret = "your_consumer_secret_here"; //consumer secret
 
 var klout = require('klout-js')('your_klout_api_key_here'); //klout var & key
 

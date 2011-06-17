@@ -3,8 +3,7 @@ about:
 mostly just a client im writing in my spare time, nothing really that special here.
 it is meant to be ran with only a single user (eg localhost, NOT the internet) at a time at the moment.
 
-you should use http://127.0.0.1:8080/oauth/callback as your callback url. configure in z,js.
-an oauth token and secret has been included which points to everything correctly when ran locally.
+you should use http://127.0.0.1:8080/oauth/callback as your callback url. configure in z,js (read NOTES).
 
 it is licensed under the new bsd / freebsd styled / simplified bsd license, and is partially based on 
 "designo" (search for it on here), the streaming code from jdub/node-twitter, and a small section of a
