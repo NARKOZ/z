@@ -165,6 +165,7 @@ if (!module.parent)
 gzip.gzip({matchType: /audio/});
 gzip.gzip({matchType: /css/});
 gzip.gzip({matchType: /js/});
+gzip.gzip({matchType: /socket.io/});
 
 /*
  * the socket connection event which gets the gears started
