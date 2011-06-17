@@ -441,8 +441,6 @@ function z_engine_attrition()
 				oauth_token = json.info.oauth_token;
 				screen_name = json.info.screen_name;
 				user_id = json.info.user_id;
-				store.set('oauth_secret', oauth_secret);
-				store.set('oauth_token', oauth_token);
 				store.set('screen_name', screen_name);
 				store.set('user_id', user_id);
 			}
@@ -785,8 +783,6 @@ function z_engine_logout()
 	store.remove('account');
 	store.remove('connect_id');
 	store.remove('friends');
-	store.remove('oauth_secret');
-	store.remove('oauth_token');
 	store.remove('screen_name');
 	store.remove('user_id');
 	window.location = "/oauth/logout";

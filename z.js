@@ -405,8 +405,6 @@ function z_engine_static_timeline_fetch(tw, client, session, params, json)
 						case 'home':
 							client.send({info: 
 							{
-								oauth_token: session.oauth._token,
-								oauth_secret: session.oauth._secret,
 								screen_name: session.oauth._results.screen_name,
 								user_id: session.oauth._results.user_id
 							}});
