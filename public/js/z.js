@@ -776,6 +776,22 @@ function z_engine_geolocation_error(err)
 	}
 }
 
+/* attempt to highlight reply */
+function z_engine_highlight(id)
+{
+	if ($("comment-"+id) && $("comment-"+id).isVisible())
+	{
+		new Effect.Highlight(id,
+		{
+			duration: 2.5,
+			before: function()
+			{
+				$("comment-"+id).scrollTo();
+			}
+		});
+	}
+}
+
 /* properly log out a user */
 function z_engine_logout()
 {
@@ -1147,8 +1163,9 @@ function z_engine_tweet(data, output)
 							if (verified)
 							{
 								var verified_element = new Element('span');
+								verified_element.update(" ");
 								var verified_img_element = new Element('img', {'src': 'img/ver.png', 'alt': ''});
-								verified_element.update(" "+verified_img_element);
+								verified_element.insert({'bottom': verified_img_element});
 								left_element.insert({'bottom': verified_element});
 							}
 						comment_date_element.insert(left_element);
