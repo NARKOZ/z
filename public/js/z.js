@@ -892,11 +892,11 @@ function z_engine_prune_tweets()
 	},20000);
 	window.setTimeout(function()
 	{
+		var dm_elements = $("dms-outbox-timeline").childElements();
 		dm_sent_elements.each(function(item, index)
 		{
 			if (index > cutoff)
 			{
-				$(item).setStyle("text-decoration: line-through;");
 				window.setTimeout(function(){
 					new Effect.DropOut(item);
 				},3000);
