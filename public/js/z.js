@@ -35,6 +35,8 @@ else
 {
 	var max_fpx = 120; //otherwise open the throttle all the way for effects
 }
+var oauth_token = ""; //oauth token
+var oauth_secret = ""; //oauth secret
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var pttid = 0; //this serves as the (#) amount displayed when paused
 var prune_tweets_interval = 60000; //start the pruning loop over again every minute
@@ -174,6 +176,10 @@ function z_engine_attrition()
 				{
 					this.z_engine_prune_tweets();
 				},prune_tweets_interval);
+			}
+			else if (json.account)
+			{
+				store.set('account', json.account);
 			}
 			else if (json["delete"]) //catch it like this, it can cause errors in other browsers like opera
 			{
@@ -419,14 +425,8 @@ function z_engine_attrition()
 			}
 			else if (json.friends)
 			{
-				store.set('friends', json.friends);
-			}
-			else if (json.info)
-			{
-				screen_name = json.info.screen_name;
-				user_id = json.info.user_id;
-				store.set('screen_name', screen_name);
-				store.set('user_id', user_id);
+				var friends = json.friends.join(" ");
+				store.set('friends', friends);
 			}
 			else if (json.home) //realtime tweets DO NOT come through here, this is the initial 50 that we throw in there
 			{
@@ -436,6 +436,17 @@ function z_engine_attrition()
 				});
 				socket.send({fetch: "userstream"});
 				$("loading-home").fade();
+			}
+			else if (json.info)
+			{
+				oauth_secret = json.info.oauth_secret;
+				oauth_token = json.info.oauth_token;
+				screen_name = json.info.screen_name;
+				user_id = json.info.user_id;
+				store.set('oauth_secret', oauth_secret);
+				store.set('oauth_token', oauth_token);
+				store.set('screen_name', screen_name);
+				store.set('user_id', user_id);
 			}
 			else if (json.mentions) //realtime mentions DO NOT come through here, this is the initial 50 that we throw in there
 			{
@@ -469,10 +480,13 @@ function z_engine_attrition()
 				{
 					case 'end':
 						z_engine_notification("", "notice!", "lost connection to the userstream, reconnecting...");
+						socket.disconnect();
+						socket.connect();
 						socket.send({fetch: "userstream"});
 					break;
 					case 'error':
-						//handle errors somehow
+						z_engine_notification("", "notice!", "userstream error occurred, reconnecting...");
+						socket.send({fetch: "userstream"});
 					break;
 				}
 			}
@@ -761,7 +775,13 @@ function z_engine_geolocation_error(err)
 /* properly log out a user */
 function z_engine_logout()
 {
-	store.clear();
+	//keep our blocks
+	store.remove('accout');
+	store.remove('friends');
+	store.remove('oauth_secret');
+	store.remove('oauth_token');
+	store.remove('screen_name');
+	store.remove('user_id');
 	window.location = "/oauth/logout";
 }
 
@@ -1020,7 +1040,8 @@ function z_engine_tweet(data, output)
 		var userid = data.sender_id;
 		var verified = data.sender.verified;
 	}
-	$w(blocks).each(function(item)
+	var blocks = $w(store.get('blocks')).uniq();
+	blocks.each(function(item)
 	{
 		if (item == userid)
 		{

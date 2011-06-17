@@ -116,7 +116,6 @@ server.get('/oauth/login', function(req, res)
 		{
 			req.session.destroy(function()
 			{
-				console.error(error);
 				res.writeHead(500, {'Content-Type': 'text/html'});
 				res.send("there was an issue building the url..<a href='/'>return</a>");
 			});
@@ -144,7 +143,6 @@ server.get('/oauth/callback', function(req, res)
 			{
 				req.session.destroy(function()
 				{
-					console.error(error);
 					res.send("there was an issue getting the token..<a href='/'>return</a>");
 				});
 			}
@@ -184,13 +182,6 @@ socket.on('sconnection', function(client, session)
 	{
 		var tw = new twitter(key, secret, session.oauth);
 		client.send({loaded: true});
-		client.send({info: 
-		{
-			oauth_token: session.oauth._token,
-			oauth_secret: session.oauth._secret,
-			screen_name: session.oauth._results.screen_name,
-			user_id: session.oauth._results.user_id
-		}});
 		client.on('message', function(message)
 		{
 			if(tw)
@@ -259,6 +250,9 @@ function z_engine_message_handler(tw, session, client, message)
 	{
 		switch (message.fetch)
 		{
+			case 'account':
+				z_engine_static_timeline_fetch(tw, client, session, {include_entities: true}, "account");
+			break;
 			case 'dms-inbox':
 				z_engine_static_timeline_fetch(tw, client, session, {count: startup_count, include_entities: true}, "dms-inbox");
 			break;
@@ -361,35 +355,22 @@ function z_engine_streaming_handler(tw, client, session)
  */
 function z_engine_static_timeline_fetch(tw, client, session, params, json)
 {
-	if (json != "dms-inbox" && json != "dms-outbox")
+	switch (json)
 	{
-		tw.getTimeline(params, function(error, data, response)
-		{
-			if(error)
+		case 'account':
+			tw.getAccount(true, function(error, data, response)
 			{
-				console.error('TIMELINE ERROR: '+error);
-			}
-			else
-			{
-				switch (json)
+				if(error)
 				{
-					case 'home':
-						client.send({home: data.reverse()});
-					break;
-					case 'mentions':
-						client.send({mentions: data}); //dont reverse this, we handle mentions differently than all current timelines at the moment
-					break;
-					case 'retweets':
-						client.send({retweets: data.reverse()});
-					break;
+					console.error('TIMELINE ERROR: '+error);
 				}
-			}
-		});
-	}
-	else
-	{
-		if (json == "dms-inbox")
-		{
+				else
+				{
+					client.send({account: data});
+				}
+			});
+		break;
+		case 'dms-inbox':
 			tw.getInbox(params, function(error, data, response)
 			{
 				if(error)
@@ -401,9 +382,8 @@ function z_engine_static_timeline_fetch(tw, client, session, params, json)
 					client.send({dms: data.reverse()});
 				}
 			});
-		}
-		else if (json == "dms-outbox")
-		{
+		break;
+		case 'dms-outbox':
 			tw.getOutbox(params, function(error, data, response)
 			{
 				if(error)
@@ -415,6 +395,39 @@ function z_engine_static_timeline_fetch(tw, client, session, params, json)
 					client.send({dms: data.reverse()});
 				}
 			});
-		}
+		break;
+		case 'home':
+		case 'mentions':
+		case 'retweets':
+			tw.getTimeline(params, function(error, data, response)
+			{
+				if(error)
+				{
+					console.error('TIMELINE ERROR: '+error);
+				}
+				else
+				{
+					switch (json)
+					{
+						case 'home':
+							client.send({info: 
+							{
+								oauth_token: session.oauth._token,
+								oauth_secret: session.oauth._secret,
+								screen_name: session.oauth._results.screen_name,
+								user_id: session.oauth._results.user_id
+							}});
+							client.send({home: data.reverse()});
+						break;
+						case 'mentions':
+							client.send({mentions: data}); //dont reverse this, we handle mentions differently than all current timelines at the moment
+						break;
+						case 'retweets':
+							client.send({retweets: data.reverse()});
+						break;
+					}
+				}
+			});
+		break;
 	}
 }
