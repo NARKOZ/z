@@ -859,7 +859,6 @@ function z_engine_prune_tweets()
 	{
 		if (index > cutoff)
 		{
-			$(item).setStyle("text-decoration: line-through;");
 			window.setTimeout(function(){
 				new Effect.DropOut(item);
 			},3000);
@@ -872,7 +871,6 @@ function z_engine_prune_tweets()
 		{
 			if (index > cutoff)
 			{
-				$(item).setStyle("text-decoration: line-through;");
 				window.setTimeout(function(){
 					new Effect.DropOut(item);
 				},3000);
@@ -886,7 +884,6 @@ function z_engine_prune_tweets()
 		{
 			if (index > cutoff)
 			{
-				$(item).setStyle("text-decoration: line-through;");
 				window.setTimeout(function(){
 					new Effect.DropOut(item);
 				},3000);
@@ -895,7 +892,6 @@ function z_engine_prune_tweets()
 	},20000);
 	window.setTimeout(function()
 	{
-		var dm_sent_elements = $("dms-outbox-timeline").childElements();
 		dm_sent_elements.each(function(item, index)
 		{
 			if (index > cutoff)
@@ -1064,7 +1060,6 @@ function z_engine_tweet(data, output)
 	{
 		if (item == userid)
 		{
-			console.log("blocked tweet from "+author);
 			blocked = true;
 			$break;
 		}
@@ -1164,7 +1159,7 @@ function z_engine_tweet(data, output)
 							{
 								var verified_element = new Element('span');
 								verified_element.update(" ");
-								var verified_img_element = new Element('img', {'src': 'img/ver.png', 'alt': ''});
+								var verified_img_element = new Element('img', {'src': 'img/ver.png', 'alt': 'verified user'});
 								verified_element.insert({'bottom': verified_img_element});
 								left_element.insert({'bottom': verified_element});
 							}
