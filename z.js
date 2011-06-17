@@ -20,13 +20,6 @@ var storage_fingerprint = "";
 var storage_secret = "youshouldchangethisvalue";
 var storage_type = "memory";
 
-var supported_transports = [
-	'htmlfile',
-	'websocket',
-	'xhr-multipart',
-	'xhr-polling'
-];
-
 /*
  * end configuration
  */
@@ -44,7 +37,7 @@ switch (storage_type)
 }
 var socket = sio.enable(
 {
-	socket: io.listen(server, {transports: supported_transports}),
+	socket: io.listen(server),
 	store: storage,
 	parser: express.cookieParser()
 });
