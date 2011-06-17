@@ -441,14 +441,14 @@ function z_engine_attrition()
 						$("klout-"+id).setStyle('cursor: default;');
 						$("klout-"+id).setAttribute('onclick', '');
 						$("klout-"+id).setAttribute('src', 'img/kltd.png');
-						$("klout-"+id).setAttribute('title', kclass+':\n'+description+'\n\\tnscore: '+kscore+'\n\tamp: '+amp+'\n\tnetwork: '+net+'\n\treach: '+reach+'\n\t1 day: '+one_day+'\n\t5 days: '+five_days);
+						$("klout-"+id).setAttribute('title', 'according to klout, '+data[0].twitter_screen_name+' '+description+'\n\n'+kclass+': '+kclass_description+'\n\n\t- score: '+kscore+'\n\t- amp: '+amp+'\n\t- network: '+net+'\n\t- reach: '+reach+'\n\t- 1 day: '+one_day+'\n\t- 5 days: '+five_days);
 					}
 				}
 				else if (data.length == 0)
 				{
 					if ($("klout-"+id))
 					{
-						$("klout-"+id).setAttribute('title', 'seems that we couldnt fetch any klout for this user');
+						$("klout-"+id).setAttribute('title', 'it appears that this user doesnt have klout');
 					}
 				}
 			}
@@ -1330,8 +1330,8 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, e
 			var klout_element = new Element('span');
 			klout_element.update(" ");
 			var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
-			klout_element.insert({'bottom': klout_img_element});
-			$("left-"+id).insert({'bottom': klout_element})
+			klout_element.insert({'top': klout_img_element});
+			$("left-"+id).insert({'top': klout_element});
 		break;
 		case 'mentions':
 			if (author != screen_name)
@@ -1356,6 +1356,22 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, e
 				}
 				new Element.extend(reply_img_element);
 				new Element.extend(fave_img_element);
+				if ($("left-"+id))
+				{
+					var klout_element = new Element('span');
+					klout_element.update(" ");
+					var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
+					klout_element.insert({'top': klout_img_element});
+					$("left-"+id).insert({'top': klout_element});
+				}
+				if ($("left-"+id+"-mentioned"))
+				{
+					var klout_element = new Element('span');
+					klout_element.update(" ");
+					var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
+					klout_element.insert({'top': klout_img_element});
+					$("left-"+id+"-mentioned").insert({'top': klout_element});
+				}
 				if ($("right-"+id))
 				{
 					$("right-"+id).insert(reply_img_element);
