@@ -47,6 +47,10 @@ var update_relative_dms_interval = 60000; //once a minute
 var update_relative_home_interval = 15000; //every 15 seconds
 var update_relative_mentions_interval = 30000; //every 30 seconds
 var user_id = 0; //our own user id
+if (!store.get('users'))
+{
+	store.set('users', "");
+}
 
 /* set up some of our effects */
 new S2.FX.Base(
@@ -325,16 +329,16 @@ function z_engine_attrition()
 				{
 					case 'block':
 						var current_blocks = $w(store.get('blocks')).uniq();
-						var already_blocked = false;
+						var exists = false;
 						current_blocks.each(function(item)
 						{
 							if (item == json.target.id)
 							{
-								already_blocked = true;
+								exists = true;
 								$break;
 							}
 						});
-						if (!already_blocked)
+						if (!exists)
 						{
 							var new_block = json.target.id;
 							var blocks = current_blocks.join(" ")+" "+new_block;
@@ -344,7 +348,7 @@ function z_engine_attrition()
 					case 'unblock':
 						var current_blocks = $w(store.get('blocks')).uniq();
 						var new_blocks = "";
-						$w(current_blocks).each(function(item)
+						current_blocks.each(function(item)
 						{
 							if (item != json.target.id)
 							{
@@ -829,7 +833,7 @@ function z_engine_get_klout(author, id)
 /* properly log out a user */
 function z_engine_logout()
 {
-	//keep our blocks
+	//keep our 'blocks' (mutes) and 'users' (autocompletion) keys
 	store.remove('account');
 	store.remove('connect_id');
 	store.remove('friends');
@@ -929,6 +933,26 @@ function z_engine_prune_tweets()
 			}
 		});
 	},30000);
+}
+
+/* remember usernames, used for autocompletion */
+function z_engine_remember(author)
+{
+	var exists = false;
+	var usernames = $w(store.get('users')).uniq();
+	usernames.each(function(item)
+	{
+		if (item == author)
+		{
+			exists = true;
+			$break;
+		}
+	});
+	if (!exists)
+	{
+		var users = usernames.join(" ")+" "+author;
+		store.set('users', users);
+	}
 }
 
 /* reply to a specific tweet */
@@ -1103,6 +1127,7 @@ function z_engine_tweet(data, output)
 	});
 	if (!content[id] && !blocked)
 	{
+		z_engine_remember(author);
 		if (output != "mentions")
 		{
 			ids[tid] = id;
@@ -1338,10 +1363,6 @@ function z_engine_tweet(data, output)
 /* the reply / rt / fave buttons */
 function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, entities)
 {
-	var klout_element = new Element('span');
-	klout_element.update(" ");
-	var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
-	klout_element.insert({'top': klout_img_element});
 	switch (type)
 	{
 		case 'home':
@@ -1377,12 +1398,16 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, e
 				$("right-"+id).insert({'bottom': del_img_element});
 				new Element.extend(del_img_element);
 			}
+			var klout_element = new Element('span');
+			klout_element.update(" ");
+			var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
+			klout_element.insert({'top': klout_img_element});
 			$("left-"+id).insert({'top': klout_element});
 		break;
 		case 'mentions':
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+entities+'");', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
+				var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'-mentioned", "'+entities+'");', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
 				if (!locked)
 				{
 					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'", "'+author+'", "'+escape_string(text)+'");', 'id': 'rt-'+id+'-mentioned', 'alt': ''});
@@ -1430,10 +1455,18 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, e
 			}
 			if ($("left-"+id))
 			{
+				var klout_element = new Element('span');
+				klout_element.update(" ");
+				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
+				klout_element.insert({'top': klout_img_element});
 				$("left-"+id).insert({'top': klout_element});
 			}
 			if ($("left-"+id+"-mentioned"))
 			{
+				var klout_element = new Element('span');
+				klout_element.update(" ");
+				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id+'-mentioned', 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
+				klout_element.insert({'top': klout_img_element});
 				$("left-"+id+"-mentioned").insert({'top': klout_element});
 			}
 		break;
