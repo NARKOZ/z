@@ -940,7 +940,7 @@ function z_engine_remember(author)
 {
 	var exists = false;
 	var usernames = $w(store.get('users')).uniq();
-	usernames.each(function(item)
+	usernames.each(function(item, index)
 	{
 		if (item == author)
 		{
@@ -950,7 +950,23 @@ function z_engine_remember(author)
 	});
 	if (!exists)
 	{
-		var users = usernames.join(" ")+" "+author;
+		var users = "";
+		if (usernames.length >= 100)
+		{
+			var usernames2 = usernames.without(0);
+		}
+		else
+		{
+			var usernames2 = usernames;
+		}
+		usernames2.each(function(item, index)
+		{
+			if (index < 100)
+			{
+				users += item+" ";
+			}
+		});
+		users += author;
 		store.set('users', users);
 	}
 }
@@ -1127,7 +1143,7 @@ function z_engine_tweet(data, output)
 	});
 	if (!content[id] && !blocked)
 	{
-		z_engine_remember(author);
+		//z_engine_remember(author);
 		if (output != "mentions")
 		{
 			ids[tid] = id;
