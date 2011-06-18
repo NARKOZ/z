@@ -34,7 +34,7 @@ else
 {
 	var max_fpx = 120; //otherwise open the throttle all the way for effects
 }
-var mentions_cutoff = 175; //max amount of tweets to display before pruning occurs on the mentions timeline
+var mentions_cutoff = 150; //max amount of tweets to display before pruning occurs on the mentions timeline
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var pttid = 0; //this serves as the (#) amount displayed when paused
 var prune_tweets_interval = 60000; //start the pruning loop over again every minute
@@ -1003,7 +1003,7 @@ function z_engine_retweet(id, author, text)
 		else
 		{
 			reply_id = id; //set this as a reply
-			$("new-tweet").setValue("RT "+author+": "+text);
+			$("new-tweet").setValue("RT @"+author+": "+text);
 		}
 	}
 }
