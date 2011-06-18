@@ -459,8 +459,8 @@ function z_engine_attrition()
 							var viewport = document.viewport.getDimensions();
 							var width = viewport.width;
 							var height = viewport.height;
-							$("klout-"+id).setAttribute('onclick', 'window.open("http://klout.com/'+data[0].twitter_screen_name+'","klout-window","width='+width/2+',height='+height/2+'",screenX='+height/4+',screenY='+height/4+');'); //open a small window
-						},3000);
+							$("klout-"+id).setAttribute('onclick', 'window.open("http://klout.com/'+data[0].twitter_screen_name+'","klout-window","width='+width+',height='+height+'");'); //open a small window
+						},5000);
 					}
 				}
 				else if (data.length == 0)
@@ -893,9 +893,7 @@ function z_engine_prune_tweets()
 	{
 		if (index > home_cutoff)
 		{
-			window.setTimeout(function(){
-				new Effect.DropOut(item);
-			},3000);
+			$(item).remove();
 		}
 	});
 	window.setTimeout(function()
@@ -905,9 +903,7 @@ function z_engine_prune_tweets()
 		{
 			if (index > mentions_cutoff)
 			{
-				window.setTimeout(function(){
-					new Effect.DropOut(item);
-				},3000);
+				$(item).remove();
 			}
 		});
 	},10000);
@@ -918,9 +914,7 @@ function z_engine_prune_tweets()
 		{
 			if (index > dms_cutoff)
 			{
-				window.setTimeout(function(){
-					new Effect.DropOut(item);
-				},3000);
+				$(item).remove();
 			}
 		});
 	},20000);
@@ -931,9 +925,7 @@ function z_engine_prune_tweets()
 		{
 			if (index > dms_cutoff)
 			{
-				window.setTimeout(function(){
-					new Effect.DropOut(item);
-				},3000);
+				$(item).remove();
 			}
 		});
 	},30000);
@@ -970,6 +962,7 @@ function z_engine_retweet(id, author, text)
 		}
 		else
 		{
+			reply_id = id; //set this as a reply
 			$("new-tweet").setValue("RT "+author+": "+text);
 		}
 	}
@@ -1132,7 +1125,7 @@ function z_engine_tweet(data, output)
 					var gravatar_author_link_element = new Element('a', {'target': '_blank', href: 'http://twitter.com/'+author});
 						if (output != "dms")
 						{
-							var title = '@'+author+'\'s information:\n';
+							var title = "";
 							if (description != "")
 							{
 								title += description+'\n';
@@ -1523,7 +1516,7 @@ function z_engine_tweet_pause()
 	{
 		paused = true;
 		$("pause").update("unpause");
-		new Effect.Appear("paused-count");
+		$("paused-count").appear();
 		$("paused-count").morph("opacity: 1;");
 		window.clearTimeout(prune_old_tweets);
 	}
