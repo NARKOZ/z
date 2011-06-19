@@ -432,44 +432,7 @@ function z_engine_attrition()
 			{
 				var data = json.klout.users;
 				var id = json.id_str;
-				if (data.length > 0 && typeof(id) == "string")
-				{
-					var amp = Math.round(data[0].score.amplification_score);
-					var one_day = data[0].score.delta_1day;
-					var description = data[0].score.description;
-					var five_days = data[0].score.delta_5day;
-					var kclass = data[0].score.kclass;
-					var kclass_description = data[0].score.kclass_description;
-					var kscore = Math.round(data[0].score.kscore);
-					var kscore_description = data[0].score.kscore_description;
-					var net = Math.round(data[0].score.network_score);
-					var reach = Math.round(data[0].score.true_reach);
-					if ($("klout-"+id))
-					{
-						var klout_info = '- score: '+kscore+'<br />';
-						klout_info += '- amp: '+amp+'<br />';
-						klout_info += '- network: '+net+'<br />';
-						klout_info += '- reach: '+reach;
-						$("klout-"+id).addTip(klout_info,
-						{
-							className: 'klout',
-							hideOn: 'click',
-							stem: true,
-							target: true,
-							targetJoint: ['left', 'top'],
-							tipJoint: ['right', 'bottom']
-						});
-						$("klout-"+id).setAttribute('src', 'img/kltd.png');
-						$("klout-"+id).setAttribute('title', '');
-					}
-				}
-				else if (data.length == 0)
-				{
-					if ($("klout-"+id))
-					{
-						$("klout-"+id).setAttribute('title', 'it appears that this user doesnt have klout');
-					}
-				}
+				z_engine_set_klout(data, id);
 			}
 			else if (json.mentions) //realtime mentions DO NOT come through here, this is the initial 50 that we throw in there
 			{
@@ -521,7 +484,7 @@ function z_engine_attrition()
 			}
 			else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
 			{
-				if (typeof(json.retweeted_status) == "object" && json.retweeted_status.user.screen_name == screen_name && json.user.screen_name != screen_name)
+				if (json.retweeted_status && json.retweeted_status.user.screen_name == screen_name && json.user.screen_name != screen_name)
 				{
 					z_engine_notification(json.user.profile_image_url, "@"+json.user.screen_name+" retweeted you!", json.retweeted_status.text);
 				}
@@ -1054,6 +1017,48 @@ function z_engine_send_tweet()
 	}
 }
 
+/* set the klout icon up properly */
+function z_engine_set_klout(data, id)
+{
+	if (data.length > 0 && typeof(id) == "string")
+	{
+		var amp = Math.round(data[0].score.amplification_score);
+		var one_day = data[0].score.delta_1day;
+		var description = data[0].score.description;
+		var five_days = data[0].score.delta_5day;
+		var kclass = data[0].score.kclass;
+		var kclass_description = data[0].score.kclass_description;
+		var kscore = Math.round(data[0].score.kscore);
+		var kscore_description = data[0].score.kscore_description;
+		var net = Math.round(data[0].score.network_score);
+		var reach = Math.round(data[0].score.true_reach);
+		if ($("klout-"+id))
+		{
+			var klout_info = 'score: '+kscore+'<br />';
+			klout_info += 'amp: '+amp+'<br />';
+			klout_info += 'network: '+net+'<br />';
+			klout_info += 'reach: '+reach;
+			$("klout-"+id).addTip(klout_info,
+			{
+				className: 'klout',
+				stem: true,
+				target: true,
+				targetJoint: ['left', 'top'],
+				tipJoint: ['right', 'bottom']
+			});
+			$("klout-"+id).setAttribute('src', 'img/kltd.png');
+			$("klout-"+id).setAttribute('title', '');
+		}
+	}
+	else if (data.length == 0)
+	{
+		if ($("klout-"+id))
+		{
+			$("klout-"+id).setAttribute('title', 'it appears that this user doesnt have klout');
+		}
+	}
+}
+
 /* the engine that handles, sorts, and displays our data */
 function z_engine_tweet(data, output)
 {
@@ -1161,7 +1166,7 @@ function z_engine_tweet(data, output)
 		var container_element = new Element('li', {'id': 'comment-'+id, 'class': 'comment-parent', 'style': 'display:none;opacity:0;'});
 			var profile_wrapper_element = new Element('div', {'class': 'comment-profile-wrapper left'});
 				var gravatar_element = new Element('div', {'class': 'comment-gravatar'});
-					var gravatar_author_img_element = new Element('img', {'src': avatar, 'style': 'height:50px;width:50px', 'alt': ''});
+					var gravatar_author_img_element = new Element('img', {'src': avatar, 'style': 'height:50px;width:50px;cursor:pointer;', 'alt': ''});
 					gravatar_element.insert(gravatar_author_img_element);
 					if (output != "dms")
 					{
@@ -1174,14 +1179,12 @@ function z_engine_tweet(data, output)
 						{
 							userinfo += '- location: '+location+'<br />';
 						}
-						userinfo += '- tweets: '+tweets+'<br />';
-						userinfo += '- following: '+following+'<br />';
-						userinfo += '- followers: '+followers;
+						userinfo += 'tweets: '+tweets+'<br />';
+						userinfo += 'following: '+following+'<br />';
+						userinfo += 'followers: '+followers;
 						gravatar_author_img_element.addTip(userinfo,
 						{
 							className: 'user',
-							hideOn: 'click',
-							showOn: 'click',
 							stem: true,
 							target: true,
 							targetJoint: ['right', 'middle'],
