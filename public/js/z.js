@@ -15,7 +15,7 @@ if (!store.get('blocks'))
 var blocks = store.get('blocks');
 store.set('connect_id', CONNECT_SID);
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
-var content_queued = Array();
+var content_queued = Array(); //holds our realtime tweets
 var dms_cutoff = 150; //max amount of tweets to display before pruning occurs on all dms
 var dms_loaded = 0; //quick method to hide each dm timelines loading image without needing to write a ton of code to do it
 var dm_to = false; //catch dm reply
@@ -41,7 +41,7 @@ var prune_tweets_interval = 60000; //start the pruning loop over again every min
 var reply_id = false; //catch reply
 var screen_name = ""; //our own screen name
 var socket = new io.SessionSocket();
-var stream_queue_interval = 1000; //once a second
+var stream_queue_interval = 1500; //once a second
 var tid = 0; //internal counter
 var ttid = 0; //temporary internal counter
 var update_relative_dms_interval = 60000; //once a minute
@@ -1194,7 +1194,7 @@ function z_engine_tweet(data, output)
 			var mentioned = z_engine_tweet_mentioned(entities);
 			var mentions_string = z_engine_tweet_mentioned_string(entities);
 		}
-		var container_element = new Element('li', {'id': 'comment-'+id, 'class': 'comment-parent', 'style': 'display:none;opacity:0;'});
+		var container_element = new Element('li', {'id': 'comment-'+id, 'class': 'comment-parent', 'style': 'display: none; opacity: 0;'});
 			var profile_wrapper_element = new Element('div', {'class': 'comment-profile-wrapper left'});
 				var gravatar_element = new Element('div', {'class': 'comment-gravatar'});
 					var gravatar_author_link_element = new Element('a', {'target': '_blank', href: 'http://twitter.com/'+author});
@@ -1208,7 +1208,7 @@ function z_engine_tweet(data, output)
 						}
 						if (location != "" || description != "null")
 						{
-							userinfo += '- location: '+location+'<br />';
+							userinfo += 'location: '+location+'<br />';
 						}
 							userinfo += 'tweets: <strong>'+tweets+'</strong><br />';
 						userinfo += 'following: <strong>'+following+'</strong><br />';

@@ -125,6 +125,7 @@ li
 {
 	margin-top: 15px;
 	margin-bottom: 15px;
+	z-index: 50;
 }
 
 .comment-list ul.children, #comments #respond ul
@@ -725,43 +726,43 @@ div.growls div.large
 .ot-container.ot-css3.ot-becoming-visible.ot-show-grow,
 .ot-container.ot-css3.ot-hidden.ot-hide-shrink
 {
+	transform: scale(0);
 	-khtml-transform: scale(0);
 	-moz-transform: scale(0);
-	-o-transform: scale(0);
 	-webkit-transform: scale(0);
 }
 .ot-container.ot-css3.ot-becoming-visible.ot-show-blindDown,
 .ot-container.ot-css3.ot-becoming-visible.ot-show-slideDown,
 .ot-container.ot-css3.ot-hidden.ot-hide-blindUp
 {
+	transform: scaleY(0);
 	-khtml-transform: scaleY(0);
 	-moz-transform: scaleY(0);
-	-o-transform: scaleY(0);
 	-webkit-transform: scaleY(0);
 	opacity: 0;
 }
 .ot-container.ot-css3.ot-becoming-visible.ot-show-condense,
 .ot-container.ot-css3.ot-hidden.ot-hide-puff
 {
+	transform: scale(5);
 	-khtml-transform: scale(5);
 	-moz-transform: scale(5);
-	-o-transform: scale(5);
 	-webkit-transform: scale(5);
 	opacity: 0;
 }
 .ot-container.ot-css3.ot-becoming-visible.ot-show-rotate
 {
+	transform: scale(3) rotate(-500deg);
 	-khtml-transform: scale(3) rotate(-500deg);
 	-moz-transform: scale(3) rotate(-500deg);
-	-o-transform: scale(3) rotate(-500deg);
 	-webkit-transform: scale(3) rotate(-500deg);
 	opacity: 0;
 }
 .ot-container.ot-css3.ot-hidden.ot-hide-rotate
 {
+	transform: scale(3) rotate(500deg);
 	-khtml-transform: scale(3) rotate(500deg);
 	-moz-transform: scale(3) rotate(500deg);
-	-o-transform: scale(3) rotate(500deg);
 	-webkit-transform: scale(3) rotate(500deg);
 	opacity: 0;
 }
@@ -773,6 +774,18 @@ div.growls div.large
 .login-inner
 {
 	display: inline-block;
+}
+
+.login-inner img
+{
+	border-radius: 4px;
+	box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	-khtml-border-radius: 4px;
+	-khtml-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	-moz-border-radius: 5px;
+	-moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	-webkit-border-radius: 5px;
+	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 }
 
 .loading
