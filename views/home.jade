@@ -30,7 +30,7 @@
 
   ul#home-timeline
     li
-      img#loading-home(src='img/spinner.gif', class='loading', style='display:none;')
+      img#loading-home(src='img/spinner.gif', class='loading')
 
   ul#mentions-timeline(style='display:none;')
     li
@@ -45,4 +45,4 @@
         img#loading-outbox(src='img/spinner.gif', class='loading', style='display:none;')
 
 script var growler = new Growler(); //we need this here for the growler to work properly
-script document.observe("dom:loaded",function() { z_engine_attrition(); }); //load engine
+script z_engine_attrition(); //load engine
