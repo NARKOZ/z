@@ -139,7 +139,6 @@ function z_engine_attrition()
 			{
 				$("new-tweet").setValue("");
 				$("new-tweet").enable();
-				$("loading-home").appear();
 				new Event.observe("new-tweet-form", "submit", function(event)
 				{
 					Event.stop(event);
@@ -194,7 +193,7 @@ function z_engine_attrition()
 				{
 					var id = 0; //we will only handle normal tweets from here, dms are handled elsewhere
 				}
-				content_paused.each(function(item, index)
+				/*content_paused.each(function(item, index)
 				{
 					var data = item.evalJSON(true);
 					if (!data.retweeted_status)
@@ -212,7 +211,7 @@ function z_engine_attrition()
 						$("paused-count").update("("+pttid+")");
 						$break;
 					}
-				});
+				});*/
 				if ($("comment-"+id))
 				{
 					$("comment-"+id).setStyle("text-decoration: line-through;");
@@ -447,24 +446,21 @@ function z_engine_attrition()
 					var reach = Math.round(data[0].score.true_reach);
 					if ($("klout-"+id))
 					{
-						var klout_info = 'according to klout, @'+data[0].twitter_screen_name+' '+description+'\n';
-						klout_info += '\t- score: '+kscore+'\n';
-						klout_info += '\t- amp: '+amp+'\n';
-						klout_info += '\t- network: '+net+'\n';
-						klout_info += '\t- reach: '+reach+'\n';
-						klout_info += '\t- 1 day: '+one_day+'\n';
-						klout_info += '\t- 5 days: '+five_days;
-						$("klout-"+id).setStyle("cursor: default;");
-						$("klout-"+id).setAttribute('src', 'img/kltd.png');
-						$("klout-"+id).setAttribute('title', klout_info);
-						window.setTimeout(function()
+						var klout_info = '- score: '+kscore+'<br />';
+						klout_info += '- amp: '+amp+'<br />';
+						klout_info += '- network: '+net+'<br />';
+						klout_info += '- reach: '+reach;
+						$("klout-"+id).addTip(klout_info,
 						{
-							$("klout-"+id).setStyle("cursor: pointer;"); //make it noticeably clickable
-							var viewport = document.viewport.getDimensions();
-							var width = viewport.width;
-							var height = viewport.height;
-							$("klout-"+id).setAttribute('onclick', 'window.open("http://klout.com/'+data[0].twitter_screen_name+'","klout-window","width='+width+',height='+height+'");'); //open a small window
-						},5000);
+							className: 'klout',
+							hideOn: 'click',
+							stem: true,
+							target: true,
+							targetJoint: ['left', 'top'],
+							tipJoint: ['right', 'bottom']
+						});
+						$("klout-"+id).setAttribute('src', 'img/kltd.png');
+						$("klout-"+id).setAttribute('title', '');
 					}
 				}
 				else if (data.length == 0)
@@ -1124,6 +1120,8 @@ function z_engine_tweet(data, output)
 		var avatar = data.sender.profile_image_url;
 		var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,'');
 		var entities = false;
+		var followers = data.user.followers_count;
+		var following = data.user.friends_count;
 		var id = data.id_str;
 		var locked = false;
 		var reply = data.recipient.screen_name;
@@ -1163,30 +1161,33 @@ function z_engine_tweet(data, output)
 		var container_element = new Element('li', {'id': 'comment-'+id, 'class': 'comment-parent', 'style': 'display:none;opacity:0;'});
 			var profile_wrapper_element = new Element('div', {'class': 'comment-profile-wrapper left'});
 				var gravatar_element = new Element('div', {'class': 'comment-gravatar'});
-					var gravatar_author_link_element = new Element('a', {'target': '_blank', href: 'http://twitter.com/'+author});
-						if (output != "dms")
+					var gravatar_author_img_element = new Element('img', {'src': avatar, 'style': 'height:50px;width:50px', 'alt': ''});
+					gravatar_element.insert(gravatar_author_img_element);
+					if (output != "dms")
+					{
+						var userinfo = "";
+						if (description != "")
 						{
-							var title = "";
-							if (description != "")
-							{
-								title += description+'\n';
-							}
-							title += '\t- name: '+name+'\n';
-							if (location != "")
-							{
-								title += '\t- location: '+location+'\n';
-							}
-							title += '\t- tweets: '+tweets+'\n';
-							title += '\t- following: '+following+'\n';
-							title += '\t- followers: '+followers;
-							var gravatar_author_img_element = new Element('img', {'src': avatar, 'style': 'height:50px;width:50px', 'alt': '', 'title': title});
+							userinfo += description+'<br /><br />';
 						}
-						else
+						if (location != "")
 						{
-							var gravatar_author_img_element = new Element('img', {'src': avatar, 'style': 'height:50px;width:50px', 'alt': ''});
+							userinfo += '- location: '+location+'<br />';
 						}
-						gravatar_author_link_element.insert(gravatar_author_img_element);
-					gravatar_element.insert(gravatar_author_link_element);
+						userinfo += '- tweets: '+tweets+'<br />';
+						userinfo += '- following: '+following+'<br />';
+						userinfo += '- followers: '+followers;
+						gravatar_author_img_element.addTip(userinfo,
+						{
+							className: 'user',
+							hideOn: 'click',
+							showOn: 'click',
+							stem: true,
+							target: true,
+							targetJoint: ['right', 'middle'],
+							tipJoint: ['left', 'middle']
+						});
+					}
 				profile_wrapper_element.insert(gravatar_element);
 			var comment_content_element = new Element('div', {'id': 'comment-'+id+'content', 'class': 'comment-content-wrapper right'});
 			if (author != screen_name)
