@@ -223,7 +223,7 @@ function z_engine_attrition()
 					{
 						$("rt-"+id).fade();
 					}
-					window.setTimeout(function()
+					setTimeout(function()
 					{
 						new S2.FX.Parallel(
 						[
@@ -263,7 +263,7 @@ function z_engine_attrition()
 					{
 						$("rt-"+id+"-mentioned").fade();
 					}
-					window.setTimeout(function()
+					setTimeout(function()
 					{
 						new S2.FX.Parallel(
 						[
@@ -673,7 +673,7 @@ function z_engine_destroy(id, method)
 			{
 				$("rt-"+id).fade();
 			}
-			window.setTimeout(function()
+			setTimeout(function()
 			{
 				new S2.FX.Parallel(
 				[
@@ -785,7 +785,7 @@ function z_engine_notification(av, head, text)
 	{
 		var notification = window.webkitNotifications.createNotification(av, head, text);
 		notification.show();
-		window.setTimeout(function()
+		setTimeout(function()
 		{
 			notification.cancel();
 		},5000);
@@ -1305,7 +1305,6 @@ function z_engine_tweet(data, output)
 			new Element.extend(mentioned_clone);
 			$("mentions-timeline").insert({'top': mentioned_clone});
 			z_engine_notification(avatar, "@"+author+" mentioned you!", text);
-			$("comment-"+id+"-mentioned").morph("opacity: 1;");
 			new S2.FX.Parallel(
 			[
 				new Effect.Appear('comment-'+id+'-mentioned',
