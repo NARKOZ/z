@@ -331,7 +331,7 @@ function z_engine_attrition()
 						});
 						if (!exists)
 						{
-							var new_block = json.target.id;
+							var new_block = json.target.screen_name;
 							var blocks = current_blocks.join(" ")+" "+new_block;
 							store.set('blocks', blocks);
 						}
@@ -500,7 +500,7 @@ function z_engine_attrition()
 			}
 		}
 	});
-	socket.on('disconnect', function(alert)
+	/*socket.on('disconnect', function(alert)
 	{
 		if (alert)
 		{
@@ -508,7 +508,7 @@ function z_engine_attrition()
 		}
 		$("new-tweet").disable();
 		$("new-tweet").setValue("lost connection!");
-	});
+	});*/
 }
 
 /* the "home", "mentions", "mentions", etc switcher */
