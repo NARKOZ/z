@@ -1295,7 +1295,7 @@ function z_engine_tweet(data, output)
 				$("home-timeline").insert({'top': container_element});
 			break;
 		}
-		if (mentioned && output != "mentions" && author != screen_name && !json.retweeted_status)
+		if (mentioned && output != "mentions" && author != screen_name && !data.retweeted_status)
 		{
 			var mentioned_clone = cloneNodeWithEvents(container_element);
 			mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
