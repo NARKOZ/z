@@ -204,25 +204,6 @@ function z_engine_attrition()
 				{
 					var id = 0; //we will only handle normal tweets from here, dms are handled elsewhere
 				}
-				/*content_paused.each(function(item, index)
-				{
-					var data = item.evalJSON(true);
-					if (!data.retweeted_status)
-					{
-						var paused_id = data.retweeted_status.id_str;
-					}
-					else
-					{
-						var paused_id = data.id_str;
-					}
-					if (paused_id == id)
-					{
-						content_paused = content_paused.without(index);
-						pttid--;
-						$("paused-count").update("("+pttid+")");
-						$break;
-					}
-				});*/
 				if ($("comment-"+id))
 				{
 					$("comment-"+id).setStyle("text-decoration: line-through;");
@@ -342,7 +323,7 @@ function z_engine_attrition()
 						var exists = false;
 						current_blocks.each(function(item)
 						{
-							if (item == json.target.id)
+							if (item == json.target.screen_name)
 							{
 								exists = true;
 								$break;
@@ -360,7 +341,7 @@ function z_engine_attrition()
 						var new_blocks = "";
 						current_blocks.each(function(item)
 						{
-							if (item != json.target.id)
+							if (item != json.target.screen_name)
 							{
 								new_blocks += item+" ";
 							}
@@ -392,10 +373,6 @@ function z_engine_attrition()
 					case 'list_destroyed':
 					break;
 					case 'list_member_removed':
-						if (json.source.screen_name != screen_name)
-						{
-							z_engine_notification(json.source.profile_image_url, "@"+json.source.screen_name+" removed you from "+json.target_object.full_name+"!", json.target_object.description);
-						}
 					break;
 					case 'list_updated':
 					break;
@@ -773,22 +750,6 @@ function z_engine_geolocation_error(err)
 	}
 }
 
-/* attempt to highlight reply */
-function z_engine_highlight(id)
-{
-	if ($("comment-"+id) && $("comment-"+id).isVisible())
-	{
-		new Effect.Highlight(id,
-		{
-			duration: 2.5,
-			before: function()
-			{
-				$("comment-"+id).scrollTo();
-			}
-		});
-	}
-}
-
 /* get a users klout score */
 function z_engine_get_klout(author, id)
 {
@@ -798,6 +759,9 @@ function z_engine_get_klout(author, id)
 /* properly log out a user */
 function z_engine_logout()
 {
+	socket.disconnect();
+	$("new-tweet").disable();
+	$("new-tweet").setValue("see ya!");
 	store.remove('account');
 	store.remove('friends');
 	store.remove('screen_name');
@@ -863,7 +827,7 @@ function z_engine_prune_tweets()
 			$(item).remove();
 		}
 	});
-	window.setTimeout(function()
+	setTimeout(function()
 	{
 		var mention_elements = $("mentions-timeline").childElements();
 		mention_elements.each(function(item, index)
@@ -874,7 +838,7 @@ function z_engine_prune_tweets()
 			}
 		});
 	},10000);
-	window.setTimeout(function()
+	setTimeout(function()
 	{
 		var dm_elements = $("dms-inbox-timeline").childElements();
 		dm_elements.each(function(item, index)
@@ -885,7 +849,7 @@ function z_engine_prune_tweets()
 			}
 		});
 	},20000);
-	window.setTimeout(function()
+	setTimeout(function()
 	{
 		var dm_sent_elements = $("dms-outbox-timeline").childElements();
 		dm_sent_elements.each(function(item, index)
@@ -896,31 +860,6 @@ function z_engine_prune_tweets()
 			}
 		});
 	},30000);
-}
-
-/* remember usernames, used for autocompletion */
-function z_engine_remember(author)
-{
-	var exists = false;
-	var usernames = $w(store.get('users')).uniq();
-	usernames.each(function(item, index)
-	{
-		if (item == author)
-		{
-			exists = true;
-			$break;
-		}
-	});
-	if (!exists)
-	{
-		var users = new Array();
-		if (usernames.length >= 100)
-		{
-			var shifted = usernames.shift();
-		}
-		usernames.push(author);
-		store.set('users', usernames);
-	}
 }
 
 /* reply to a specific tweet */
@@ -955,7 +894,7 @@ function z_engine_retweet(id, author, text)
 		else
 		{
 			reply_id = id; //set this as a reply
-			$("new-tweet").setValue("RT @"+author+": "+text);
+			$("new-tweet").setValue("RT @"+author+" "+text);
 		}
 	}
 }
@@ -1155,13 +1094,13 @@ function z_engine_tweet(data, output)
 	var mentions_blocked = false;
 	$w(store.get('blocks')).uniq().each(function(item)
 	{
-		if (item == userid)
+		if (item == author)
 		{
 			blocked = true;
 			$break;
 		}
 	});
-	if (!entities) //theres been a few instances of entities not being included, and thus this
+	if (!entities)
 	{
 		var mention_blocked = false;
 	}
@@ -1171,7 +1110,7 @@ function z_engine_tweet(data, output)
 		{
 			entities.user_mentions.each(function(item)
 			{
-				if (item == userid)
+				if (item == author)
 				{
 					mentions_blocked = true;
 					$break;
@@ -1182,9 +1121,9 @@ function z_engine_tweet(data, output)
 	if (!content[id] && !blocked && !mention_blocked)
 	{
 		ids[tid] = id;
-		content[id] = true; //see comment above
+		content[id] = true;
 		var linebreak = new Element('br');
-		if (!entities) //theres been a few instances of entities not being included, and thus this
+		if (!entities)
 		{
 			var mentioned = false;
 			var mentions_string = false;
@@ -1366,6 +1305,7 @@ function z_engine_tweet(data, output)
 			new Element.extend(mentioned_clone);
 			$("mentions-timeline").insert({'top': mentioned_clone});
 			z_engine_notification(avatar, "@"+author+" mentioned you!", text);
+			$("comment-"+id+"-mentioned").morph("opacity: 1;");
 			new S2.FX.Parallel(
 			[
 				new Effect.Appear('comment-'+id+'-mentioned',

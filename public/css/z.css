@@ -120,8 +120,7 @@ li
 /*
  * tweet related css
  */
-
-.comment-parent, .comment-single
+.comment-parent
 {
 	margin-top: 15px;
 	margin-bottom: 15px;
@@ -281,6 +280,7 @@ li
 
 #new-tweet-input-li
 {
+	padding-left: 3px;
 	width: 100%;
 }
 
@@ -452,31 +452,25 @@ div.growls
 	z-index: 50000;
 	position: fixed;
 }
-
-
 div.growls.bottom-right
 {
 	bottom: 10px;
 	right: 10px;
 }
-
 div.growls div.growl
 {
 	opacity: 0;
 }
-
 div.growls div.growl div.title
 {
 	font-weight: bold;
 	font-size: small;
 }
-
 div.growls div.growl div.message
 {
 	font-weight: normal;
 	font-size: small;
 }
-
 div.growls div.black
 {
 	background: #FFF;
@@ -492,7 +486,6 @@ div.growls div.black
 	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	behavior: url(border-radius.htc);
 }
-
 div.growls div.small
 {
 	border-radius: 5px;
@@ -505,7 +498,6 @@ div.growls div.small
 	-webkit-border-radius: 5px;
 	behavior: url(border-radius.htc);
 }
-
 div.growls div.medium
 {
 	border-radius: 10px;
@@ -518,7 +510,6 @@ div.growls div.medium
 	-webkit-border-radius: 10px;
 	behavior: url(border-radius.htc);
 }
-
 div.growls div.large
 {
 	border-radius: 15px;
@@ -533,12 +524,36 @@ div.growls div.large
 }
 
 /*
+ * dialog stuff
+ */
+.dialog-window
+{
+	border-radius: 5px;
+	-khtml-border-radius: 5px;
+	-khtml-user-select: text;
+	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	-moz-border-radius: 5px;
+	-moz-user-select: text;
+	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	-webkit-border-radius: 5px;
+	-webkit-user-select: text;
+	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	-o-user-select: text;
+	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	user-select: text;
+	background: #FFF;
+	border: 1px solid #DDD;
+	padding: 1px 12px 0 9px;
+	behavior: url(border-radius.htc);
+}
+
+/*
  * opentip stuff
  */
 .ot-container
 {
 	position: absolute;
-	max-width: 300px;
+	max-width: 500px;
 	z-index: 100;
 }
 .ot-container.ot-fixed
@@ -564,39 +579,17 @@ div.growls div.large
 }
 .opentip .title   { font-weight: bold; }
 .opentip .content { width: auto !important;}
-
 .opentip .loadingIndication
 {
 	display: none;
 	padding: 10px 15px;
-	background: url("loading.gif") center center no-repeat;
+	background: url("spinner.gif") center center no-repeat;
 	width: 25px;
 	height: 15px;
 }
 .opentip .loadingIndication span        { display: none; }
 .ot-loading .opentip .loadingIndication { display: block; }
 .ot-loading .opentip .content           { display: none; }
-.ot-buttons
-{
-	position: absolute;
-	right: 0;
-	top: 0;
-}
-.ot-buttons .close
-{
-	display: block;
-	width: 15px;
-	height: 15px;
-	display: block;
-	text-decoration: none;
-}
-.ot-buttons .close .canvas
-{
-	position: relative;
-	display: block;
-	color: white;
-	background-color: rgba(0, 0, 0, 0.2);  /* Read by JS and applied to canvas */
-}
 .ot-container .stem-container
 {
 	position: absolute;
@@ -608,7 +601,6 @@ div.growls div.large
 	position: absolute;
 	overflow: hidden;
 	color: #cccccc;
-/*    background: rgba(255, 0, 0, 0.5);*/
 }
 .ot-container .left   { left: 0; }
 .ot-container .center { left: 50%; }
@@ -648,7 +640,6 @@ div.growls div.large
 	background-color: rgba(255, 241, 143, 0.5);
 	color: #a2932B;
 }
-
 .style-user .opentip
 {
 	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
@@ -750,22 +741,6 @@ div.growls div.large
 	-webkit-transform: scale(5);
 	opacity: 0;
 }
-.ot-container.ot-css3.ot-becoming-visible.ot-show-rotate
-{
-	transform: scale(3) rotate(-500deg);
-	-khtml-transform: scale(3) rotate(-500deg);
-	-moz-transform: scale(3) rotate(-500deg);
-	-webkit-transform: scale(3) rotate(-500deg);
-	opacity: 0;
-}
-.ot-container.ot-css3.ot-hidden.ot-hide-rotate
-{
-	transform: scale(3) rotate(500deg);
-	-khtml-transform: scale(3) rotate(500deg);
-	-moz-transform: scale(3) rotate(500deg);
-	-webkit-transform: scale(3) rotate(500deg);
-	opacity: 0;
-}
 
 /*
  * other
@@ -780,12 +755,28 @@ div.growls div.large
 {
 	border-radius: 4px;
 	box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	transition-duration: 0.35s;
+	transition-property: all, transform;
 	-khtml-border-radius: 4px;
 	-khtml-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	-khtml-transition-duration: 0.35s;
+	-khtml-transition-property: all, -khtml-transform;
 	-moz-border-radius: 5px;
 	-moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	-moz-transition-duration: 0.35s;
+	-moz-transition-property: all, -moz-transform;
 	-webkit-border-radius: 5px;
 	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	-webkit-transition-duration: 0.35s;
+	-webkit-transition-property: all, -webkit-transform;
+}
+
+.login-inner img:hover
+{
+	transform: scale(1.15);
+	-khtml-transform: scale(1.15);
+	-moz-transform: scale(1.15);
+	-webkit-transform: scale(1.15);
 }
 
 .loading
