@@ -13,7 +13,7 @@ var twitter = require('./lib/vendor/twitter');
 var key = "your_consumer_key_here"; //consumer key
 var secret = "your_consumer_secret_here"; //consumer secret
 
-var klout = "your_klout_api_key_here"; //klout key
+var klout_key = "your_klout_api_key_here"; //klout key
 
 var port = 8080;
 
@@ -27,6 +27,7 @@ var storage_type = "memory"; //can be "meory", or "redis" currently
  * end configuration
  */
 
+var klout = require('./lib/vendor/klout')(klout_key);
 var server = module.exports = express.createServer();
 switch (storage_type)
 {
@@ -397,8 +398,7 @@ function z_engine_static_timeline_fetch(tw, client, session, params, json)
 			});
 		break;
 		case 'klout':
-			var klout_api_base = "http://api.klout.com/1/";
-			json.get(klout_api_base+"users/show.json?key="+klout_key+"&users="+params.user, function (error, data)
+			klout.show(params.user, function (error, data)
 			{
 				if(error)
 				{

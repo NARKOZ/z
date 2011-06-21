@@ -471,7 +471,7 @@ function z_engine_attrition()
 				{
 					case 'end':
 						z_engine_notification("", "notice!", "lost connection to the userstream, reconnecting...");
-						socket.disconnect(false);
+						socket.disconnect(true);
 						$("new-tweet").disable();
 						socket.connect();
 						$("new-tweet").enable();
@@ -479,7 +479,7 @@ function z_engine_attrition()
 					break;
 					case 'error':
 						z_engine_notification("", "notice!", "userstream error occurred, reconnecting...");
-						socket.disconnect(false);
+						socket.disconnect(true);
 						$("new-tweet").disable();
 						socket.connect();
 						$("new-tweet").enable();
@@ -516,18 +516,18 @@ function z_engine_attrition()
 			}
 		}
 	});
-	socket.on('disconnect', function(alert)
+	socket.on('disconnect', function(dont_alert)
 	{
-		if (alert)
-		{
-			z_engine_notification("", "error!", "lost connection to server");
-		}
 		$("new-tweet").disable();
-		$("new-tweet").setValue("lost connection!");
+		if (dont_alert)
+		{
+			$("new-tweet").setValue("disconnected!");
+			z_engine_notification("", "error!", "disconnected");
+		}
 	});
 }
 
-/* the "home", "mentions", "mentions", etc switcher */
+/* the "home", "mentions", "messages", etc switcher */
 function z_engine_clicker(id, this_id)
 {
 	new Event.observe(id, "click", function(event)
@@ -775,7 +775,7 @@ function z_engine_get_klout(author, id)
 /* properly log out a user */
 function z_engine_logout()
 {
-	socket.disconnect();
+	socket.disconnect(true);
 	$("new-tweet").disable();
 	$("new-tweet").setValue("see ya!");
 	store.remove('account');
@@ -1152,11 +1152,11 @@ function z_engine_tweet(data, output)
 						gravatar_author_link_element.insert(gravatar_author_img_element);
 						gravatar_element.insert(gravatar_author_link_element);
 						var userinfo = "";
-						if (description != "" || description != "null")
+						if (description != "" || description != null)
 						{
 								userinfo += description+'<br /><br />';
 						}
-						if (location != "" || description != "null")
+						if (location != "" || description != null)
 						{
 							userinfo += 'location: '+location+'<br />';
 						}
@@ -1172,7 +1172,7 @@ function z_engine_tweet(data, output)
 							targetJoint: ['right', 'middle'],
 							tipJoint: ['left', 'middle']
 						});
-					profile_wrapper_element.insert(gravatar_element);
+				profile_wrapper_element.insert(gravatar_element);
 			var comment_content_element = new Element('div', {'id': 'comment-'+id+'content', 'class': 'comment-content-wrapper right'});
 			if (author != screen_name)
 			{

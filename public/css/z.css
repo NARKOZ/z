@@ -254,13 +254,14 @@ form
 }
 input, textarea
 {
+	background-color: #fafafa;
+	border: 1px solid #c4c4c4;
 	border-radius: 4px;
 	box-shadow: 0 0 4px #e2e2e2, inset 0 0 4px #e2e2e2;
-	resize: none;
-	background-color: #fafafa;
 	color: #4d4d4d;
-	border: 1px solid #c4c4c4;
+	font-family: "Open Sans", sans-serif;
 	padding: 8px 12px;
+	resize: none;
 	transition: all .20s ease-in-out;
 	-khtml-border-radius: 4px;
 	-khtml-box-shadow: 0 0 4px #e2e2e2, inset 0 0 4px #eee;
@@ -275,7 +276,8 @@ input, textarea
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=#eee, Direction=135, Strength=5)";
 	behavior: url(border-radius.htc);
 }
-input[type="text"], input[type="text"]:hover, input[type="text"]:focus, input[type="text"]:disabled
+input[type="text"], input[type="text"]:hover, input[type="text"]:focus, input[type="text"]:disabled,
+textarea, textarea:hover, textarea:focus, textarea:disabled
 {
 	outline: none;
 	transition: all .20s ease-in-out;
@@ -283,7 +285,7 @@ input[type="text"], input[type="text"]:hover, input[type="text"]:focus, input[ty
 	-moz-transition: all .20s ease-in-out;
 	-webkit-transition: all .20s ease-in-out;
 }
-input[type="text"]:hover
+input[type="text"]:hover, textarea:hover
 {
 	box-shadow: 0 0 4px #fefefe, inset 0 0 4px #fefefe;
 	background-color: #fefefe;
@@ -294,7 +296,7 @@ input[type="text"]:hover
 	filter:progid:DXImageTransform.Microsoft.Shadow (color=#fefefe, Direction=135, Strength=5);
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=#fefefe, Direction=135, Strength=5)";
 }
-input[type="text"]:focus
+input[type="text"]:focus, textarea:focus
 {
 	box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
 	background-color: #fefefe;
@@ -305,7 +307,7 @@ input[type="text"]:focus
 	filter:progid:DXImageTransform.Microsoft.Shadow (color=rgba(81, 203, 238, 0.75), Direction=135, Strength=5);
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=rgba(81, 203, 238, 0.75), Direction=135, Strength=5)";
 }
-input[type="text"]:disabled
+input[type="text"]:disabled, textarea:disabled
 {
 	box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
 	background-color: rgba(255,0,0,0.05);
@@ -768,6 +770,7 @@ div.growls div.large
 body
 {
 	background: #F6F6F6;
+	color: #2A2A2A;
 	font: normal 75% "Open Sans", sans-serif;
 	font-smoothing: subpixel-antialiased;
 	height: 100%;
