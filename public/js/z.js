@@ -418,9 +418,25 @@ function z_engine_attrition()
 			}
 			else if (json.klout)
 			{
-				var data = json.klout.users;
+				var data = json.klout;
 				var id = json.id_str;
-				z_engine_set_klout(data, id);
+				if (data != "error")
+				{
+					z_engine_set_klout(data.users, id);
+				}
+				else
+				{
+					$("klout-"+id).setStyle('cursor: default;');
+					$("klout-"+id).setAttribute('onclick', '');
+					$("klout-"+id).addTip('<big><strong>?</strong></big>',
+					{
+						className: 'klout',
+						stem: true,
+						target: true,
+						targetJoint: ['left', 'top'],
+						tipJoint: ['right', 'bottom']
+					});
+				}
 			}
 			else if (json.mentions) //realtime mentions DO NOT come through here, this is the initial 50 that we throw in there
 			{
@@ -500,7 +516,7 @@ function z_engine_attrition()
 			}
 		}
 	});
-	/*socket.on('disconnect', function(alert)
+	socket.on('disconnect', function(alert)
 	{
 		if (alert)
 		{
@@ -508,7 +524,7 @@ function z_engine_attrition()
 		}
 		$("new-tweet").disable();
 		$("new-tweet").setValue("lost connection!");
-	});*/
+	});
 }
 
 /* the "home", "mentions", "mentions", etc switcher */
@@ -895,6 +911,7 @@ function z_engine_retweet(id, author, text)
 		{
 			reply_id = id; //set this as a reply
 			$("new-tweet").setValue("RT @"+author+" "+text);
+			$("new-tweet").focus();
 		}
 	}
 }
@@ -964,6 +981,7 @@ function z_engine_set_klout(data, id)
 		var kscore_description = data[0].score.kscore_description;
 		var net = Math.round(data[0].score.network_score);
 		var reach = Math.round(data[0].score.true_reach);
+		var slope = Math.round(data[0].score.slope);
 		if ($("klout-"+id))
 		{
 			var klout_info = 'score: <strong>'+kscore+'</strong><br />';
@@ -980,13 +998,6 @@ function z_engine_set_klout(data, id)
 			});
 			$("klout-"+id).setAttribute('src', 'img/kltd.png');
 			$("klout-"+id).setAttribute('title', '');
-		}
-	}
-	else if (data.length == 0)
-	{
-		if ($("klout-"+id))
-		{
-			$("klout-"+id).setAttribute('title', 'it appears that this user doesnt have klout');
 		}
 	}
 }
@@ -1540,14 +1551,13 @@ function z_engine_tweet_pause()
 		paused = true;
 		$("pause").update("unpause");
 		$("paused-count").appear();
-		$("paused-count").morph("opacity: 1;");
 	}
 	else
 	{
 		paused = false;
-		$("pause").update("pause");
 		$("paused-count").fade();
 		$("paused-count").update("(0)");
+		$("pause").update("pause");
 		pttid = 0;
 	}
 }

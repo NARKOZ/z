@@ -1,5 +1,6 @@
 var express = require('express');
 var gzip = require('connect-gzip');
+var json = require('jsonreq');
 var io = require('socket.io');
 var sio = require('socket.io-sessions');
 var sys = require('sys');
@@ -12,7 +13,7 @@ var twitter = require('./lib/vendor/twitter');
 var key = "your_consumer_key_here"; //consumer key
 var secret = "your_consumer_secret_here"; //consumer secret
 
-var klout = require('klout-js')('your_klout_api_key_here'); //klout var & key
+var klout = "your_klout_api_key_here"; //klout key
 
 var port = 8080;
 
@@ -396,11 +397,12 @@ function z_engine_static_timeline_fetch(tw, client, session, params, json)
 			});
 		break;
 		case 'klout':
-			klout.show(params.user, function(error, data)
+			var klout_api_base = "http://api.klout.com/1/";
+			json.get(klout_api_base+"users/show.json?key="+klout_key+"&users="+params.user, function (error, data)
 			{
 				if(error)
 				{
-					console.error('KLOUT ERROR: '+error);
+					client.send({klout: "error", id_str: params.id_str});
 				}
 				else
 				{

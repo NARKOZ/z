@@ -15,7 +15,7 @@ npm install connect
 npm install connect-gzip
 npm install express
 npm install jade
-npm install klout-js
+npm install jsonreq
 npm install oauth
 npm install socket.io
 npm install socket.io-sessions

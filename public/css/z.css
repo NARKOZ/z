@@ -10,38 +10,31 @@ tbody, tfoot, thead, tr, th, td
 	padding: 0;
 	border: 0;
 }
-
 article, aside, figure, figure img, figcaption, hgroup, footer, header, nav, section, video, object
 {
 	display: block;
 }
-
 a img
 {
 	border: 0;
 }
-
 a:focus,a:hover
 {
 	color: #039;
 }
-
 a
 {
 	color: #456;
 	text-decoration: none;
 }
-
 a:hover
 {
 	text-decoration: underline;
 }
-
 li
 {
 	list-style: none;
 }
-
 .hr
 {
 	height: 1px;
@@ -51,7 +44,6 @@ li
 	background: #fff no-repeat center top -moz-radial-gradient(top center, #ddd, #fff);
 	background: #ddd no-repeat top center -webkit-gradient(radial, center top, 0, center top, 1000, from(#ddd), to(#fff));
 }
-
 .huge, h1
 {
 	text-shadow: rgba(215,215,215,0.3) 5px 5px 8px;
@@ -66,7 +58,6 @@ li
 	padding: 0 20px;
 	text-align: center;
 }
-
 .large, h2
 {
 	font: normal 90% "Open Sans", sans-serif;
@@ -76,39 +67,32 @@ li
 	letter-spacing: -1px;
 	text-align: center;
 }
-
 .big, h3
 {
 	font-size: 26px;
 	line-height: 36px;
 }
-
 .normal, body
 {
 	font: normal 80% "Open Sans", sans-serif;
 }
-
 .small, small
 {
 	font-size: 13px;
 	line-height: 18px;
 }
-
 .left,.alignleft
 {
 	float: left;
 }
-
 .right,.alignright
 {
 	float: right;
 }
-
 .clear,.clearer
 {
 	clear: both;
 }
-
 .clearer
 {
 	display: block;
@@ -126,34 +110,28 @@ li
 	margin-bottom: 15px;
 	z-index: 50;
 }
-
 .comment-list ul.children, #comments #respond ul
 {
 	margin: 0 0 0 130px;
 }
-
 .comment-list ul.children ul.children
 {
 	margin-left: 15px;
 }
-
 .comment-list ul.children li
 {
 	background: url('/img/comment-reply.png') no-repeat left top;
 	margin: 0;
 	padding: 10px 0 0 15px;
 }
-
 .comment-author
 {
 	padding-top: 2px;
 }
-
 .comment-text p
 {
 	margin-bottom: 0.5em;
 }
-
 .comment-text img
 {
 	cursor: pointer;
@@ -164,14 +142,12 @@ li
 	-webkit-user-select: none;
 	user-select: none;
 }
-
 .post-date, .comment-author
 {
 	font-size: 0.87em;
 	padding-top: 4px;
 	padding-top: 4px;
 }
-
 .comment-body, .comment-body-mentioned, .comment-body-me
 {
 	border-radius: 5px;
@@ -188,7 +164,6 @@ li
 	padding: 1px 12px 0 9px;
 	behavior: url(border-radius.htc);
 }
-
 .comment-body
 {
 	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
@@ -196,7 +171,6 @@ li
 	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 }
-
 .comment-body-mentioned
 {
 	box-shadow: 2px 2px 5px #FFB4B8;
@@ -204,7 +178,6 @@ li
 	-moz-box-shadow: 2px 2px 5px #FFB4B8;
 	-webkit-box-shadow: 3px 3px 2px 2px #FFB4B8;
 }
-
 .comment-body-me
 {
 	box-shadow: 2px 2px 5px #BDC3FF;
@@ -212,7 +185,6 @@ li
 	-moz-box-shadow: 2px 2px 5px #BDC3FF;
 	-webkit-box-shadow: 3px 3px 2px 2px #BDC3FF;
 }
-
 .comment-arrow
 {
 	background: url('/img/comment-arrow.png') no-repeat left top;
@@ -223,34 +195,28 @@ li
 	position: absolute;
 	width: 20px;
 }
-
 .comment-list-wrapper
 {
 	padding: 5px 12px 10px 7px;
 	behavior: url(border-radius.htc);
 }
-
 .comment-input-text textarea
 {
 	width: 80%;
 }
-
 .comment-list
 {
 	margin: 0;
 	padding: 0;
 }
-
 .comment-list li
 {
 	list-style: none;
 }
-
 .comment-list ul
 {
 	margin-bottom: 0;
 }
-
 .comment-gravatar
 {
 	margin-bottom: 3px;
@@ -263,12 +229,10 @@ li
 	-webkit-border-radius: 4px;
 	behavior: url(border-radius.htc);
 }
-
 .comment-content-wrapper
 {
 	float: right;
 }
-
 .comment-profile-wrapper
 {
 	text-align: center;
@@ -283,13 +247,11 @@ li
 	padding-left: 3px;
 	width: 100%;
 }
-
 form
 {
 	padding: 1px;
 	margin: 0 10px 50px 10px;
 }
-
 input, textarea
 {
 	border-radius: 4px;
@@ -313,7 +275,6 @@ input, textarea
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=#eee, Direction=135, Strength=5)";
 	behavior: url(border-radius.htc);
 }
-
 input[type="text"], input[type="text"]:hover, input[type="text"]:focus, input[type="text"]:disabled
 {
 	outline: none;
@@ -322,7 +283,6 @@ input[type="text"], input[type="text"]:hover, input[type="text"]:focus, input[ty
 	-moz-transition: all .20s ease-in-out;
 	-webkit-transition: all .20s ease-in-out;
 }
-
 input[type="text"]:hover
 {
 	box-shadow: 0 0 4px #fefefe, inset 0 0 4px #fefefe;
@@ -334,7 +294,6 @@ input[type="text"]:hover
 	filter:progid:DXImageTransform.Microsoft.Shadow (color=#fefefe, Direction=135, Strength=5);
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=#fefefe, Direction=135, Strength=5)";
 }
-
 input[type="text"]:focus
 {
 	box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
@@ -346,7 +305,6 @@ input[type="text"]:focus
 	filter:progid:DXImageTransform.Microsoft.Shadow (color=rgba(81, 203, 238, 0.75), Direction=135, Strength=5);
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=rgba(81, 203, 238, 0.75), Direction=135, Strength=5)";
 }
-
 input[type="text"]:disabled
 {
 	box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
@@ -368,7 +326,6 @@ input[type="text"]:disabled
 	padding: 12px 0;
 	font-weight: bold;
 }
-
 #sub-nav a
 {
 	border-radius: 4px;
@@ -391,18 +348,15 @@ input[type="text"]:disabled
 	-webkit-transition: all .20s ease-in-out;
 	behavior: url(border-radius.htc);
 }
-
 #sub-nav li
 {
 	margin: 0 1em;
 	text-decoration: none;
 }
-
 #sub-nav li.current-tab a
 {
 	font-weight: bold;
 }
-
 #sub-av li a
 {
 	background-color: #F6F6F6;
@@ -412,7 +366,6 @@ input[type="text"]:disabled
 	-moz-transition: all .20s ease-in-out;
 	-webkit-transition: all .20s ease-in-out;
 }
-
 #sub-nav li a:hover
 {
 	box-shadow: 0 0 2px 2px #FFF;
@@ -427,13 +380,11 @@ input[type="text"]:disabled
 	-webkit-transition: all .20s ease-in-out;
 	behavior: url(border-radius.htc);
 }
-
 ul.tabbed li
 {
 	list-style: none;
 	margin-top: 0;
 }
-
 ul.tabbed
 {
 	display: inline;
@@ -687,9 +638,9 @@ div.growls div.large
 	margin: 0;
 	padding: 0;
 	display:none;
- 	/*sorry for IE5*/ display/**/:block;/*sorry for IE5*/
- 	z-index:-1;/*must have*/
- 	filter:mask();/*must have*/
+ 	display:block;
+ 	z-index:-1;
+ 	filter:mask();
 }
 
 /* CSS3 */
@@ -750,7 +701,6 @@ div.growls div.large
 {
 	display: inline-block;
 }
-
 .login-inner img
 {
 	border-radius: 4px;
@@ -771,7 +721,6 @@ div.growls div.large
 	-webkit-transition-duration: 0.35s;
 	-webkit-transition-property: all, -webkit-transform;
 }
-
 .login-inner img:hover
 {
 	transform: scale(1.15);
@@ -779,39 +728,32 @@ div.growls div.large
 	-moz-transform: scale(1.15);
 	-webkit-transform: scale(1.15);
 }
-
 .loading
 {
 	display: inline-block;
 	margin: auto;
 }
-
 ::selection
 {
 	background: rgba(175,175,175,0.4);
 }
-
 ::-moz-selection
 {
 	background: rgba(175,175,175,0.4);
 }
-
 ::-webkit-scrollbar
 {
 	width: 10px;
 	height: 10px;
 }
-
 ::-webkit-scrollbar-track-piece
 {
 	background-color: #F6F6F6;
 }
-
 ::-webkit-scrollbar-track-piece:horizontal
 {
 	width: 25px;
 }
-
 ::-webkit-scrollbar-thumb
 {
 	background-color: #5F5F5F;
@@ -866,7 +808,6 @@ body
 		font: normal 69% "Open Sans", sans-serif;
 	}
 }
-
 @media only screen and (min-width: 480px) and (max-width: 590px)
 {
 	.comment-content-wrapper
@@ -884,7 +825,6 @@ body
 		font: normal 71% "Open Sans", sans-serif;
 	}
 }
-
 @media only screen and (min-width: 590px) and (max-width: 800px)
 {
 	.comment-content-wrapper
@@ -902,7 +842,6 @@ body
 		font: normal 73% "Open Sans", sans-serif;
 	}
 }
-
 @media only screen and (min-width: 800px) and (max-width: 1024px)
 {
 	.comment-body, .comment-body-mentioned, .comment-body-me
@@ -924,7 +863,6 @@ body
 		font: normal 74% "Open Sans", sans-serif;
 	}
 }
-
 @media only screen and (min-width: 1024px) and (max-width: 1152px)
 {
 	.comment-body, .comment-body-mentioned, .comment-body-me
@@ -946,7 +884,6 @@ body
 		font: normal 76% "Open Sans", sans-serif;
 	}
 }
-
 @media only screen and (min-width: 1152px) and (max-width: 1350px)
 {
 	.comment-body, .comment-body-mentioned, .comment-body-me
@@ -968,7 +905,6 @@ body
 		font: normal 78% "Open Sans", sans-serif;
 	}
 }
-
 @media only screen and (min-width: 1350px) and (max-width: 1600px)
 {
 	.comment-body, .comment-body-mentioned, .comment-body-me
@@ -990,7 +926,6 @@ body
 		font: normal 80% "Open Sans", sans-serif;
 	}
 }
-
 @media only screen and (min-width: 1600px)
 {
 	.comment-body, .comment-body-mentioned, .comment-body-me
