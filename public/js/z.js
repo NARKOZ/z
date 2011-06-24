@@ -953,7 +953,7 @@ function z_engine_send_tweet()
 		{
 			var send = {
 				direct_message: {
-					text: temp_element,
+					text: temp_element.replace(/~/i,""),
 					user_id: dm_to
 				}
 			};
@@ -1098,6 +1098,7 @@ function z_engine_tweet(data, output)
 		var reply = data.recipient.screen_name;
 		var rtd = false;
 		var text = data.text;
+		var tweets = data.sender.statuses_count;
 		var userid = data.sender_id;
 		var verified = data.sender.verified;
 	}
