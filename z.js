@@ -1,6 +1,5 @@
 var express = require('express');
 var gzip = require('connect-gzip');
-var json = require('jsonreq');
 var io = require('socket.io');
 var sio = require('socket.io-sessions');
 var sys = require('sys');
@@ -12,6 +11,8 @@ var twitter = require('./lib/vendor/twitter');
 
 var key = "your_consumer_key_here"; //consumer key
 var secret = "your_consumer_secret_here"; //consumer secret
+
+var imgur_key = "your_imgur_api_key_here"; //imgur key
 
 var klout_key = "your_klout_api_key_here"; //klout key
 
@@ -41,9 +42,9 @@ switch (storage_type)
 }
 var socket = sio.enable(
 {
+	parser: express.cookieParser(),
 	socket: io.listen(server),
-	store: storage,
-	parser: express.cookieParser()
+	store: storage
 });
 
 server.configure(function()
@@ -94,6 +95,7 @@ server.get('/',function(req, res)
 		{
 			res.render('home.jade',
 			{
+				imgur_script: "var imgur_key = '"+imgur_key+"';",
 				title: 'hello @'+req.session.oauth._results.screen_name+'!'
 			});
 		}
@@ -176,21 +178,28 @@ gzip.gzip({matchType: /socket.io/});
  */
 socket.on('sconnection', function(client, session)
 {
-	try
+	if (typeof(session.oauth) === "undefined")
 	{
-		var tw = new twitter(key, secret, session.oauth);
-		client.json.send({loaded: true});
-		client.on('message', function(message)
-		{
-			if(tw)
-			{
-				z_engine_message_handler(tw, session, client, message);
-			}
-		});
+		//do nothing?
 	}
-	catch(e)
+	else
 	{
-		console.error('ERROR: ' + e);
+		try
+		{
+			var tw = new twitter(key, secret, session.oauth);
+			client.json.send({loaded: true});
+			client.on('message', function(message)
+			{
+				if(tw)
+				{
+					z_engine_message_handler(tw, session, client, message);
+				}
+			});
+		}
+		catch(e)
+		{
+			console.error('ERROR: ' + e);
+		}
 	}
 });
 
@@ -206,43 +215,19 @@ function z_engine_message_handler(tw, session, client, message)
 {
 	if (message.status)
 	{
-		tw.update(message.status, function(error, data, response)
-		{
-			if(error)
-			{
-				console.error("UPDATE ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
-			}
-		});
+		tw.update(message.status);
 	}
 	else if (message.destroy)
 	{
-		tw.destroy(message.destroy.status.id_str, function(error, data, response)
-		{
-			if(error)
-			{
-				console.error("DELETE ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
-			}
-		});
+		tw.destroy(message.destroy.status.id_str);
 	}
 	else if (message.destroy_dm)
 	{
-		tw.destroy_dm(message.destroy_dm.status.id_str, function(error, data, response)
-		{
-			if(error)
-			{
-				console.error("DELETE ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
-			}
-		});
+		tw.destroy_dm(message.destroy_dm.status.id_str);
 	}
 	else if (message.direct_message)
 	{
-		tw.direct_message(message.direct_message, function(error, data, response)
-		{
-			if(error)
-			{
-				console.error("UPDATE ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
-			}
-		});
+		tw.direct_message(message.direct_message);
 	}
 	else if (message.fetch)
 	{
@@ -279,23 +264,13 @@ function z_engine_message_handler(tw, session, client, message)
 	}
 	else if (message.favorite)
 	{
-		tw.favorite(message.favorite.status.id_str, function(error, data, response)
-		{
-			if(error)
-			{
-				console.error("FAVORITE ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
-			}
-		});
+		tw.favorite(message.favorite.status.id_str);
 	}
 	else if (message.retweet)
 	{
 		tw.retweet(message.retweet.status.id_str, function(error, data, response)
 		{
-			if(error)
-			{
-				console.error("RETWEET ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
-			}
-			else
+			if(!error)
 			{
 				client.json.send({retweet_info: data});
 			}
@@ -303,13 +278,7 @@ function z_engine_message_handler(tw, session, client, message)
 	}
 	else if (message.unfavorite)
 	{
-		tw.unfavorite(message.unfavorite.status.id_str, function(error, data, response)
-		{
-			if(error)
-			{
-				console.error("UNFAVORITE ERROR\ndata: "+sys.inspect(data)+'response: '+sys.inspect(response)+'oauth: '+tw+'message: '+sys.inspect(message));
-			}
-		});
+		tw.unfavorite(message.unfavorite.status.id_str);
 	}
 }
 
@@ -340,12 +309,10 @@ function z_engine_streaming_handler(tw, client, session)
 			stream.on('error', function(data)
 			{
 				client.json.send({server_event: 'error'});
-				console.error('UserStream ERROR: ' + data);
 			});
 			stream.on('end', function()
 			{
 				client.json.send({server_event: 'end'});
-				console.log('UserStream ends successfully');
 			});
 		});
 	}
@@ -361,11 +328,7 @@ function z_engine_static_timeline_fetch(tw, client, session, params, output)
 		case 'account':
 			tw.getAccount(true, function(error, data, response)
 			{
-				if(error)
-				{
-					console.error('TIMELINE ERROR: '+error);
-				}
-				else
+				if(!error)
 				{
 					client.json.send({account: data});
 				}
@@ -374,11 +337,7 @@ function z_engine_static_timeline_fetch(tw, client, session, params, output)
 		case 'dms-inbox':
 			tw.getInbox(params, function(error, data, response)
 			{
-				if(error)
-				{
-					console.error('TIMELINE ERROR: '+error);
-				}
-				else
+				if(!error)
 				{
 					client.json.send({dms: data.reverse()});
 				}
@@ -387,11 +346,7 @@ function z_engine_static_timeline_fetch(tw, client, session, params, output)
 		case 'dms-outbox':
 			tw.getOutbox(params, function(error, data, response)
 			{
-				if(error)
-				{
-					console.error('TIMELINE ERROR: '+error);
-				}
-				else
+				if(!error)
 				{
 					client.json.send({dms: data.reverse()});
 				}
@@ -415,11 +370,7 @@ function z_engine_static_timeline_fetch(tw, client, session, params, output)
 		case 'retweets':
 			tw.getTimeline(params, function(error, data, response)
 			{
-				if(error)
-				{
-					console.error('TIMELINE ERROR: '+error);
-				}
-				else
+				if(!error)
 				{
 					switch (output)
 					{

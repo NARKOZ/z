@@ -43,6 +43,7 @@ var pttid = 0; //this serves as the (#) amount displayed when paused
 var prune_tweets_interval = 60000; //start the pruning loop over again every minute
 var reply_id = false; //catch reply
 var screen_name = ""; //our own screen name
+var socket = io.connectWithSession();
 var stream_queue_interval = 1500; //once a second
 var tid = 0; //internal counter
 var ttid = 0; //temporary internal counter
@@ -65,6 +66,8 @@ new S2.FX.Base(
 	fps: max_fps
 });
 
+z_engine_attrition(); //call the below function
+
 /* the websocket itself */
 function z_engine_attrition()
 {
@@ -81,9 +84,7 @@ function z_engine_attrition()
 	{
 		window.webkitNotifications.requestPermission();
 	}
-	if (typeof(window.FileReader) === 'undefined')
-	{}
-	else
+	if (typeof(window.FileReader) === "function" && BrowserDetect.browser != "MSIE")
 	{
 		var image = $("image");
 		image.show();
@@ -722,29 +723,61 @@ function z_engine_dropped_image(image)
 {
 	var form = new FormData();
 	form.append("image", image);
+	form.append("key", imgur_key);
+	/*new Ajax.Request("http://api.imgur.com/2/upload.json",
+	{
+		method: "POST",
+		parameters: form,
+		onFailure: function(transport)
+		{
+			$("image").setStyle("border-color: red;");
+			setTimeout(function()
+			{
+				$("image").setStyle("border-color: #ddd;");
+			},3000);
+		},
+		onSuccess: function(transport)
+		{
+			var response = transport.responseText.evalJSON(true);
+			var image_url = response.upload.links.original;
+			var current_tweet = $("new-tweet").getValue();
+			if (current_tweet.length > 0)
+			{
+				var new_tweet = current_tweet+" "+image_url;
+			}
+			else if (current_tweet.length == 0)
+			{
+				var new_tweet = image_url;
+			}
+			$("new-tweet").setValue(new_tweet);
+			$("image").setStyle("border-color: #ddd;");
+		}
+	});*/
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function()
 	{
 		if(this.readyState == 4 && this.status == 200)
 		{
-			console.log(this.responseText);
-			$("image").setStyle("border-color: #ddd;");
+			var response = this.responseText.evalJSON(true);
+			var image_url = response.upload.links.original;
 			var current_tweet = $("new-tweet").getValue();
 			if (current_tweet.length > 0)
 			{
-				var new_tweet = current_tweet+" "+this.responseText;
+				var new_tweet = current_tweet+" "+image_url;
 			}
 			else if (current_tweet.length == 0)
 			{
-				var new_tweet = this.responseText;
+				var new_tweet = image_url;
 			}
+			$("new-tweet").setValue(new_tweet);
+			$("image").setStyle("border-color: #ddd;");
 		}
 		if(this.readyState == 4 && this.status != 200)
 		{
 			$("image").setStyle("border-color: red;");
 		}
 	}
-	xhr.open("POST", "/post/image", true);
+	xhr.open("POST", "http://api.imgur.com/2/upload.json", true);
 	xhr.send(form);
 }
 
@@ -948,7 +981,7 @@ function z_engine_send_tweet()
 					status: temp_element,
 					include_entities: true
 				}
-			};
+			}
 			if (latit && longit)
 			{
 				var geo = {
@@ -973,7 +1006,7 @@ function z_engine_send_tweet()
 					text: temp_element.replace(/~/i,""),
 					user_id: dm_to
 				}
-			};
+			}
 		}
 		socket.emit("message", send);
 		reply_id = false;
@@ -1296,7 +1329,7 @@ function z_engine_tweet(data, output)
 						var right_element = new Element('div', {'class': 'right'});
 							if (rtd)
 							{
-								var rtd_element = new Element('span');
+								var rtd_element = new Element('span', {'class': 'rtd'});
 								rtd_element.update(" ");
 								var rtd_img_element = new Element('img', {'src': 'img/rtd2.png', 'alt': ''});
 								var rtd_author_link_element = new Element('a', {'target': '_blank', 'href': 'http://twitter.com/'+author2});
@@ -1447,7 +1480,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 			}
 			if (!$('klout-'+id))
 			{
-				var klout_element = new Element('span');
+				var klout_element = new Element('span', {'class': 'klout'});
 				klout_element.update(" ");
 				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
 				klout_element.insert({'top': klout_img_element});
@@ -1517,7 +1550,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 			}
 			if ($("left-"+id) && !$('klout-'+id))
 			{
-				var klout_element = new Element('span');
+				var klout_element = new Element('span', {'class': 'klout'});
 				klout_element.update(" ");
 				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
 				klout_element.insert({'top': klout_img_element});
@@ -1525,7 +1558,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 			}
 			if ($("left-"+id+"-mentioned") && !$('klout-'+id+'-mentioned'))
 			{
-				var klout_element = new Element('span');
+				var klout_element = new Element('span', {'class': 'klout'});
 				klout_element.update(" ");
 				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id+'-mentioned', 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
 				klout_element.insert({'top': klout_img_element});

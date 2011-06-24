@@ -828,7 +828,15 @@ body
 	}
 	.normal, body
 	{
-		font: normal 69% "Open Sans", sans-serif;
+		font: normal 67% "Open Sans", sans-serif;
+	}
+	.klout
+	{
+		display: none;
+	}
+	.rtd
+	{
+		display: none;
 	}
 	.via
 	{
@@ -865,7 +873,11 @@ body
 	}
 	.normal, body
 	{
-		font: normal 71% "Open Sans", sans-serif;
+		font: normal 68% "Open Sans", sans-serif;
+	}
+	.klout
+	{
+		display: none;
 	}
 	.via
 	{
@@ -886,7 +898,7 @@ body
 	}
 	.normal, body
 	{
-		font: normal 73% "Open Sans", sans-serif;
+		font: normal 70% "Open Sans", sans-serif;
 	}
 }
 @media only screen and (min-width: 800px) and (max-width: 1024px)
@@ -907,7 +919,7 @@ body
 	}
 	.normal, body
 	{
-		font: normal 74% "Open Sans", sans-serif;
+		font: normal 73% "Open Sans", sans-serif;
 	}
 }
 @media only screen and (min-width: 1024px) and (max-width: 1152px)
@@ -949,7 +961,7 @@ body
 	}
 	.normal, body
 	{
-		font: normal 78% "Open Sans", sans-serif;
+		font: normal 79% "Open Sans", sans-serif;
 	}
 }
 @media only screen and (min-width: 1350px) and (max-width: 1600px)
@@ -970,7 +982,7 @@ body
 	}
 	.normal, body
 	{
-		font: normal 80% "Open Sans", sans-serif;
+		font: normal 81% "Open Sans", sans-serif;
 	}
 }
 @media only screen and (min-width: 1600px)
@@ -991,6 +1003,6 @@ body
 	}
 	.normal, body
 	{
-		font: normal 85% "Open Sans", sans-serif;
+		font: normal 86% "Open Sans", sans-serif;
 	}
 }
