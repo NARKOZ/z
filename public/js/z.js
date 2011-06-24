@@ -40,7 +40,7 @@ var pttid = 0; //this serves as the (#) amount displayed when paused
 var prune_tweets_interval = 60000; //start the pruning loop over again every minute
 var reply_id = false; //catch reply
 var screen_name = ""; //our own screen name
-var socket = new io.SessionSocket();
+var socket = io.connectWithSession();
 var stream_queue_interval = 1500; //once a second
 var tid = 0; //internal counter
 var ttid = 0; //temporary internal counter
@@ -74,6 +74,30 @@ function z_engine_attrition()
 	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1)
 	{
 		window.webkitNotifications.requestPermission();
+	}
+	if (typeof(window.FileReader) === 'undefined')
+	{}
+	else
+	{
+		var image = $("image");
+		image.show();
+		image.ondragover = function()
+		{
+			image.setStyle("border-color: #aaa;");
+			return false;
+		};
+		image.ondragend = function()
+		{
+			image.setStyle("border-color: #ddd;");
+			return false;
+		};
+		image.ondrop = function (error)
+		{
+			error.preventDefault();
+			var dropped = error.dataTransfer.files[0];
+			z_engine_dropped_image(dropped);
+			return false;
+		};
 	}
 	$("loading-home").center(8);
 	$("loading-mentions").center(8);
@@ -125,7 +149,6 @@ function z_engine_attrition()
 			$("new-tweet").setStyle("color: red;");
 		}
 	});
-	socket.connect();
 	socket.on("connect",function()
 	{
 		$("new-tweet").setValue("connected...");
@@ -150,18 +173,18 @@ function z_engine_attrition()
 				z_engine_clicker("dms-timeline-click", "dms-timeline"); //dms
 				z_engine_dms_clicker("dms-inbox-timeline-click", "dms-inbox-timeline");
 				z_engine_dms_clicker("dms-outbox-timeline-click", "dms-outbox-timeline");
-				socket.send({fetch: "home"});
+				socket.emit("message", {fetch: "home"});
 				var populate_mentions_tab = setTimeout(function()
 				{
-					socket.send({fetch: "mentions"});
+					socket.emit("message", {fetch: "mentions"});
 				},10000);
 				var populate_dms_inbox_tab = setTimeout(function()
 				{
-					socket.send({fetch: "dms-inbox"});
+					socket.emit("message", {fetch: "dms-inbox"});
 				},20000);
 				var populate_dms_outbox_tab = setTimeout(function()
 				{
-					socket.send({fetch: "dms-outbox"});
+					socket.emit("message", {fetch: "dms-outbox"});
 				},30000);
 				var update_relative_home = setInterval(function()
 				{
@@ -204,87 +227,7 @@ function z_engine_attrition()
 				{
 					var id = 0; //we will only handle normal tweets from here, dms are handled elsewhere
 				}
-				if ($("comment-"+id))
-				{
-					$("comment-"+id).setStyle("text-decoration: line-through;");
-					if ($("del-"+id))
-					{
-						$("del-"+id).fade();
-					}
-					if ($("fave-"+id))
-					{
-						$("fave-"+id).fade();
-					}
-					if ($("reply-"+id))
-					{
-						$("reply-"+id).fade();
-					}
-					if ($("rt-"+id))
-					{
-						$("rt-"+id).fade();
-					}
-					setTimeout(function()
-					{
-						new S2.FX.Parallel(
-						[
-							new Effect.Fade('comment-'+id,
-							{
-								duration: 1.25,
-								mode: 'relative',
-								transition: 'easeOutSine'
-							}),
-							new Effect.BlindUp('comment-'+id,
-							{
-								duration: 1,
-								mode: 'relative',
-								transition: 'easeOutSine'
-							})
-						],
-						{
-							duration: 1.5
-						});
-					},3000);
-				}
-				if ($("comment-"+id+"-mentioned"))
-				{
-					if ($("del-"+id+"-mentioned"))
-					{
-						$("del-"+id+"-mentioned").fade();
-					}
-					if ($("fave-"+id+"-mentioned"))
-					{
-						$("fave-"+id+"-mentioned").fade();
-					}
-					if ($("reply-"+id+"-mentioned"))
-					{
-						$("reply-"+id+"-mentioned").fade();
-					}
-					if ($("rt-"+id+"-mentioned"))
-					{
-						$("rt-"+id+"-mentioned").fade();
-					}
-					setTimeout(function()
-					{
-						new S2.FX.Parallel(
-						[
-							new Effect.Fade('comment-'+id+'-mentioned',
-							{
-								duration: 1.25,
-								mode: 'relative',
-								transition: 'easeOutSine'
-							}),
-							new Effect.BlindUp('comment-'+id+'-mentioned',
-							{
-								duration: 1,
-								mode: 'relative',
-								transition: 'easeOutSine'
-							})
-						],
-						{
-							duration: 1.5
-						});
-					},3000);
-				}
+				z_engine_drop_tweet(id);
 			}
 			else if (json.direct_message)
 			{
@@ -405,7 +348,7 @@ function z_engine_attrition()
 				{
 					z_engine_tweet(item, "home");
 				});
-				socket.send({fetch: "userstream"});
+				socket.emit("message", {fetch: "userstream"});
 				$("loading-home").fade();
 				$("loading-mentions").appear();
 			}
@@ -467,7 +410,7 @@ function z_engine_attrition()
 			else if (json.server_event)
 			{
 				console.log(JSON.stringify(json));
-				switch (json.server_event)
+				/*switch (json.server_event)
 				{
 					case 'end':
 						z_engine_notification("", "notice!", "lost connection to the userstream, reconnecting...");
@@ -475,7 +418,7 @@ function z_engine_attrition()
 						$("new-tweet").disable();
 						socket.connect();
 						$("new-tweet").enable();
-						socket.send({fetch: "userstream"});
+						socket.emit({fetch: "userstream"});
 					break;
 					case 'error':
 						z_engine_notification("", "notice!", "userstream error occurred, reconnecting...");
@@ -484,7 +427,7 @@ function z_engine_attrition()
 						socket.connect();
 						$("new-tweet").enable();
 					break;
-				}
+				}*/
 			}
 			else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
 			{
@@ -516,7 +459,7 @@ function z_engine_attrition()
 			}
 		}
 	});
-	socket.on('disconnect', function(dont_alert)
+	/*socket.on('disconnect', function(dont_alert)
 	{
 		$("new-tweet").disable();
 		if (dont_alert)
@@ -524,7 +467,7 @@ function z_engine_attrition()
 			$("new-tweet").setValue("disconnected!");
 			z_engine_notification("", "error!", "disconnected");
 		}
-	});
+	});*/
 }
 
 /* the "home", "mentions", "messages", etc switcher */
@@ -672,44 +615,7 @@ function z_engine_destroy(id, method)
 		else if (method == "dm")
 		{
 			var params = {destroy_dm: {status: {id_str: id}}};
-			$("comment-"+id).setStyle("text-decoration: line-through;"); //we will just drop the element ourselves since it gets deleted on twitters end
-			if ($("del-"+id))
-			{
-				$("del-"+id).fade();
-			}
-			if ($("fave-"+id))
-			{
-				$("fave-"+id).fade();
-			}
-			if ($("reply-"+id))
-			{
-				$("reply-"+id).fade();
-			}
-			if ($("rt-"+id))
-			{
-				$("rt-"+id).fade();
-			}
-			setTimeout(function()
-			{
-				new S2.FX.Parallel(
-				[
-					new Effect.Fade('comment-'+id,
-					{
-						duration: 1.25,
-						mode: 'relative',
-						transition: 'easeOutSine'
-					}),
-					new Effect.BlindUp('comment-'+id,
-					{
-						duration: 1,
-						mode: 'relative',
-						transition: 'easeOutSine'
-					})
-				],
-				{
-					duration: 1.5
-				});
-			},3000);
+			z_engine_drop_tweet(id);
 		}
 		if (method == "rt")
 		{
@@ -724,14 +630,129 @@ function z_engine_destroy(id, method)
 				$("rt-"+id+"-mentioned").setAttribute("onclick","z_engine_retweet('"+id+"');");
 			}
 		}
-		socket.send(params);
+		socket.emit("message", params);
 	}
+}
+
+function z_engine_drop_tweet(id)
+{
+	if ($("comment-"+id))
+	{
+		$("comment-"+id).setStyle("text-decoration: line-through;");
+		if ($("del-"+id))
+		{
+			$("del-"+id).fade();
+		}
+		if ($("fave-"+id))
+		{
+			$("fave-"+id).fade();
+		}
+		if ($("reply-"+id))
+		{
+			$("reply-"+id).fade();
+		}
+		if ($("rt-"+id))
+		{
+			$("rt-"+id).fade();
+		}
+		setTimeout(function()
+		{
+			new S2.FX.Parallel(
+			[
+				new Effect.Fade('comment-'+id,
+				{
+					duration: 1.25,
+					mode: 'relative',
+					transition: 'easeOutSine'
+				}),
+				new Effect.BlindUp('comment-'+id,
+				{
+					duration: 1,
+					mode: 'relative',
+					transition: 'easeOutSine'
+				})
+			],
+			{
+				duration: 1.5
+			});
+		},3000);
+	}
+	if ($("comment-"+id+"-mentioned"))
+	{
+		if ($("del-"+id+"-mentioned"))
+		{
+			$("del-"+id+"-mentioned").fade();
+		}
+		if ($("fave-"+id+"-mentioned"))
+		{
+			$("fave-"+id+"-mentioned").fade();
+		}
+		if ($("reply-"+id+"-mentioned"))
+		{
+			$("reply-"+id+"-mentioned").fade();
+		}
+		if ($("rt-"+id+"-mentioned"))
+		{
+			$("rt-"+id+"-mentioned").fade();
+		}
+		setTimeout(function()
+		{
+			new S2.FX.Parallel(
+			[
+				new Effect.Fade('comment-'+id+'-mentioned',
+				{
+					duration: 1.25,
+					mode: 'relative',
+					transition: 'easeOutSine'
+				}),
+				new Effect.BlindUp('comment-'+id+'-mentioned',
+				{
+					duration: 1,
+					mode: 'relative',
+					transition: 'easeOutSine'
+				})
+			],
+			{
+				duration: 1.5
+			});
+		},3000);
+	}
+}
+
+function z_engine_dropped_image(image)
+{
+	var form = new FormData();
+	form.append("image", image);
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function()
+	{
+		if(this.readyState == 4 && this.status == 200)
+		{
+			console.log(this.responseText);
+			$("image").setStyle("border-color: #ddd;");
+			var current_tweet = $("new-tweet").getValue();
+			if (current_tweet.length > 0)
+			{
+				var new_tweet = current_tweet+" "+this.responseText;
+			}
+			else if (current_tweet.length == 0)
+			{
+				var new_tweet = this.responseText;
+			}
+		}
+		if(this.readyState == 4 && this.status != 200)
+		{
+			$("image").setStyle("border-color: red;");
+		}
+	}
+	xhr.open("POST", "/post/image", true);
+	xhr.send(form);
 }
 
 /* favorite a tweet */
 function z_engine_favorite(id)
 {
-	socket.send({favorite: {status: {id_str: id}}});
+	socket.emit("message", {favorite: {status: {id_str: id}}});
 	if ($("fave-"+id))
 	{
 		$("fave-"+id).writeAttribute("src","img/favd.png");
@@ -769,7 +790,7 @@ function z_engine_geolocation_error(err)
 /* get a users klout score */
 function z_engine_get_klout(author, id)
 {
-	socket.send({fetch: "klout", screen_name: author, id_str: id});
+	socket.emit("message", {fetch: "klout", screen_name: author, id_str: id});
 }
 
 /* properly log out a user */
@@ -893,7 +914,6 @@ function z_engine_reply_dm(id, user)
 	dm_to = id;
 	$("new-tweet").setValue("~");
 	$("new-tweet").focus();
-	//z_engine_notification("", "sending dm to @"+user, "the ~ is not sent with the dm, it is used as a placeholder before a bug occurs");
 }
 
 /* retweet a tweet */
@@ -905,7 +925,7 @@ function z_engine_retweet(id, author, text)
 		var confirm_rt2 = confirm("ok for normal retweet\ncancel for commented retweet");
 		if (confirm_rt2)
 		{
-			socket.send({retweet: {status: {id_str: id}}});
+			socket.emit("message", {retweet: {status: {id_str: id}}});
 		}
 		else
 		{
@@ -958,7 +978,7 @@ function z_engine_send_tweet()
 				}
 			};
 		}
-		socket.send(send);
+		socket.emit("message", send);
 		reply_id = false;
 		dm_to = false;
 		$("new-tweet").setValue("");
@@ -1566,7 +1586,7 @@ function z_engine_tweet_pause()
 /* favorite a tweet */
 function z_engine_unfavorite(id)
 {
-	socket.send({unfavorite: {status: {id_str: id}}});
+	socket.emit("message", {unfavorite: {status: {id_str: id}}});
 	if ($("fave-"+id))
 	{
 		$("fave-"+id).writeAttribute("src","img/fav.png");

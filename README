@@ -17,8 +17,8 @@ npm install express
 npm install jade
 npm install jsonreq
 npm install oauth
-npm install socket.io@0.6.18
-npm install socket.io-sessions@0.5.5
+npm install socket.io
+npm install socket.io-sessions
 
 optional:
 

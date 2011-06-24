@@ -179,7 +179,7 @@ socket.on('sconnection', function(client, session)
 	try
 	{
 		var tw = new twitter(key, secret, session.oauth);
-		client.send({loaded: true});
+		client.json.send({loaded: true});
 		client.on('message', function(message)
 		{
 			if(tw)
@@ -326,7 +326,7 @@ function z_engine_streaming_handler(tw, client, session)
 			{
 				try
 				{
-					client.send(data);
+					client.json.send(data);
 				}
 				catch(e)
 				{
@@ -339,12 +339,12 @@ function z_engine_streaming_handler(tw, client, session)
 			});
 			stream.on('error', function(data)
 			{
-				client.send({server_event: 'error'});
+				client.json.send({server_event: 'error'});
 				console.error('UserStream ERROR: ' + data);
 			});
 			stream.on('end', function()
 			{
-				client.send({server_event: 'end'});
+				client.json.send({server_event: 'end'});
 				console.log('UserStream ends successfully');
 			});
 		});
@@ -354,9 +354,9 @@ function z_engine_streaming_handler(tw, client, session)
 /*
  * callback function to send static resources via websocket to client
  */
-function z_engine_static_timeline_fetch(tw, client, session, params, json)
+function z_engine_static_timeline_fetch(tw, client, session, params, output)
 {
-	switch (json)
+	switch (output)
 	{
 		case 'account':
 			tw.getAccount(true, function(error, data, response)
@@ -367,7 +367,7 @@ function z_engine_static_timeline_fetch(tw, client, session, params, json)
 				}
 				else
 				{
-					client.send({account: data});
+					client.json.send({account: data});
 				}
 			});
 		break;
@@ -380,7 +380,7 @@ function z_engine_static_timeline_fetch(tw, client, session, params, json)
 				}
 				else
 				{
-					client.send({dms: data.reverse()});
+					client.json.send({dms: data.reverse()});
 				}
 			});
 		break;
@@ -393,7 +393,7 @@ function z_engine_static_timeline_fetch(tw, client, session, params, json)
 				}
 				else
 				{
-					client.send({dms: data.reverse()});
+					client.json.send({dms: data.reverse()});
 				}
 			});
 		break;
@@ -402,11 +402,11 @@ function z_engine_static_timeline_fetch(tw, client, session, params, json)
 			{
 				if(error)
 				{
-					client.send({klout: "error", id_str: params.id_str});
+					client.json.send({klout: "error", id_str: params.id_str});
 				}
 				else
 				{
-					client.send({klout: data, id_str: params.id_str});
+					client.json.send({klout: data, id_str: params.id_str});
 				}
 			});
 		break;
@@ -421,21 +421,21 @@ function z_engine_static_timeline_fetch(tw, client, session, params, json)
 				}
 				else
 				{
-					switch (json)
+					switch (output)
 					{
 						case 'home':
-							client.send({info: 
+							client.json.send({info: 
 							{
 								screen_name: session.oauth._results.screen_name,
 								user_id: session.oauth._results.user_id
 							}});
-							client.send({home: data.reverse()});
+							client.json.send({home: data.reverse()});
 						break;
 						case 'mentions':
-							client.send({mentions: data}); //dont reverse this, we handle mentions differently than all current timelines at the moment
+							client.json.send({mentions: data}); //dont reverse this, we handle mentions differently than all current timelines at the moment
 						break;
 						case 'retweets':
-							client.send({retweets: data.reverse()});
+							client.json.send({retweets: data.reverse()});
 						break;
 					}
 				}
