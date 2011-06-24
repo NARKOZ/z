@@ -297,7 +297,7 @@ function z_engine_message_handler(tw, session, client, message)
 			}
 			else
 			{
-				client.send({retweet_info: data});
+				client.json.send({retweet_info: data});
 			}
 		});
 	}

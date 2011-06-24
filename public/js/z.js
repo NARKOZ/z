@@ -40,7 +40,6 @@ var pttid = 0; //this serves as the (#) amount displayed when paused
 var prune_tweets_interval = 60000; //start the pruning loop over again every minute
 var reply_id = false; //catch reply
 var screen_name = ""; //our own screen name
-var socket = io.connectWithSession();
 var stream_queue_interval = 1500; //once a second
 var tid = 0; //internal counter
 var ttid = 0; //temporary internal counter
@@ -363,7 +362,7 @@ function z_engine_attrition()
 			{
 				var data = json.klout;
 				var id = json.id_str;
-				if (data != "error")
+				if (data != "error" || data.status != 200)
 				{
 					z_engine_set_klout(data.users, id);
 				}
@@ -1169,7 +1168,7 @@ function z_engine_tweet(data, output)
 			var profile_wrapper_element = new Element('div', {'class': 'comment-profile-wrapper left'});
 				var gravatar_element = new Element('div', {'class': 'comment-gravatar'});
 					var gravatar_author_link_element = new Element('a', {'target': '_blank', href: 'http://twitter.com/'+author});
-						var gravatar_author_img_element = new Element('img', {'src': avatar, 'style': 'height: 50px; width: 50px; cursor: pointer;', 'alt': ''});
+						var gravatar_author_img_element = new Element('img', {'id': 'av-'+id, 'src': avatar, 'style': 'height: 50px; width: 50px; cursor: pointer;', 'alt': ''});
 						gravatar_author_link_element.insert(gravatar_author_img_element);
 						gravatar_element.insert(gravatar_author_link_element);
 						var userinfo = "";
@@ -1333,6 +1332,16 @@ function z_engine_tweet(data, output)
 			mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
 			left_element.setAttribute("id", "left-"+id+"-mentioned");
 			right2_element.setAttribute("id", "right-"+id+"-mentioned");
+			gravatar_author_img_element.setAttribute("id", "av-"+id+"-mentioned");
+			$("av-"+id+"-mentioned").addTip(userinfo,
+			{
+				className: 'user',
+				offset: [11, 0],
+				stem: true,
+				target: true,
+				targetJoint: ['right', 'middle'],
+				tipJoint: ['left', 'middle']
+			});
 			z_engine_tweet_buttons("mentions", id, author, userid, text, locked, faved, mentions_string);
 			new Element.extend(mentioned_clone);
 			$("mentions-timeline").insert({'top': mentioned_clone});
