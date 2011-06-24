@@ -320,9 +320,23 @@ input[type="text"]:disabled, textarea:disabled
 }
 
 /*
+ * drag n drop / button image upload
+ */
+#image
+{
+	border: 2px dashed #DDD;
+	color: #456;
+	padding-left: 5px;
+	padding-right: 5px;
+	transition: all .20s ease-in-out;
+	-khtml-transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
+	-webkit-transition: all .20s ease-in-out;
+}
+
+/*
  * navigation related stuff
  */
-
 #sub-nav
 {
 	padding: 12px 0;
@@ -769,8 +783,8 @@ div.growls div.large
 /* global body stuff */
 body
 {
-	background: #F6F6F6;
-	color: #2A2A2A;
+	background: #f6f6f6;
+	color: #3a3a4a;
 	font: normal 75% "Open Sans", sans-serif;
 	font-smoothing: subpixel-antialiased;
 	height: 100%;
@@ -792,6 +806,12 @@ body
 /* from here on out we are doing to set stuff specifically by the users viewport width */
 @media only screen and (max-width: 480px)
 {
+	body
+	{
+		padding-left: 18px;
+		padding-right: 18px;
+		width: 264px;
+	}
 	.comment-arrow 	
 	{
 		display: none;
@@ -810,6 +830,26 @@ body
 	{
 		font: normal 69% "Open Sans", sans-serif;
 	}
+	.via
+	{
+		display: none;
+	}
+	#clear
+	{
+		display: none;
+	}
+	#image
+	{
+		display: none;
+	}
+	#pause
+	{
+		display: none;
+	}
+	#paused-count
+	{
+		display: none;
+	}
 }
 @media only screen and (min-width: 480px) and (max-width: 590px)
 {
@@ -826,6 +866,10 @@ body
 	.normal, body
 	{
 		font: normal 71% "Open Sans", sans-serif;
+	}
+	.via
+	{
+		display: none;
 	}
 }
 @media only screen and (min-width: 590px) and (max-width: 800px)

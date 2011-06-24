@@ -413,16 +413,14 @@ function z_engine_attrition()
 				{
 					case 'end':
 						z_engine_notification("", "notice!", "lost connection to the userstream, reconnecting...");
-						socket.disconnect(true);
-						$("new-tweet").disable();
+						socket.disconnect();
 						socket.connect();
 						$("new-tweet").enable();
 						socket.emit({fetch: "userstream"});
 					break;
 					case 'error':
 						z_engine_notification("", "notice!", "userstream error occurred, reconnecting...");
-						socket.disconnect(true);
-						$("new-tweet").disable();
+						socket.disconnect();
 						socket.connect();
 						$("new-tweet").enable();
 					break;
@@ -458,15 +456,10 @@ function z_engine_attrition()
 			}
 		}
 	});
-	/*socket.on('disconnect', function(dont_alert)
+	socket.on('disconnect', function()
 	{
 		$("new-tweet").disable();
-		if (dont_alert)
-		{
-			$("new-tweet").setValue("disconnected!");
-			z_engine_notification("", "error!", "disconnected");
-		}
-	});*/
+	});
 }
 
 /* the "home", "mentions", "messages", etc switcher */
@@ -795,7 +788,7 @@ function z_engine_get_klout(author, id)
 /* properly log out a user */
 function z_engine_logout()
 {
-	socket.disconnect(true);
+	socket.disconnect();
 	$("new-tweet").disable();
 	$("new-tweet").setValue("see ya!");
 	store.remove('account');
@@ -957,13 +950,13 @@ function z_engine_send_tweet()
 					display_coordinates: true,
 					lat: latit,
 					'long': longit
-				};
+				}
 				new Object.extend(send.status, geo);
 			}
 			if (reply_id)
 			{
 				var in_reply_to_status = {
-					in_reply_to_status_id: reply_id,
+					in_reply_to_status_id: reply_id
 				}
 				new Object.extend(send.status, in_reply_to_status);
 			}
@@ -988,35 +981,38 @@ function z_engine_send_tweet()
 /* set the klout icon up properly */
 function z_engine_set_klout(data, id)
 {
-	if (data.length > 0 && typeof(id) == "string")
+	if (typeof(data) === "object")
 	{
-		var amp = Math.round(data[0].score.amplification_score);
-		var one_day = Math.round(data[0].score.delta_1day);
-		var description = data[0].score.description;
-		var five_days = Math.round(data[0].score.delta_5day);
-		var kclass = data[0].score.kclass;
-		var kclass_description = data[0].score.kclass_description;
-		var kscore = Math.round(data[0].score.kscore);
-		var kscore_description = data[0].score.kscore_description;
-		var net = Math.round(data[0].score.network_score);
-		var reach = Math.round(data[0].score.true_reach);
-		var slope = Math.round(data[0].score.slope);
-		if ($("klout-"+id))
+		if (data.length > 0 && typeof(id) == "string")
 		{
-			var klout_info = 'score: <strong>'+kscore+'</strong><br />';
-			klout_info += 'amp: <strong>'+amp+'</strong><br />';
-			klout_info += 'network: <strong>'+net+'</strong><br />';
-			klout_info += 'reach: <strong>'+reach+'</strong>';
-			$("klout-"+id).addTip(klout_info,
+			var amp = Math.round(data[0].score.amplification_score);
+			var one_day = Math.round(data[0].score.delta_1day);
+			var description = data[0].score.description;
+			var five_days = Math.round(data[0].score.delta_5day);
+			var kclass = data[0].score.kclass;
+			var kclass_description = data[0].score.kclass_description;
+			var kscore = Math.round(data[0].score.kscore);
+			var kscore_description = data[0].score.kscore_description;
+			var net = Math.round(data[0].score.network_score);
+			var reach = Math.round(data[0].score.true_reach);
+			var slope = Math.round(data[0].score.slope);
+			if ($("klout-"+id))
 			{
-				className: 'klout',
-				stem: true,
-				target: true,
-				targetJoint: ['left', 'top'],
-				tipJoint: ['right', 'bottom']
-			});
-			$("klout-"+id).setAttribute('src', 'img/kltd.png');
-			$("klout-"+id).setAttribute('title', '');
+				var klout_info = 'score: <strong>'+kscore+'</strong><br />';
+				klout_info += 'amp: <strong>'+amp+'</strong><br />';
+				klout_info += 'network: <strong>'+net+'</strong><br />';
+				klout_info += 'reach: <strong>'+reach+'</strong><br />';
+				$("klout-"+id).addTip(klout_info,
+				{
+					className: 'klout',
+					stem: true,
+					target: true,
+					targetJoint: ['left', 'top'],
+					tipJoint: ['right', 'bottom']
+				});
+				$("klout-"+id).setAttribute('src', 'img/kltd.png');
+				$("klout-"+id).setAttribute('title', '');
+			}
 		}
 	}
 }
@@ -1241,7 +1237,7 @@ function z_engine_tweet(data, output)
 									left_element.insert(in_reply_to_element);
 									left_element.insert({'bottom': in_reply_to_link_element});
 								}
-								var via_source_element = new Element('span');
+								var via_source_element = new Element('span', {'class': 'via'});
 								via_source_element.update(' via '+source);
 								left_element.insert({'bottom': via_source_element});
 							}
@@ -1273,8 +1269,10 @@ function z_engine_tweet(data, output)
 								var rtd_element = new Element('span');
 								rtd_element.update(" ");
 								var rtd_img_element = new Element('img', {'src': 'img/rtd2.png', 'alt': ''});
+								var rtd_author_link_element = new Element('a', {'target': '_blank', 'href': 'http://twitter.com/'+author2});
+								rtd_author_link_element.update(author2);
 								rtd_element.insert({'top': rtd_img_element});
-								rtd_element.insert({'bottom': 'by <a target="_blank" href="http://twitter.com/'+author2+'">'+author2+'</a> '});
+								rtd_element.insert({'bottom': rtd_author_link_element});
 								right_element.insert({'bottom': rtd_element});
 							}
 							if (output != "dms" && place && place.full_name)
