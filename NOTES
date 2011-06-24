@@ -1,6 +1,8 @@
 1) register your application here: https://dev.twitter.com/apps
-2) register for a klout api key here (you need to register a seperate account first): http://developer.klout.com/apps/mykeys
-3) muting users is now possible with one "funny" exception: you can not do it directly from within the client itself.
+2) register for a klout api key here: http://developer.klout.com/apps/mykeys
+3) register for an imgur api key here: http://imgur.com/register/api_anon
+4) muting users is now possible with one "funny" exception: you can not do it directly from within the client itself.
    instead, i decided to use the events system available in userstreams, specifically the "block" and "unblock" events.
    so with that said, you will need to go to the official site and block said user you want to mute, and vice versa
-   to unmute. pretty simple in the end, just not so obvious at first.
+   to unmute. pretty simple in the end, just not so obvious at first. also, if you can access the "localstorage" within
+   your browser, you can mess with this and client + hashtag muting (seperate each entry with a space).
