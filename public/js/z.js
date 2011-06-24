@@ -1170,7 +1170,7 @@ function z_engine_tweet(data, output)
 	}
 	var client_blocked = false;
 	var hashtag_blocked = false;
-	var mentions_blocked = false;
+	var mention_blocked = false;
 	var user_blocked = false;
 	if (output != "dms")
 	{
@@ -1183,29 +1183,34 @@ function z_engine_tweet(data, output)
 			}
 		});
 	}
-	$w(store.get('hashtag_blocks')).uniq().each(function(item)
+	if (entities)
 	{
-		if (item == source)
+		if (typeof(entities.hashtags) == "object")
 		{
-			hashtag_blocked = true;
-			$break;
+			$w(store.get('hashtag_blocks')).uniq().each(function(item)
+			{
+				entities.hashtags.uniq().each(function(tag)
+				{
+					if (item == tag)
+					{
+						hashtag_blocked = true;
+						$break;
+					}
+				});
+			});
 		}
-	});
-	if (!entities)
-	{
-		var mention_blocked = false;
-	}
-	else
-	{
 		if (typeof(entities.user_mentions) == "object")
 		{
-			entities.user_mentions.uniq().each(function(item)
+			$w(store.get('mention_blocks')).uniq().each(function(item)
 			{
-				if (item == author)
+				entities.user_mentions.uniq().each(function(user)
 				{
-					mentions_blocked = true;
-					$break;
-				}
+					if (item == user)
+					{
+						mention_blocked = true;
+						$break;
+					}
+				});
 			});
 		}
 	}
