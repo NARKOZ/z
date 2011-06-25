@@ -59,8 +59,8 @@ if (!store.get('users'))
 {
 	store.set('users', "");
 }
-var window_height =  document.viewport.getDimensions().height-Number(25);
-var window_width =  document.viewport.getDimensions().width-Number(25);
+var window_height =  document.viewport.getDimensions().height-Number(30);
+var window_width =  document.viewport.getDimensions().width-Number(30);
 
 /* set up some of our effects */
 new S2.FX.Base(
@@ -108,7 +108,7 @@ function z_engine_attrition()
 			var reader = new FileReader();
 			reader.onload = function(img)
 			{
-				bg_image.setStyle("background: url('"+img.target.result+"') repeat left top;");
+				$(document.body).setStyle("background-url('"+img.target.result+"'); repeat left top;");
 			};
 			reader.readAsDataURL(dropped);
 			return false;
@@ -1083,6 +1083,33 @@ function z_engine_set_klout(data, id)
 			}
 		}
 	}
+}
+
+/* shorten urls to goo.gl */
+function z_engine_shorten_urls()
+{
+	//should work but doesnt due to access-control
+	var tweet = $("new-tweet").getValue().replace(/((https?\:\/\/)|(www\.))([^ ]+)/g,function(url)
+	{
+		var form = new FormData();
+		form.append("auth_token", googl(url));
+		form.append("url", url);
+		form.append("user", "toolbar@google.com");
+		var shortened_url = url;
+		var xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function()
+		{
+			if(this.readyState == 4 && this.status == 200)
+			{
+				var response = this.responseText.evalJSON(true);
+				shortened_url = response.short_url;
+			}
+		}
+		xhr.open("GET", "http://goo.gl/api/url", true);
+		xhr.send(form);
+		return shortened_url;
+	});
+	$("new-tweet").setValue(tweet);
 }
 
 /* output at max one tweet per second */
