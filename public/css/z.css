@@ -749,6 +749,10 @@ div.growls div.large
 	display: inline-block;
 	margin: auto;
 }
+.klout
+{
+	cursor: pointer;
+}
 ::selection
 {
 	background: rgba(175,175,175,0.4);

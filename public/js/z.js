@@ -1470,9 +1470,10 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 			{
 				var klout_element = new Element('span', {'class': 'klout'});
 				klout_element.update(" ");
-				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
+				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score'});
 				klout_element.insert({'top': klout_img_element});
 				$("left-"+id).insert({'top': klout_element});
+				new Element.extend(klout_img_element);
 			}
 			if ($("av-"+id))
 			{
@@ -1535,22 +1536,6 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 					$("right-"+id+"-mentioned").insert({'bottom': del_img_element});
 				}
 				new Element.extend(del_img_element);
-			}
-			if ($("left-"+id) && !$('klout-'+id))
-			{
-				var klout_element = new Element('span', {'class': 'klout'});
-				klout_element.update(" ");
-				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
-				klout_element.insert({'top': klout_img_element});
-				$("left-"+id).insert({'top': klout_element});
-			}
-			if ($("left-"+id+"-mentioned") && !$('klout-'+id+'-mentioned'))
-			{
-				var klout_element = new Element('span', {'class': 'klout'});
-				klout_element.update(" ");
-				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id+'-mentioned', 'alt': '', 'title': 'click to get this users klout score', 'style': 'cursor: pointer;'});
-				klout_element.insert({'top': klout_img_element});
-				$("left-"+id+"-mentioned").insert({'top': klout_element});
 			}
 			if ($("av-"+id))
 			{
