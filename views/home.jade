@@ -1,11 +1,11 @@
-.comment-list-wrapper
+#container(class='comment-list-wrapper')
   #sub-nav(class='navigation')
     ul.tabbed
       li(style='float:right;')
         a#logout(href='#') logout
       li(style='float:right;')
         a#clear(href='#') clear
-      li#image(title='drop images here', style='display: none; float: right;') image
+      li#image(style='display: none; float: right;') image
       li(style='float:right')
         a#pause(href='#') pause
       li(style='float:right')
@@ -26,8 +26,6 @@
     ul.tabbed
       li#new-tweet-input-li
         input#new-tweet(type='text', disabled='disabled', placeholder='write your tweet here and submit!', style='width:98%;', value='loading...')
-
-  .hr
 
   ul#home-timeline
     li

@@ -15,7 +15,7 @@ if (!store.get('client_blocks'))
 store.set('connect_id', CONNECT_SID);
 var content = Array(); //holds our tweets, allows us to prune it later / not display the same tweet more than twice
 var content_queued = Array(); //holds our realtime tweets
-var dms_cutoff = 150; //max amount of tweets to display before pruning occurs on all dms
+var dms_cutoff = 50; //max amount of tweets to display before pruning occurs on all dms
 var dms_loaded = 0; //quick method to hide each dm timelines loading image without needing to write a ton of code to do it
 var dm_to = false; //catch dm reply
 var following = Array(); //holds our following id's array
@@ -25,7 +25,7 @@ if (!store.get('hashtag_blocks'))
 {
 	store.set('hashtag_blocks', "");
 }
-var home_cutoff = 200; //max amount of tweets to display before pruning occurs on the home timeline
+var home_cutoff = 150; //max amount of tweets to display before pruning occurs on the home timeline
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
 var latit = false; //hold our latitude
 var longit = false; //hold our longitude
@@ -37,7 +37,7 @@ else
 {
 	var max_fpx = 120; //otherwise open the throttle all the way for effects
 }
-var mentions_cutoff = 150; //max amount of tweets to display before pruning occurs on the mentions timeline
+var mentions_cutoff = 100; //max amount of tweets to display before pruning occurs on the mentions timeline
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var pttid = 0; //this serves as the (#) amount displayed when paused
 var prune_tweets_interval = 60000; //start the pruning loop over again every minute
@@ -59,6 +59,8 @@ if (!store.get('users'))
 {
 	store.set('users', "");
 }
+var window_height =  document.viewport.getDimensions().height-Number(25);
+var window_width =  document.viewport.getDimensions().width-Number(25);
 
 /* set up some of our effects */
 new S2.FX.Base(
@@ -84,28 +86,60 @@ function z_engine_attrition()
 	{
 		window.webkitNotifications.requestPermission();
 	}
-	if (typeof(window.FileReader) === "function" && BrowserDetect.browser != "MSIE")
+	if (window.File && window.FileReader && window.FileList && window.Blob)
 	{
+		var bg_image = $("container");
 		var image = $("image");
 		image.show();
-		image.ondragover = function()
+		bg_image.ondragover = function(event)
 		{
+			event.preventDefault();
+			return false;
+		}
+		bg_image.ondragend = function(event)
+		{
+			event.preventDefault();
+			return false;
+		}
+		bg_image.ondrop = function (event)
+		{
+			event.preventDefault();
+			var dropped = event.dataTransfer.files[0];
+			var reader = new FileReader();
+			reader.onload = function(img)
+			{
+				bg_image.setStyle("background: url('"+img.target.result+"') repeat left top;");
+			};
+			reader.readAsDataURL(dropped);
+			return false;
+		}
+		image.ondragover = function(event)
+		{
+			event.preventDefault();
 			image.setStyle("border-color: #aaa;");
 			return false;
-		};
-		image.ondragend = function()
+		}
+		image.ondragend = function(event)
 		{
+			event.preventDefault();
 			image.setStyle("border-color: #ddd;");
 			return false;
-		};
-		image.ondrop = function (error)
+		}
+		image.ondrop = function (event)
 		{
-			error.preventDefault();
-			var dropped = error.dataTransfer.files[0];
+			event.preventDefault();
+			var dropped = event.dataTransfer.files[0];
 			z_engine_dropped_image(dropped);
 			return false;
-		};
+		}
+		image.addTip("drag and drop images here!",
+		{
+			className: 'user',
+			showOn: 'click',
+			target: true
+		});
 	}
+	$("container").setStyle("width: "+window_width+"px; height: "+window_height+"px;");
 	$("loading-home").center(8);
 	$("loading-mentions").center(8);
 	$("loading-inbox").center(8);
