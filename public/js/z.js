@@ -724,38 +724,13 @@ function z_engine_dropped_image(image)
 	var form = new FormData();
 	form.append("image", image);
 	form.append("key", imgur_key);
-	/*new Ajax.Request("http://api.imgur.com/2/upload.json",
-	{
-		method: "POST",
-		parameters: form,
-		onFailure: function(transport)
-		{
-			$("image").setStyle("border-color: red;");
-			setTimeout(function()
-			{
-				$("image").setStyle("border-color: #ddd;");
-			},3000);
-		},
-		onSuccess: function(transport)
-		{
-			var response = transport.responseText.evalJSON(true);
-			var image_url = response.upload.links.original;
-			var current_tweet = $("new-tweet").getValue();
-			if (current_tweet.length > 0)
-			{
-				var new_tweet = current_tweet+" "+image_url;
-			}
-			else if (current_tweet.length == 0)
-			{
-				var new_tweet = image_url;
-			}
-			$("new-tweet").setValue(new_tweet);
-			$("image").setStyle("border-color: #ddd;");
-		}
-	});*/
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function()
 	{
+		if(this.readyState == 3)
+		{
+			$("image").setStyle("border-color: yellow;");
+		}
 		if(this.readyState == 4 && this.status == 200)
 		{
 			var response = this.responseText.evalJSON(true);
@@ -770,11 +745,19 @@ function z_engine_dropped_image(image)
 				var new_tweet = image_url;
 			}
 			$("new-tweet").setValue(new_tweet);
-			$("image").setStyle("border-color: #ddd;");
+			$("image").setStyle("border-color: green;");
+			setTimeout(function()
+			{
+				$("image").setStyle("border-color: #ddd;");
+			},1500);
 		}
 		if(this.readyState == 4 && this.status != 200)
 		{
 			$("image").setStyle("border-color: red;");
+			setTimeout(function()
+			{
+				$("image").setStyle("border-color: #ddd;");
+			},1500);
 		}
 	}
 	xhr.open("POST", "http://api.imgur.com/2/upload.json", true);
@@ -878,7 +861,7 @@ function z_engine_parse_tweet(text)
 	}
 	else
 	{
-		text = twttr.txt.autoLink(text, {hashtagUrlBase: 'https://search.twitter.com/search?q=%23'}); //autolink everything
+		text = twttr.txt.autoLink(text); //autolink everything
 		text = text.replace(/\n\r?/g, '<br />'); //convert linebreaks into html linebreaks
 		return text;
 	}
@@ -1345,7 +1328,7 @@ function z_engine_tweet(data, output)
 							}
 							if (output != "dms" && place && place.full_name)
 							{
-								var place_element = new Element('span');
+								var place_element = new Element('span', {'class': 'place'});
 								var place_link_element = new Element('a', {'target': '_blank', href: 'http://maps.google.com?q='+place.full_name});
 								var place_img_element = new Element('img', {'src': 'img/plc.png', 'alt': ''});
 								place_link_element.update(place_img_element);
