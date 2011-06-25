@@ -888,7 +888,7 @@ function z_engine_prune_tweets()
 				$(item).remove();
 			}
 		});
-	},10000);
+	},15000);
 	setTimeout(function()
 	{
 		var dm_elements = $("dms-inbox-timeline").childElements();
@@ -899,7 +899,7 @@ function z_engine_prune_tweets()
 				$(item).remove();
 			}
 		});
-	},20000);
+	},30000);
 	setTimeout(function()
 	{
 		var dm_sent_elements = $("dms-outbox-timeline").childElements();
@@ -910,7 +910,7 @@ function z_engine_prune_tweets()
 				$(item).remove();
 			}
 		});
-	},30000);
+	},45000);
 }
 
 /* reply to a specific tweet */

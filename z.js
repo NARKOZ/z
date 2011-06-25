@@ -79,6 +79,7 @@ server.dynamicHelpers(
 	}
 });
 
+/* index, does some detection on sessions */
 server.get('/',function(req, res)
 {
 	gzip.gzip();
@@ -106,6 +107,7 @@ server.get('/',function(req, res)
 	}
 });
 
+/* initial logging in */
 server.get('/oauth/login', function(req, res)
 {
 	var tw = new twitter(key, secret);
@@ -127,6 +129,7 @@ server.get('/oauth/login', function(req, res)
 	});
 });
 
+/* oauth callback */
 server.get('/oauth/callback', function(req, res)
 {
 	if (!req.session.oauth)
@@ -165,24 +168,22 @@ server.get('/oauth/logout', function(req, res)
 if (!module.parent)
 {
 	server.listen(port);
-	console.log('z is listening on port '+server.address().port);
 }
 
+/* gzipping */
 gzip.gzip({matchType: /audio/});
 gzip.gzip({matchType: /css/});
 gzip.gzip({matchType: /js/});
 gzip.gzip({matchType: /socket.io/});
 
 /*
- * the socket connection event which gets the gears started
+ * socket.io
  */
+
+/* the socket connection event which gets the gears started */
 socket.on('sconnection', function(client, session)
 {
-	if (typeof(session.oauth) === "undefined")
-	{
-		//do nothing?
-	}
-	else
+	if (typeof(session.oauth) === "object")
 	{
 		try
 		{
@@ -198,19 +199,25 @@ socket.on('sconnection', function(client, session)
 		}
 		catch(e)
 		{
-			console.error('ERROR: ' + e);
+			console.error('ERROR: '+sys.inspect(e));
 		}
 	}
 });
 
+/* log to console that an invalid session was found but do nothing further than this */
 socket.on('sinvalid', function(client)
 {
-	console.error('Client connected with an invalid session id, ignoring');
+	console.error('client connected with an invalid session id, ignoring');
 });
 
-/*
- * callback function to handle message based events coming from our client via websocket
- */
+/* error handling */
+socket.on('error', function(error)
+{
+	if (error.errno === process.ECONNRESET)
+	{/* prevent an error from being spit out, this is expected behavior! */}
+});
+
+/* callback function to handle message based events coming from our client via websocket */
 function z_engine_message_handler(tw, session, client, message)
 {
 	if (message.status)
@@ -282,9 +289,7 @@ function z_engine_message_handler(tw, session, client, message)
 	}
 }
 
-/*
- * start and handle the userstream
- */
+/* start and handle the userstream */
 function z_engine_streaming_handler(tw, client, session)
 {
 	if(tw && client && session)
@@ -318,9 +323,7 @@ function z_engine_streaming_handler(tw, client, session)
 	}
 }
 
-/*
- * callback function to send static resources via websocket to client
- */
+/* callback function to send static resources via websocket to client */
 function z_engine_static_timeline_fetch(tw, client, session, params, output)
 {
 	switch (output)
