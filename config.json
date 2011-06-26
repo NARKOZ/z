@@ -1,0 +1,11 @@
+{
+	"oauth_key": "",
+	"oauth_secret": "",
+	"imgur_key": "",
+	"klout_key": "",
+	"port": 8080,
+	"startup_count": 50,
+	"storage_fingerprint": "",
+	"storage_secret": "",
+	"storage_type": "memory"
+}

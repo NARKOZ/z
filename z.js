@@ -1,31 +1,32 @@
+/*
+ * vars and configuration
+ */
+var config = config = require('./lib/vendor/config').config;
 var express = require('express');
 var gzip = require('connect-gzip');
+var json = require('jsonreq');
 var io = require('socket.io');
 var sio = require('socket.io-sessions');
 var sys = require('sys');
 var twitter = require('./lib/vendor/twitter');
 
-/*
- * start configuration
- */
+var key = config.oauth_key;
+var secret = config.oauth_secret;
 
-var key = "your_consumer_key_here"; //consumer key
-var secret = "your_consumer_secret_here"; //consumer secret
+var imgur_key = config.imgur_key;
 
-var imgur_key = "your_imgur_api_key_here"; //imgur key
+var klout_key = config.klout_key;
 
-var klout_key = "your_klout_api_key_here"; //klout key
+var port = config.port;
 
-var port = 8080;
+var startup_count = config.startup_count; //initial amount of tweets to grab before we start streaming
 
-var startup_count = 100; //initial amount of tweets to grab before we start streaming
-
-var storage_fingerprint = "";
-var storage_secret = "you_should_change_this";
-var storage_type = "memory"; //can be "meory", or "redis" currently
+var storage_fingerprint = config.storage_fingerprint;
+var storage_secret = config.storage_secret;
+var storage_type = config.storage_type;
 
 /*
- * end configuration
+ * server
  */
 
 var klout = require('./lib/vendor/klout')(klout_key);
@@ -202,12 +203,16 @@ socket.on('sconnection', function(client, session)
 			console.error('ERROR: '+sys.inspect(e));
 		}
 	}
+	else
+	{
+		//it appears this user has a session but no oauth tokens, just ignore
+	}
 });
 
 /* log to console that an invalid session was found but do nothing further than this */
 socket.on('sinvalid', function(client)
 {
-	console.error('client connected with an invalid session id, ignoring');
+	//invalid session, ignore
 });
 
 /* error handling */
@@ -240,32 +245,61 @@ function z_engine_message_handler(tw, session, client, message)
 	{
 		switch (message.fetch)
 		{
-			case 'account':
-				z_engine_static_timeline_fetch(tw, client, session, {include_entities: true}, "account");
-			break;
 			case 'dms-inbox':
-				z_engine_static_timeline_fetch(tw, client, session, {count: startup_count, include_entities: true}, "dms-inbox");
+				tw.getInbox({count: startup_count, include_entities: true}, function(error, data, response)
+				{
+					if(!error)
+					{
+						client.json.send({dms: data.reverse()});
+					}
+				});
 			break;
 			case 'dms-outbox':
-				z_engine_static_timeline_fetch(tw, client, session, {count: startup_count, include_entities: true}, "dms-outbox");
-			break;
-			case 'home':
-				z_engine_static_timeline_fetch(tw, client, session, {type: 'home_timeline', count: startup_count, include_entities: true}, "home");
+				tw.getOutbox({count: startup_count, include_entities: true}, function(error, data, response)
+				{
+					if(!error)
+					{
+						client.json.send({dms: data.reverse()});
+					}
+				});
 			break;
 			case 'klout':
-				z_engine_static_timeline_fetch(tw, client, session, {user: [message.screen_name], id_str: message.id_str}, "klout");
+				klout.show(message.screen_name, function(error, data)
+				{
+					if(error)
+					{
+						client.json.send({klout: "error", id_str: message.id_str});
+					}
+					else
+					{
+						client.json.send({klout: data, id_str: message.id_str});
+					}
+				});
 			break;
 			case 'mentions':
-				z_engine_static_timeline_fetch(tw, client, session, {type: 'mentions', count: startup_count, include_entities: true}, "mentions");
-			break;
-			case 'retweets':
-				z_engine_static_timeline_fetch(tw, client, session, {type: 'retweeted_of_me', count: startup_count, include_entities: true}, "retweets");
+				tw.getTimeline({type: 'mentions', count: startup_count, include_entities: true}, function(error, data, response)
+				{
+					client.json.send({info: 
+					{
+						screen_name: session.oauth._results.screen_name,
+						user_id: session.oauth._results.user_id
+					}});
+					client.json.send({mentions: data});
+				});
 			break;
 			case 'userstream':
 				z_engine_streaming_handler(tw, client, session);
 			break;
 			default:
-				z_engine_static_timeline_fetch(tw, client, session, {type: 'home_timeline', count: startup_count, include_entities: true}, "home");
+				tw.getTimeline({count: startup_count, include_entities: true}, function(error, data, response)
+				{
+					client.json.send({info: 
+					{
+						screen_name: session.oauth._results.screen_name,
+						user_id: session.oauth._results.user_id
+					}});
+					client.json.send({home: data.reverse()});
+				});
 			break;
 		}
 	}
@@ -320,80 +354,5 @@ function z_engine_streaming_handler(tw, client, session)
 				client.json.send({server_event: 'end'});
 			});
 		});
-	}
-}
-
-/* callback function to send static resources via websocket to client */
-function z_engine_static_timeline_fetch(tw, client, session, params, output)
-{
-	switch (output)
-	{
-		case 'account':
-			tw.getAccount(true, function(error, data, response)
-			{
-				if(!error)
-				{
-					client.json.send({account: data});
-				}
-			});
-		break;
-		case 'dms-inbox':
-			tw.getInbox(params, function(error, data, response)
-			{
-				if(!error)
-				{
-					client.json.send({dms: data.reverse()});
-				}
-			});
-		break;
-		case 'dms-outbox':
-			tw.getOutbox(params, function(error, data, response)
-			{
-				if(!error)
-				{
-					client.json.send({dms: data.reverse()});
-				}
-			});
-		break;
-		case 'klout':
-			klout.show(params.user, function (error, data)
-			{
-				if(error)
-				{
-					client.json.send({klout: "error", id_str: params.id_str});
-				}
-				else
-				{
-					client.json.send({klout: data, id_str: params.id_str});
-				}
-			});
-		break;
-		case 'home':
-		case 'mentions':
-		case 'retweets':
-			tw.getTimeline(params, function(error, data, response)
-			{
-				if(!error)
-				{
-					switch (output)
-					{
-						case 'home':
-							client.json.send({info: 
-							{
-								screen_name: session.oauth._results.screen_name,
-								user_id: session.oauth._results.user_id
-							}});
-							client.json.send({home: data.reverse()});
-						break;
-						case 'mentions':
-							client.json.send({mentions: data}); //dont reverse this, we handle mentions differently than all current timelines at the moment
-						break;
-						case 'retweets':
-							client.json.send({retweets: data.reverse()});
-						break;
-					}
-				}
-			});
-		break;
 	}
 }
