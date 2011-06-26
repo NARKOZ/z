@@ -101,7 +101,7 @@ function z_engine_attrition()
 			event.preventDefault();
 			return false;
 		}
-		bg_image.ondrop = function (event)
+		bg_image.ondrop = function(event)
 		{
 			event.preventDefault();
 			var dropped = event.dataTransfer.files[0];
@@ -212,8 +212,8 @@ function z_engine_attrition()
 				z_engine_clicker("home-timeline-click", "home-timeline"); //home
 				z_engine_clicker("mentions-timeline-click", "mentions-timeline"); //mentions
 				z_engine_clicker("dms-timeline-click", "dms-timeline"); //dms
-				z_engine_dms_clicker("dms-inbox-timeline-click", "dms-inbox-timeline");
-				z_engine_dms_clicker("dms-outbox-timeline-click", "dms-outbox-timeline");
+				z_engine_clicker_dms("dms-inbox-timeline-click", "dms-inbox-timeline");
+				z_engine_clicker_dms("dms-outbox-timeline-click", "dms-outbox-timeline");
 				socket.emit("message", {fetch: "home"});
 				var populate_mentions_tab = setTimeout(function()
 				{
@@ -393,6 +393,36 @@ function z_engine_attrition()
 				$("loading-home").fade();
 				$("loading-mentions").appear();
 			}
+			else if (json.imgur)
+			{
+				if (json.imgur != "error")
+				{
+					var image_url = json.imgur.upload.links.original;
+					var current_tweet = $("new-tweet").getValue();
+					if (current_tweet.length > 0)
+					{
+						var new_tweet = current_tweet+" "+image_url;
+					}
+					else if (current_tweet.length == 0)
+					{
+						var new_tweet = image_url;
+					}
+					$("new-tweet").setValue(new_tweet);
+					$("image").setStyle("border-color: green;");
+					setTimeout(function()
+					{
+						$("image").setStyle("border-color: #ddd;");
+					},1500);
+				}
+				else
+				{
+					$("image").setStyle("border-color: red;");
+					setTimeout(function()
+					{
+						$("image").setStyle("border-color: #ddd;");
+					},1500);
+				}
+			}
 			else if (json.info)
 			{
 				screen_name = json.info.screen_name;
@@ -410,16 +440,19 @@ function z_engine_attrition()
 				}
 				else
 				{
-					$("klout-"+id).setStyle('cursor: default;');
-					$("klout-"+id).setAttribute('onclick', '');
-					$("klout-"+id).addTip('<big><strong>?</strong></big>',
+					if ($("klout-"+id))
 					{
-						className: 'klout',
-						stem: true,
-						target: true,
-						targetJoint: ['left', 'top'],
-						tipJoint: ['right', 'bottom']
-					});
+						$("klout-"+id).setStyle('cursor: default;');
+						$("klout-"+id).setAttribute('onclick', '');
+						$("klout-"+id).addTip('<big><strong>?</strong></big>',
+						{
+							className: 'klout',
+							stem: true,
+							target: true,
+							targetJoint: ['left', 'top'],
+							tipJoint: ['right', 'bottom']
+						});
+					}
 				}
 			}
 			else if (json.mentions) //realtime mentions DO NOT come through here, this is the initial 50 that we throw in there
@@ -467,6 +500,16 @@ function z_engine_attrition()
 						$("new-tweet").enable();
 					break;
 				}
+			}
+			else if (json.shorten)
+			{
+				console.log(JSON.stringify(json.shorten));
+				var current_tweet = $("new-tweet").getValue();
+				if (current_tweet.search(json.original))
+				{
+					current_tweet.replace(json.original, json.shorten);
+				}
+				$("new-tweet").setValue(current_tweet);
 			}
 			else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
 			{
@@ -600,7 +643,7 @@ function z_engine_clicker(id, this_id)
 }
 
 /* a more specific clicker for the inbox / outbox page */
-function z_engine_dms_clicker(id, this_id)
+function z_engine_clicker_dms(id, this_id)
 {
 	new Event.observe(id, "click", function(event)
 	{
@@ -753,6 +796,7 @@ function z_engine_drop_tweet(id)
 	}
 }
 
+/* handle image uploads */
 function z_engine_dropped_image(image)
 {
 	var form = new FormData();
@@ -1089,27 +1133,10 @@ function z_engine_set_klout(data, id)
 function z_engine_shorten_urls()
 {
 	//should work but doesnt due to access-control
-	var tweet = $("new-tweet").getValue().replace(/((https?\:\/\/)|(www\.))([^ ]+)/g,function(url)
+	$("new-tweet").getValue().replace(/((https?\:\/\/)|(www\.))([^ ]+)/g,function(url)
 	{
-		var form = new FormData();
-		form.append("auth_token", googl(url));
-		form.append("url", url);
-		form.append("user", "toolbar@google.com");
-		var shortened_url = url;
-		var xhr = new XMLHttpRequest();
-		xhr.onreadystatechange = function()
-		{
-			if(this.readyState == 4 && this.status == 200)
-			{
-				var response = this.responseText.evalJSON(true);
-				shortened_url = response.short_url;
-			}
-		}
-		xhr.open("GET", "http://goo.gl/api/url", true);
-		xhr.send(form);
-		return shortened_url;
+		socket.emit("message", {shorten: url});
 	});
-	$("new-tweet").setValue(tweet);
 }
 
 /* output at max one tweet per second */
@@ -1269,11 +1296,11 @@ function z_engine_tweet(data, output)
 	if (!content[id] && !client_blocked && !hashtag_blocked && !mention_blocked && !user_blocked)
 	{
 		var userinfo = "";
-		if (description != "" || description != null || description != "null")
+		if (description != null)
 		{
 				userinfo += description+'<br /><br />';
 		}
-		if (location != "" || location != null || location != "null")
+		if (location != null)
 		{
 			userinfo += 'location: '+location+'<br />';
 		}
