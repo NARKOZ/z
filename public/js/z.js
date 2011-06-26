@@ -28,6 +28,7 @@ if (!store.get('hashtag_blocks'))
 var home_cutoff = 150; //max amount of tweets to display before pruning occurs on the home timeline
 var ids = Array(); //work in progress to get the "just now" to update every 15 / 20 seconds
 var latit = false; //hold our latitude
+var loaded = false; //not loaded
 var longit = false; //hold our longitude
 if (!S2.Extensions.HardwareAcceleratedCSSTransitions)
 {
@@ -86,113 +87,119 @@ function z_engine_attrition()
 	{
 		window.webkitNotifications.requestPermission();
 	}
-	if (window.File && window.FileReader && window.FileList && window.Blob)
+	if (!loaded)
 	{
-		var bg_image = $("container");
-		var image = $("image");
-		image.show();
-		bg_image.ondragover = function(event)
+		if (window.File && window.FileReader && window.FileList && window.Blob)
 		{
-			event.preventDefault();
-			return false;
-		}
-		bg_image.ondragend = function(event)
-		{
-			event.preventDefault();
-			return false;
-		}
-		bg_image.ondrop = function(event)
-		{
-			event.preventDefault();
-			var dropped = event.dataTransfer.files[0];
-			var reader = new FileReader();
-			reader.onload = function(img)
+			var bg_image = $("container");
+			var image = $("image");
+			image.show();
+			bg_image.ondragover = function(event)
 			{
-				$(document.body).setStyle("background-url('"+img.target.result+"'); repeat left top;");
-			};
-			reader.readAsDataURL(dropped);
-			return false;
+				event.preventDefault();
+				return false;
+			}
+			bg_image.ondragend = function(event)
+			{
+				event.preventDefault();
+				return false;
+			}
+			bg_image.ondrop = function(event)
+			{
+				event.preventDefault();
+				var dropped = event.dataTransfer.files[0];
+				var reader = new FileReader();
+				reader.onload = function(img)
+				{
+					$(document.body).setStyle("background-url('"+img.target.result+"'); repeat left top;");
+				};
+				reader.readAsDataURL(dropped);
+				return false;
+			}
+			image.ondragover = function(event)
+			{
+				event.preventDefault();
+				image.setStyle("border-color: #aaa;");
+				return false;
+			}
+			image.ondragend = function(event)
+			{
+				event.preventDefault();
+				image.setStyle("border-color: #ddd;");
+				return false;
+			}
+			image.ondrop = function (event)
+			{
+				event.preventDefault();
+				var dropped = event.dataTransfer.files[0];
+				z_engine_dropped_image(dropped);
+				return false;
+			}
+			image.addTip("drag and drop images here!",
+			{
+				className: 'user',
+				showOn: 'click',
+				target: true
+			});
 		}
-		image.ondragover = function(event)
+		$("container").setStyle("width: "+window_width+"px; height: "+window_height+"px;");
+		$("loading-home").center(8);
+		$("loading-mentions").center(8);
+		$("loading-inbox").center(8);
+		$("loading-outbox").center(8);
+		new Event.observe("logout","click",function(event)
 		{
-			event.preventDefault();
-			image.setStyle("border-color: #aaa;");
-			return false;
-		}
-		image.ondragend = function(event)
+			Event.stop(event);
+			return z_engine_logout();
+		});
+		new Event.observe("pause","click",function(event)
 		{
-			event.preventDefault();
-			image.setStyle("border-color: #ddd;");
-			return false;
-		}
-		image.ondrop = function (event)
+			Event.stop(event);
+			return z_engine_tweet_pause();
+		});
+		new Event.observe("shorten","click",function(event)
 		{
-			event.preventDefault();
-			var dropped = event.dataTransfer.files[0];
-			z_engine_dropped_image(dropped);
-			return false;
-		}
-		image.addTip("drag and drop images here!",
+			Event.stop(event);
+			return z_engine_shorten_urls();
+		});
+		new Event.observe("new-tweet","keyup",function(event)
 		{
-			className: 'user',
-			showOn: 'click',
-			target: true
+			if($("new-tweet").getValue().length === 0)
+			{
+				dm_to = false;
+				reply_id = false;
+			}
+			else if($("new-tweet").getValue().length <= 140)
+			{
+				$("new-tweet").setStyle("color: #4d4d4d;");
+			}
+			else if($("new-tweet").getValue().length >= 141)
+			{
+				$("new-tweet").setStyle("color: red;");
+			}
+		});
+		new Event.observe("new-tweet","keydown",function(event)
+		{
+			if($("new-tweet").getValue().length === 0)
+			{
+				reply_id = false;
+			}
+			else if($("new-tweet").getValue().length <= 140)
+			{
+				$("new-tweet").setStyle("color: #4d4d4d;");
+			}
+			else if($("new-tweet").getValue().length >= 141)
+			{
+				$("new-tweet").setStyle("color: red;");
+			}
 		});
 	}
-	$("container").setStyle("width: "+window_width+"px; height: "+window_height+"px;");
-	$("loading-home").center(8);
-	$("loading-mentions").center(8);
-	$("loading-inbox").center(8);
-	$("loading-outbox").center(8);
-	new Event.observe("logout","click",function(event)
-	{
-		Event.stop(event);
-		return z_engine_logout();
-	});
-	new Event.observe("pause","click",function(event)
-	{
-		Event.stop(event);
-		return z_engine_tweet_pause();
-	});
-	new Event.observe("shorten","click",function(event)
-	{
-		Event.stop(event);
-		return z_engine_shorten_urls();
-	});
-	new Event.observe("new-tweet","keyup",function(event)
-	{
-		if($("new-tweet").getValue().length === 0)
-		{
-			dm_to = false;
-			reply_id = false;
-		}
-		else if($("new-tweet").getValue().length <= 140)
-		{
-			$("new-tweet").setStyle("color: #4d4d4d;");
-		}
-		else if($("new-tweet").getValue().length >= 141)
-		{
-			$("new-tweet").setStyle("color: red;");
-		}
-	});
-	new Event.observe("new-tweet","keydown",function(event)
-	{
-		if($("new-tweet").getValue().length === 0)
-		{
-			reply_id = false;
-		}
-		else if($("new-tweet").getValue().length <= 140)
-		{
-			$("new-tweet").setStyle("color: #4d4d4d;");
-		}
-		else if($("new-tweet").getValue().length >= 141)
-		{
-			$("new-tweet").setStyle("color: red;");
-		}
-	});
 	socket.on("connect",function()
 	{
-		$("new-tweet").setValue("connected...");
+		if (!loaded)
+		{
+			$("new-tweet").setValue("connected...");
+		}
 	});
 	socket.on("message", function(json)
 	{
@@ -200,8 +207,9 @@ function z_engine_attrition()
 		if (string.isJSON() && string.evalJSON(true)) //quick sanity check before we begin
 		{
 			string = ""; //dont need it anymore
-			if (json.loaded)
+			if (json.loaded && !loaded)
 			{
+				loaded = true;
 				$("new-tweet").setValue("");
 				$("new-tweet").enable();
 				new Event.observe("new-tweet-form", "submit", function(event)
@@ -487,17 +495,20 @@ function z_engine_attrition()
 				switch (json.server_event)
 				{
 					case 'end':
-						z_engine_notification("", "notice!", "lost connection to the userstream, reconnecting...");
-						socket.disconnect();
-						socket.connect();
-						$("new-tweet").enable();
-						socket.emit({fetch: "userstream"});
+						$("new-tweet").disable();
+						z_engine_notification("", "notice!", "lost connection to the userstream, refreshing page in 5...");
+						setTimeout(function()
+						{
+							window.location = "/";
+						},5000);
 					break;
 					case 'error':
-						z_engine_notification("", "notice!", "userstream error occurred, reconnecting...");
-						socket.disconnect();
-						socket.connect();
-						$("new-tweet").enable();
+						$("new-tweet").disable();
+						z_engine_notification("", "notice!", "userstream error occurred, refreshing page in 5...");
+						setTimeout(function()
+						{
+							window.location = "/";
+						},5000);
 					break;
 				}
 			}
@@ -540,6 +551,10 @@ function z_engine_attrition()
 	socket.on('disconnect', function()
 	{
 		$("new-tweet").disable();
+		setTimeout(function()
+		{
+			window.location = "/";
+		},5000);
 	});
 }
 
@@ -1132,11 +1147,14 @@ function z_engine_set_klout(data, id)
 /* shorten urls to goo.gl */
 function z_engine_shorten_urls()
 {
-	//should work but doesnt due to access-control
-	$("new-tweet").getValue().replace(/((https?\:\/\/)|(www\.))([^ ]+)/g,function(url)
+	var current_tweet = $("new-tweet").getValue();
+	if (current_tweet.length > 0)
 	{
-		socket.emit("message", {shorten: url});
-	});
+		current_tweet.replace(/((https?\:\/\/)|(www\.))([^ ]+)/g,function(url)
+		{
+			socket.emit("message", {shorten: url});
+		});
+	}
 }
 
 /* output at max one tweet per second */

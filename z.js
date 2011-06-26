@@ -1,27 +1,23 @@
 /*
- * vars and configuration
+ * vars
  */
 var config = config = require('./lib/vendor/config').config;
 var express = require('express');
 var gzip = require('connect-gzip');
-var json = require('jsonreq');
 var io = require('socket.io');
-var querystring = require('querystring');
 var sio = require('socket.io-sessions');
 var sys = require('sys');
 var twitter = require('./lib/vendor/twitter');
 
+/*
+ * these vars are pulled in automatically from config.json
+ */
 var key = config.oauth_key;
 var secret = config.oauth_secret;
-
 var imgur_key = config.imgur_key;
-
 var klout_key = config.klout_key;
-
 var port = config.port;
-
-var startup_count = config.startup_count; //initial amount of tweets to grab before we start streaming
-
+var startup_count = config.startup_count;
 var storage_fingerprint = config.storage_fingerprint;
 var storage_secret = config.storage_secret;
 var storage_type = config.storage_type;
@@ -31,6 +27,7 @@ var storage_type = config.storage_type;
  */
 
 var klout = require('./lib/vendor/klout')(klout_key);
+var shorten = require('./lib/vendor/shorten')();
 var server = module.exports = express.createServer();
 switch (storage_type)
 {
@@ -200,7 +197,7 @@ socket.on('sconnection', function(client, session)
 		}
 		catch(e)
 		{
-			console.error('ERROR: '+sys.inspect(e));
+			console.error('oauth session issue: '+sys.inspect(e));
 		}
 	}
 	else
@@ -218,15 +215,8 @@ socket.on('sinvalid', function(client)
 /* error handling */
 socket.on('error', function(error)
 {
-	try
-	{
-		if (error.errno === process.ECONNRESET)
-		{/* prevent an error from being spit out, this is expected behavior! */}
-	}
-	catch(e)
-	{
-		console.error('ERROR: '+sys.inspect(e));
-	}
+	if (error.errno === process.ECONNRESET)
+	{/* prevent an error from being spit out, this is expected behavior! */}
 });
 
 /* callback function to handle message based events coming from our client via websocket */
@@ -326,12 +316,11 @@ function z_engine_message_handler(tw, session, client, message)
 	}
 	else if (message.shorten)
 	{
-		var url = querystring.escape(message.shorten);
-		json.get("http://is.gd/create.php?format=json&url="+url,function(error, data)
+		shorten.fetch(message.shorten, function(error, data)
 		{
 			if (!error)
 			{
-				client.json.send({shorten: data.shorturl, original: message.shorten});
+				client.json.send({shorten: data, original: message.shorten});
 			}
 		});
 	}
@@ -356,7 +345,7 @@ function z_engine_streaming_handler(tw, client, session)
 				}
 				catch(e)
 				{
-					console.error('dispatch event ERROR: ' + sys.inspect(e));
+					console.error('userstream message error: '+sys.inspect(e));
 				}
 			});
 			client.on('disconnect', function()
