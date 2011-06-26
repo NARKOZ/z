@@ -118,7 +118,6 @@ server.get('/oauth/login', function(req, res)
 		{
 			req.session.destroy(function()
 			{
-				res.writeHead(500, {'Content-Type': 'text/html'});
 				res.send("there was an issue building the url..<a href='/'>return</a>");
 			});
 		}
