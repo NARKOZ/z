@@ -144,11 +144,6 @@ function z_engine_attrition()
 	$("loading-mentions").center(8);
 	$("loading-inbox").center(8);
 	$("loading-outbox").center(8);
-	new Event.observe("clear","click",function(event)
-	{
-		Event.stop(event);
-		return z_engine_tweet_clear();
-	});
 	new Event.observe("logout","click",function(event)
 	{
 		Event.stop(event);
@@ -158,6 +153,11 @@ function z_engine_attrition()
 	{
 		Event.stop(event);
 		return z_engine_tweet_pause();
+	});
+	new Event.observe("shorten","click",function(event)
+	{
+		Event.stop(event);
+		return z_engine_shorten_urls();
 	});
 	new Event.observe("new-tweet","keyup",function(event)
 	{
@@ -504,11 +504,7 @@ function z_engine_attrition()
 			else if (json.shorten)
 			{
 				console.log(JSON.stringify(json.shorten));
-				var current_tweet = $("new-tweet").getValue();
-				if (current_tweet.search(json.original))
-				{
-					current_tweet.replace(json.original, json.shorten);
-				}
+				var current_tweet = $("new-tweet").getValue().replace(json.original, json.shorten);
 				$("new-tweet").setValue(current_tweet);
 			}
 			else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
@@ -1033,7 +1029,7 @@ function z_engine_send_tweet()
 	if ($("new-tweet").getValue().length > 0 && $("new-tweet").getValue().length <= 140)
 	{
 		$("new-tweet").disable();
-		var temp_element = $("new-tweet").getValue();
+		var temp_element = $("new-tweet").getValue().strip();
 		var send = new Hash();
 		if (!dm_to) //handle regular tweet
 		{
@@ -1062,9 +1058,13 @@ function z_engine_send_tweet()
 		}
 		else //handle direct message
 		{
+			if (temp_element.startsWith("~"))
+			{
+				temp_element.replace(/~/i,"");
+			}
 			var send = {
 				direct_message: {
-					text: temp_element.replace(/~/i,""),
+					text: temp_element,
 					user_id: dm_to
 				}
 			}
@@ -1662,35 +1662,6 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 			$("right-"+id).insert({'bottom': del_img_element});
 		break;
 	}
-}
-
-/* clear everything out (view & content var wise) */
-function z_engine_tweet_clear()
-{
-	if ($("home-timeline").visible())
-	{
-		var timeline = "home-timeline";
-	}
-	else if ($("mentions-timeline").visible())
-	{
-		var timeline = "mentions-timeline";
-	}
-	else if ($("dms-inbox-timeline").visible())
-	{
-		var timeline = "dms-inbox-timeline";
-	}
-	else if ($("dms-outbox-timeline").visible())
-	{
-		var timeline = "dms-outbox-timeline";
-	}
-	$(timeline).fade(
-	{
-		after: function()
-		{
-			$(timeline).update();
-			$(timeline).appear();
-		}
-	});
 }
 
 /* see if we were mentioned, this is faster than parsing through the text itself */

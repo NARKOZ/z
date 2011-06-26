@@ -6,6 +6,7 @@ var express = require('express');
 var gzip = require('connect-gzip');
 var json = require('jsonreq');
 var io = require('socket.io');
+var querystring = require('querystring');
 var sio = require('socket.io-sessions');
 var sys = require('sys');
 var twitter = require('./lib/vendor/twitter');
@@ -188,14 +189,14 @@ socket.on('sconnection', function(client, session)
 		try
 		{
 			var tw = new twitter(key, secret, session.oauth);
-			client.json.send({loaded: true});
-			client.on('message', function(message)
+			if(tw)
 			{
-				if(tw)
+				client.json.send({loaded: true});
+				client.on('message', function(message)
 				{
 					z_engine_message_handler(tw, session, client, message);
-				}
-			});
+				});
+			}
 		}
 		catch(e)
 		{
@@ -211,14 +212,21 @@ socket.on('sconnection', function(client, session)
 /* log to console that an invalid session was found but do nothing further than this */
 socket.on('sinvalid', function(client)
 {
-	//invalid session, ignore
+	//invalid session, just ignore
 });
 
 /* error handling */
 socket.on('error', function(error)
 {
-	if (error.errno === process.ECONNRESET)
-	{/* prevent an error from being spit out, this is expected behavior! */}
+	try
+	{
+		if (error.errno === process.ECONNRESET)
+		{/* prevent an error from being spit out, this is expected behavior! */}
+	}
+	catch(e)
+	{
+		console.error('ERROR: '+sys.inspect(e));
+	}
 });
 
 /* callback function to handle message based events coming from our client via websocket */
@@ -290,7 +298,7 @@ function z_engine_message_handler(tw, session, client, message)
 				z_engine_streaming_handler(tw, client, session);
 			break;
 			default:
-				tw.getTimeline({count: startup_count, include_entities: true}, function(error, data, response)
+				tw.getTimeline({type: 'home_timeline', count: startup_count, include_entities: true}, function(error, data, response)
 				{
 					client.json.send({info: 
 					{
@@ -313,6 +321,17 @@ function z_engine_message_handler(tw, session, client, message)
 			if(!error)
 			{
 				client.json.send({retweet_info: data});
+			}
+		});
+	}
+	else if (message.shorten)
+	{
+		var url = querystring.escape(message.shorten);
+		json.get("http://is.gd/create.php?format=json&url="+url,function(error, data)
+		{
+			if (!error)
+			{
+				client.json.send({shorten: data.shorturl, original: message.shorten});
 			}
 		});
 	}
