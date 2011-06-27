@@ -263,18 +263,21 @@ function z_engine_message_handler(tw, session, client, message)
 			case 'mentions':
 				tw.getTimeline({type: 'mentions', count: startup_count, include_entities: true}, function(error, data, response)
 				{
-					client.json.send({info: 
+					if(!error)
 					{
-						screen_name: session.oauth._results.screen_name,
-						user_id: session.oauth._results.user_id
-					}});
-					client.json.send({mentions: data});
+						client.json.send({mentions: data});
+					}
 				});
 			break;
 			case 'userstream':
 				z_engine_streaming_handler(tw, client, session);
 			break;
 			default:
+				client.json.send({info: 
+				{
+					screen_name: session.oauth._results.screen_name,
+					user_id: session.oauth._results.user_id
+				}});
 				tw.getTimeline({type: 'home_timeline', count: startup_count, include_entities: true}, function(error, data, response)
 				{
 					client.json.send({info: 
@@ -322,6 +325,20 @@ function z_engine_message_handler(tw, session, client, message)
 			if (!error)
 			{
 				client.json.send({shorten: data, original: message.shorten});
+			}
+		});
+	}
+	else if (message.show)
+	{
+		tw.show(message.show.id_str, {include_entities: true}, function(error, data, response)
+		{
+			if(error)
+			{
+				console.log(error);
+			}
+			else
+			{
+				client.json.send({show: data});
 			}
 		});
 	}
