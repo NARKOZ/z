@@ -626,12 +626,9 @@ function z_engine_clicker(id, this_id)
 				})
 			],
 			{
-				duration: 1,
-				after: function()
-				{
-					$("threaded-timeline").update();
-				}
+				duration: 1
 			});
+			$("threaded-timeline").update();
 		}
 	});
 }
