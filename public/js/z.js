@@ -202,7 +202,6 @@ function z_engine_attrition()
 	socket.on("message", function(json)
 	{
 		var string = JSON.stringify(json);
-		console.log(string);
 		if (string.isJSON() && string.evalJSON(true)) //quick sanity check before we begin
 		{
 			string = ""; //dont need it anymore
