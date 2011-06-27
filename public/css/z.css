@@ -47,8 +47,9 @@ li
 .huge, h1
 {
 	text-shadow: rgba(215,215,215,0.3) 5px 5px 8px;
-	-moz-user-select: none;
 	-khtml-user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
 	-webkit-user-select: none;
 	cursor: default;
 	font: normal 90% "Open Sans", sans-serif;
@@ -155,9 +156,10 @@ li
 	-khtml-user-select: text;
 	-moz-border-radius: 5px;
 	-moz-user-select: text;
+	-o-border-radius: 5px;
+	-o-user-select: text;
 	-webkit-border-radius: 5px;
 	-webkit-user-select: text;
-	-o-user-select: text;
 	user-select: text;
 	background: #FFF;
 	border: 1px solid #DDD;
@@ -169,6 +171,7 @@ li
 	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 }
 .comment-body-mentioned
@@ -176,6 +179,7 @@ li
 	box-shadow: 2px 2px 5px #FFB4B8;
 	-khtml-box-shadow: 2px 2px 5px #FFB4B8;
 	-moz-box-shadow: 2px 2px 5px #FFB4B8;
+	-o-box-shadow: 2px 2px 5px #FFB4B8;
 	-webkit-box-shadow: 3px 3px 2px 2px #FFB4B8;
 }
 .comment-body-me
@@ -183,6 +187,7 @@ li
 	box-shadow: 2px 2px 5px #BDC3FF;
 	-khtml-box-shadow: 2px 2px 5px #BDC3FF;
 	-moz-box-shadow: 2px 2px 5px #BDC3FF;
+	-o-box-shadow: 2px 2px 5px #BDC3FF;
 	-webkit-box-shadow: 3px 3px 2px 2px #BDC3FF;
 }
 .comment-arrow
@@ -197,6 +202,7 @@ li
 }
 .comment-list-wrapper
 {
+	min-height: 100%;
 	padding: 5px 12px 10px 7px;
 	behavior: url(border-radius.htc);
 }
@@ -226,6 +232,7 @@ li
 	border-radius: 4px;
 	-khtml-border-radius: 4px;
 	-moz-border-radius: 4px;
+	-o-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	behavior: url(border-radius.htc);
 }
@@ -269,6 +276,9 @@ input, textarea
 	-moz-border-radius: 4px;
 	-moz-box-shadow: 0 0 4px #eee, inset 0 0 4px #eee;
 	-moz-transition: all .20s ease-in-out;
+	-o-border-radius: 4px;
+	-o-box-shadow: 0 0 4px #eee, inset 0 0 4px #eee;
+	-o-transition: all .20s ease-in-out;
 	-webkit-border-radius: 4px;
 	-webkit-box-shadow: 0 0 4px #eee, inset 0 0 4px #eee;
 	-webkit-transition: all .20s ease-in-out;
@@ -283,6 +293,7 @@ textarea, textarea:hover, textarea:focus, textarea:disabled
 	transition: all .20s ease-in-out;
 	-khtml-transition: all .20s ease-in-out;
 	-moz-transition: all .20s ease-in-out;
+	-o-transition: all .20s ease-in-out;
 	-webkit-transition: all .20s ease-in-out;
 }
 input[type="text"]:hover, textarea:hover
@@ -292,17 +303,19 @@ input[type="text"]:hover, textarea:hover
 	border: 1px solid #c4c4c4;
 	-khtml-box-shadow: 0 0 4px #fefefe, inset 0 0 4px #fefefe;
 	-moz-box-shadow: 0 0 4px #fefefe, inset 0 0 4px #fefefe;
+	-o-box-shadow: 0 0 4px #fefefe, inset 0 0 4px #fefefe;
 	-webkit-box-shadow: 0 0 4px #fefefe, inset 0 0 4px #fefefe;
 	filter:progid:DXImageTransform.Microsoft.Shadow (color=#fefefe, Direction=135, Strength=5);
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=#fefefe, Direction=135, Strength=5)";
 }
 input[type="text"]:focus, textarea:focus
 {
-	box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
+	box-shadow: 0 0 4px #456, inset 0 0 4px rgba(81, 203, 238, 0.75);
 	background-color: #fefefe;
-	border: 1px solid rgba(81, 203, 238, 0.75);
+	border: 1px solid #c4c4c4;
 	-khtml-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
 	-moz-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
+	-o-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
 	-webkit-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
 	filter:progid:DXImageTransform.Microsoft.Shadow (color=rgba(81, 203, 238, 0.75), Direction=135, Strength=5);
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=rgba(81, 203, 238, 0.75), Direction=135, Strength=5)";
@@ -314,6 +327,7 @@ input[type="text"]:disabled, textarea:disabled
 	border: 1px solid rgba(255,0,0,0.25);
 	-khtml-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
 	-moz-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
+	-o-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
 	-webkit-box-shadow: 0 0 4px rgba(255,0,0,0.25), inset 0 0 4px rgba(255,0,0,0.25);
 	filter:progid:DXImageTransform.Microsoft.Shadow (color=red, Direction=135, Strength=5);
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=red, Direction=135, Strength=5)";
@@ -339,6 +353,9 @@ input[type="text"]:disabled, textarea:disabled
 	-moz-border-radius: 2px;
 	-moz-box-shadow: 0 0 2px 2px #F6F6F6;
 	-moz-transition: all .20s ease-in-out;
+	-o-border-radius: 2px;
+	-o-box-shadow: 0 0 2px 2px #F6F6F6;
+	-o-transition: all .20s ease-in-out;
 	-webkit-border-radius: 2px;
 	-webkit-box-shadow: 0 0 2px 2px #F6F6F6;
 	-webkit-transition: all .20s ease-in-out;
@@ -370,6 +387,9 @@ input[type="text"]:disabled, textarea:disabled
 	-moz-border-radius: 2px;
 	-moz-box-shadow: 0 0 2px 2px #F6F6F6;
 	-moz-transition: all .20s ease-in-out;
+	-o-border-radius: 2px;
+	-o-box-shadow: 0 0 2px 2px #F6F6F6;
+	-o-transition: all .20s ease-in-out;
 	-webkit-border-radius: 2px;
 	-webkit-box-shadow: 0 0 2px 2px #F6F6F6;
 	-webkit-transition: all .20s ease-in-out;
@@ -391,6 +411,7 @@ input[type="text"]:disabled, textarea:disabled
 	transition: all .20s ease-in-out;
 	-khtml-transition: all .20s ease-in-out;
 	-moz-transition: all .20s ease-in-out;
+	-o-transition: all .20s ease-in-out;
 	-webkit-transition: all .20s ease-in-out;
 }
 #sub-nav li a:hover
@@ -403,6 +424,8 @@ input[type="text"]:disabled, textarea:disabled
 	-khtml-transition: all .20s ease-in-out;
 	-moz-box-shadow: 0 0 2px 2px #FFF;
 	-moz-transition: all .20s ease-in-out;
+	-o-box-shadow: 0 0 2px 2px #FFF;
+	-o-transition: all .20s ease-in-out;
 	-webkit-box-shadow: 0 0 2px 2px #FFF;
 	-webkit-transition: all .20s ease-in-out;
 	behavior: url(border-radius.htc);
@@ -460,6 +483,8 @@ div.growls div.black
 	-khtml-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	-moz-border-radius: 5px;
 	-moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	-o-border-radius: 5px;
+	-o-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	-webkit-border-radius: 5px;
 	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	behavior: url(border-radius.htc);
@@ -473,6 +498,7 @@ div.growls div.small
 	margin: 5px;
 	-khtml-border-radius: 5px;
 	-moz-border-radius: 5px;
+	-o-border-radius: 5px;
 	-webkit-border-radius: 5px;
 	behavior: url(border-radius.htc);
 }
@@ -485,6 +511,7 @@ div.growls div.medium
 	margin: 10px;
 	-khtml-border-radius: 10px;
 	-moz-border-radius: 10px;
+	-o-border-radius: 10px;
 	-webkit-border-radius: 10px;
 	behavior: url(border-radius.htc);
 }
@@ -497,6 +524,7 @@ div.growls div.large
 	margin: 15px;
 	-khtml-border-radius: 15px;
 	-moz-border-radius: 15px;
+	-o-border-radius: 15px;
 	-webkit-border-radius: 15px;
 	behavior: url(border-radius.htc);
 }
@@ -507,17 +535,19 @@ div.growls div.large
 .dialog-window
 {
 	border-radius: 5px;
+	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-khtml-border-radius: 5px;
 	-khtml-user-select: text;
 	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-moz-border-radius: 5px;
 	-moz-user-select: text;
 	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	-o-border-radius: 5px;
+	-o-user-select: text;
+	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-webkit-border-radius: 5px;
 	-webkit-user-select: text;
 	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
-	-o-user-select: text;
-	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	user-select: text;
 	background: #FFF;
 	border: 1px solid #DDD;
@@ -542,6 +572,8 @@ div.growls div.large
 	-khtml-transition-property: left, top;
 	-moz-transition-duration: 0.2s, 0.2s;
 	-moz-transition-property: left, top;
+	-o-transition-duration: 0.2s, 0.2s;
+	-o-transition-property: left, top;
 	-webkit-transition-duration: 0.2s, 0.2s;
 	-webkit-transition-property: left, top;
 }
@@ -600,6 +632,8 @@ div.growls div.large
 	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-moz-border-radius: 5px;
 	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	-o-border-radius: 5px;
+	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-webkit-border-radius: 5px;
 	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	behavior: url(border-radius.htc);
@@ -629,6 +663,8 @@ div.growls div.large
 	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-moz-border-radius: 5px;
 	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	-o-border-radius: 5px;
+	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-webkit-border-radius: 5px;
 	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	behavior: url(border-radius.htc);
@@ -677,10 +713,12 @@ div.growls div.large
 	-khtml-transition-property: opacity, -khtml-transform;
 	-moz-transition-duration: 1s;
 	-moz-transition-property: opacity, -moz-transform;
-	transition-duration: 1s;
-	transition-property: opacity, transform;
+	-o-transition-duration: 1s;
+	-o-transition-property: opacity, -moz-transform;
 	-webkit-transition-duration: 1s;
 	-webkit-transition-property: opacity, -webkit-transform;
+	transition-duration: 1s;
+	transition-property: opacity, transform;
 	opacity: 1;
 }
 .ot-container.ot-css3.ot-completely-hidden
@@ -698,6 +736,7 @@ div.growls div.large
 	transform: scale(0);
 	-khtml-transform: scale(0);
 	-moz-transform: scale(0);
+	-o-transform: scale(0);
 	-webkit-transform: scale(0);
 }
 .ot-container.ot-css3.ot-becoming-visible.ot-show-blindDown,
@@ -707,6 +746,7 @@ div.growls div.large
 	transform: scaleY(0);
 	-khtml-transform: scaleY(0);
 	-moz-transform: scaleY(0);
+	-o-transform: scaleY(0);
 	-webkit-transform: scaleY(0);
 	opacity: 0;
 }
@@ -716,6 +756,7 @@ div.growls div.large
 	transform: scale(5);
 	-khtml-transform: scale(5);
 	-moz-transform: scale(5);
+	-o-transform: scale(5);
 	-webkit-transform: scale(5);
 	opacity: 0;
 }
@@ -742,6 +783,10 @@ div.growls div.large
 	-moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	-moz-transition-duration: 0.35s;
 	-moz-transition-property: all, -moz-transform;
+	-o-border-radius: 5px;
+	-o-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+	-o-transition-duration: 0.35s;
+	-o-transition-property: all, -moz-transform;
 	-webkit-border-radius: 5px;
 	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	-webkit-transition-duration: 0.35s;
@@ -752,6 +797,7 @@ div.growls div.large
 	transform: scale(1.15);
 	-khtml-transform: scale(1.15);
 	-moz-transform: scale(1.15);
+	-o-transform: scale(1.15);
 	-webkit-transform: scale(1.15);
 }
 .loading
