@@ -1357,10 +1357,8 @@ function z_engine_tweet(data, output)
 		var container_element = new Element('li', {'id': 'comment-'+id, 'class': 'comment-parent', 'style': 'display: none; opacity: 0;'});
 			var profile_wrapper_element = new Element('div', {'class': 'comment-profile-wrapper left'});
 				var gravatar_element = new Element('div', {'class': 'comment-gravatar'});
-					var gravatar_author_link_element = new Element('a', {'target': '_blank', href: 'http://twitter.com/'+author});
-						var gravatar_author_img_element = new Element('img', {'id': 'av-'+id, 'src': avatar, 'style': 'height: 50px; width: 50px; cursor: pointer;', 'alt': ''});
-						gravatar_author_link_element.insert(gravatar_author_img_element);
-						gravatar_element.insert(gravatar_author_link_element);
+					var gravatar_author_img_element = new Element('img', {'id': 'av-'+id, 'src': avatar, 'style': 'height: 50px; width: 50px; cursor: pointer;', 'alt': ''});
+					gravatar_element.insert(gravatar_author_img_element);
 				profile_wrapper_element.insert(gravatar_element);
 			var comment_content_element = new Element('div', {'id': 'comment-'+id+'content', 'class': 'comment-content-wrapper right'});
 			if (author != screen_name)
@@ -1599,9 +1597,11 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 			}
 			if ($("av-"+id))
 			{
-				$("av-"+id).addTip(userinfo,
+				$("av-"+id).addTip(z_engine_parse_tweet(userinfo),
 				{
 					className: 'user',
+					hideDelay: 3,
+					showOn: 'click',
 					offset: [11, 0],
 					stem: true,
 					target: true,
