@@ -25,7 +25,6 @@ var storage_type = config.storage_type;
 /*
  * server
  */
-
 var klout = require('./lib/vendor/klout')(klout_key);
 var shorten = require('./lib/vendor/shorten')();
 var server = module.exports = express.createServer();
@@ -155,6 +154,7 @@ server.get('/oauth/callback', function(req, res)
 	}
 });
 
+/* destroy all session information (including the id) */
 server.get('/oauth/logout', function(req, res)
 {
 	req.session.destroy(function()
@@ -260,19 +260,6 @@ function z_engine_message_handler(tw, session, client, message)
 					}
 				});
 			break;
-			case 'klout':
-				klout.show(message.screen_name, function(error, data)
-				{
-					if(error)
-					{
-						client.json.send({klout: "error", id_str: message.id_str});
-					}
-					else
-					{
-						client.json.send({klout: data, id_str: message.id_str});
-					}
-				});
-			break;
 			case 'mentions':
 				tw.getTimeline({type: 'mentions', count: startup_count, include_entities: true}, function(error, data, response)
 				{
@@ -303,6 +290,20 @@ function z_engine_message_handler(tw, session, client, message)
 	else if (message.favorite)
 	{
 		tw.favorite(message.favorite.status.id_str);
+	}
+	else if (message.klout)
+	{
+		klout.show(message.klout, function(error, data)
+		{
+			if(error)
+			{
+				client.json.send({klout: "error", id_str: message.id_str});
+			}
+			else
+			{
+				client.json.send({klout: data, id_str: message.id_str});
+			}
+		});
 	}
 	else if (message.retweet)
 	{

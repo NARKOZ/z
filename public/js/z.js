@@ -30,13 +30,14 @@ var ids = Array(); //work in progress to get the "just now" to update every 15 /
 var latit = false; //hold our latitude
 var loaded = false; //not loaded
 var longit = false; //hold our longitude
+var max_file_size = 2; //in megabytes
 if (!S2.Extensions.HardwareAcceleratedCSSTransitions)
 {
 	var max_fps = 30; //limit all effects to no more than this amount of fps so we dont have hanging / major chopping
 }
 else
 {
-	var max_fpx = 120; //otherwise open the throttle all the way for effects
+	var max_fps = 120; //otherwise open the throttle all the way for effects
 }
 var mentions_cutoff = 100; //max amount of tweets to display before pruning occurs on the mentions timeline
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
@@ -262,9 +263,9 @@ function z_engine_attrition()
 					}
 				},stream_queue_interval);
 			}
-			else if (json.account)
+			else if (json.loaded && loaded)
 			{
-				store.set('account', json.account);
+				$("new-tweet").enable();
 			}
 			else if (json["delete"]) //catch it like this, it can cause errors in other browsers like opera
 			{
@@ -401,11 +402,11 @@ function z_engine_attrition()
 				$("loading-home").fade();
 				$("loading-mentions").appear();
 			}
-			else if (json.imgur)
+			else if (json.image)
 			{
-				if (json.imgur != "error")
+				if (json.image != "error")
 				{
-					var image_url = json.imgur.upload.links.original;
+					var image_url = json.image.upload.links.original;
 					var current_tweet = $("new-tweet").getValue();
 					if (current_tweet.length > 0)
 					{
@@ -810,47 +811,62 @@ function z_engine_drop_tweet(id)
 /* handle image uploads */
 function z_engine_dropped_image(image)
 {
-	var form = new FormData();
-	form.append("image", image);
-	form.append("key", imgur_key);
-	var xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = function()
+	if (image.size <= max_file_size * 1024 * 1024)
 	{
-		if(this.readyState == 3)
+		switch(image.type)
 		{
-			$("image").setStyle("border-color: yellow;");
-		}
-		if(this.readyState == 4 && this.status == 200)
-		{
-			var response = this.responseText.evalJSON(true);
-			var image_url = response.upload.links.original;
-			var current_tweet = $("new-tweet").getValue();
-			if (current_tweet.length > 0)
-			{
-				var new_tweet = current_tweet+" "+image_url;
-			}
-			else if (current_tweet.length == 0)
-			{
-				var new_tweet = image_url;
-			}
-			$("new-tweet").setValue(new_tweet);
-			$("image").setStyle("border-color: green;");
-			setTimeout(function()
-			{
-				$("image").setStyle("border-color: #ddd;");
-			},1500);
-		}
-		if(this.readyState == 4 && this.status != 200)
-		{
-			$("image").setStyle("border-color: red;");
-			setTimeout(function()
-			{
-				$("image").setStyle("border-color: #ddd;");
-			},1500);
+			case 'application/pdf':
+			case 'image/apng':
+			case 'image/bmp':
+			case 'image/gif':
+			case 'image/jpeg':
+			case 'image/jpg':
+			case 'image/png':
+			case 'image/tiff':
+				var form = new FormData();
+				form.append("image", image);
+				form.append("key", imgur_key);
+				var xhr = new XMLHttpRequest();
+				xhr.onreadystatechange = function()
+				{
+					if(this.readyState == 3)
+					{
+						$("image").setStyle("border-color: yellow;");
+					}
+					if(this.readyState == 4 && this.status == 200)
+					{
+						var response = this.responseText.evalJSON(true);
+						var image_url = response.upload.links.original;
+						var current_tweet = $("new-tweet").getValue();
+						if (current_tweet.length > 0)
+						{
+							var new_tweet = current_tweet+" "+image_url;
+						}
+						else if (current_tweet.length == 0)
+						{
+							var new_tweet = image_url;
+						}
+						$("new-tweet").setValue(new_tweet);
+						$("image").setStyle("border-color: green;");
+						setTimeout(function()
+						{
+							$("image").setStyle("border-color: #ddd;");
+						},1500);
+					}
+					if(this.readyState == 4 && this.status != 200)
+					{
+						$("image").setStyle("border-color: red;");
+						setTimeout(function()
+						{
+							$("image").setStyle("border-color: #ddd;");
+						},1500);
+					}
+				}
+				xhr.open("POST", "http://api.imgur.com/2/upload.json", true);
+				xhr.send(form);
+			break;
 		}
 	}
-	xhr.open("POST", "http://api.imgur.com/2/upload.json", true);
-	xhr.send(form);
 }
 
 /* favorite a tweet */
@@ -894,7 +910,7 @@ function z_engine_geolocation_error(err)
 /* get a users klout score */
 function z_engine_get_klout(author, id)
 {
-	socket.emit("message", {fetch: "klout", screen_name: author, id_str: id});
+	socket.emit("message", {klout: author, id_str: id});
 }
 
 /* properly log out a user */
