@@ -6,7 +6,7 @@ ElementExtensions = {
 		var viewPort = document.viewport.getDimensions();
 		var offsets = document.viewport.getScrollOffsets();
 		var centerX = viewPort.width / 2 + offsets.left - elementDims.width / 2;
-		if (BrowserDetect.browser != "Firefox")
+		if (BrowserDetect.browser == "Chrome" || BrowserDetect.browser == "Safari")
 		{
 			centerX = centerX - offset;
 		}
