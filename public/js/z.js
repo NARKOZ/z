@@ -1733,6 +1733,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 			{
 				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': 'img/del.png', 'id': 'del-'+id, 'alt': ''});
 				new Element.extend(del_img_element);
+				$("right-"+id).update();
 				$("right-"+id).insert({'bottom': del_img_element});
 			}
 		break;
@@ -1797,10 +1798,12 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 				new Element.extend(del_img_element);
 				if ($("right-"+id))
 				{
+					$("right-"+id).update();
 					$("right-"+id).insert({'bottom': del_img_element});
 				}
 				if ($("right-"+id+"-mentioned"))
 				{
+					$("right-"+id+"-mentioned").update();
 					$("right-"+id+"-mentioned").insert({'bottom': del_img_element});
 				}
 			}
@@ -1846,6 +1849,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 				new Element.extend(del_img_element);
 				if ($("right-"+id+"-threaded"))
 				{
+					$("right-"+id+"-threaded").update();
 					$("right-"+id+"-threaded").insert({'bottom': del_img_element});
 				}
 			}
