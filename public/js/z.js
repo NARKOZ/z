@@ -503,7 +503,7 @@ function z_engine_attrition()
 				}
 				if (json.retweeted_status && json.retweeted_status.user.screen_name == screen_name && json.user.screen_name != screen_name)
 				{
-					z_engine_notification(json.stream.user.profile_image_url, "@"+json.stream.user.screen_name+" retweeted you!", json.stream.retweeted_status.text);
+					z_engine_notification(json.user.profile_image_url, "@"+json.user.screen_name+" retweeted you!", json.retweeted_status.text);
 				}
 			}
 		}
