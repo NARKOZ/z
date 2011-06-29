@@ -113,6 +113,7 @@ function z_engine_attrition()
 		if (window.File && window.FileReader && window.FileList && window.Blob)
 		{
 			var image = $("image");
+			image.setAttribute("title", "drop images here!");
 			image.show();
 			image.ondragover = function(event)
 			{
@@ -126,19 +127,19 @@ function z_engine_attrition()
 				image.setStyle("border-color: #ddd;");
 				return false;
 			}
-			image.ondrop = function (event)
+			image.ondrop = function(event)
 			{
 				event.preventDefault();
 				var dropped = event.dataTransfer.files[0];
 				z_engine_dropped_image(dropped);
 				return false;
 			}
-			image.addTip("drag and drop images here!",
+			image.ondragleave = function(event)
 			{
-				className: 'user',
-				showOn: 'click',
-				target: true
-			});
+				event.preventDefault();
+				image.setStyle("border-color: #ddd;");
+				return false;
+			}
 		}
 		$("loading-home").center(8);
 		$("loading-mentions").center(8);
@@ -935,7 +936,6 @@ function z_engine_logout()
 	socket.disconnect();
 	$("new-tweet").disable();
 	$("new-tweet").setValue("see ya!");
-	store.remove('account');
 	store.remove('friends');
 	store.remove('screen_name');
 	store.remove('user_id');
