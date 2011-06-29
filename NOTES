@@ -1,4 +1,7 @@
 1) register your application here: https://dev.twitter.com/apps
+   be sure to set the application type to "browser", use "http://127.0.0.1:8080/oauth/callback" as the callback url.
+   copy the oauth key and secret into config.json (and change anything you would like in there)...
+   be sure to change the storage_secret to something other than blank - it is a salt for sessions!
 2) register for a klout api key here: http://developer.klout.com/apps/mykeys
 3) register for an imgur api key here: http://imgur.com/register/api_anon
 4) muting users is now possible with one "funny" exception: you can not do it directly from within the client itself.
