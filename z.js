@@ -1,13 +1,13 @@
 /*
  * vars
  */
-var config = config = require('./lib/vendor/config').config;
+var config = config = require('./vendor/config').config;
 var express = require('express');
 var gzip = require('connect-gzip');
 var io = require('socket.io');
 var sio = require('socket.io-sessions');
 var sys = require('sys');
-var twitter = require('./lib/vendor/twitter');
+var twitter = require('./vendor/twitter');
 
 /*
  * these vars are pulled in automatically from config.json
@@ -25,8 +25,8 @@ var storage_type = config.storage_type;
 /*
  * server
  */
-var klout = require('./lib/vendor/klout')(klout_key);
-var shorten = require('./lib/vendor/shorten')();
+var klout = require('./vendor/klout')(klout_key);
+var shorten = require('./vendor/shorten')();
 var server = module.exports = express.createServer();
 switch (storage_type)
 {
@@ -189,6 +189,11 @@ socket.on('sconnection', function(client, session)
 			if(tw)
 			{
 				client.json.send({loaded: true});
+				client.json.send({info: 
+				{
+					screen_name: session.oauth._results.screen_name,
+					user_id: session.oauth._results.user_id
+				}});
 				client.on('message', function(message)
 				{
 					z_engine_message_handler(tw, session, client, message);
@@ -260,6 +265,15 @@ function z_engine_message_handler(tw, session, client, message)
 					}
 				});
 			break;
+			case 'home':
+				tw.getTimeline({type: 'home_timeline', count: startup_count, include_entities: true}, function(error, data, response)
+				{
+					if(!error)
+					{
+						client.json.send({home: data.reverse()});
+					}
+				});
+			break;
 			case 'mentions':
 				tw.getTimeline({type: 'mentions', count: startup_count, include_entities: true}, function(error, data, response)
 				{
@@ -269,24 +283,17 @@ function z_engine_message_handler(tw, session, client, message)
 					}
 				});
 			break;
+			case 'rates':
+				tw.rateLimit(function(error, data, response)
+				{
+					if(!error)
+					{
+						client.json.send({rates: data});
+					}
+				});
+			break;
 			case 'userstream':
 				z_engine_streaming_handler(tw, client, session);
-			break;
-			default:
-				client.json.send({info: 
-				{
-					screen_name: session.oauth._results.screen_name,
-					user_id: session.oauth._results.user_id
-				}});
-				tw.getTimeline({type: 'home_timeline', count: startup_count, include_entities: true}, function(error, data, response)
-				{
-					client.json.send({info: 
-					{
-						screen_name: session.oauth._results.screen_name,
-						user_id: session.oauth._results.user_id
-					}});
-					client.json.send({home: data.reverse()});
-				});
 			break;
 		}
 	}

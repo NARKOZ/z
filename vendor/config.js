@@ -1,7 +1,7 @@
 //originally from here: https://github.com/cramforce/streamie/blob/master/lib/config.js
 function init()
 {
-	var filename = __dirname+"/../../config.json";
+	var filename = __dirname+"/../config.json";
 	var text = require("fs").readFileSync(filename);
 	if(!text)
 	{
