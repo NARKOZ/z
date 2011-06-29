@@ -319,34 +319,56 @@ function z_engine_attrition()
 				switch (json.event)
 				{
 					case 'block':
-						var current_blocks = $w(store.get('user_blocks')).uniq();
-						var exists = false;
-						current_blocks.each(function(item)
+						var _mention_blocks = $w(store.get('mention_blocks')).uniq();
+						var user_blocks = $w(store.get('user_blocks')).uniq();
+						var mention_exists = false;
+						var user_exists = false;
+						mention_blocks.each(function(item)
 						{
 							if (item == json.target.screen_name)
 							{
-								exists = true;
+								mention_exists = true;
 								$break;
 							}
 						});
-						if (!exists)
+						user_blocks.each(function(item)
 						{
-							var new_block = json.target.screen_name;
-							var blocks = current_blocks.join(" ")+" "+new_block;
-							store.set('user_blocks', blocks);
+							if (item == json.target.screen_name)
+							{
+								user_exists = true;
+								$break;
+							}
+						});
+						if (!mention_exists)
+						{
+							store.set('mention_blocks', current_blocks.join(" ")+" "+json.target.screen_name);
+						}
+						if (!user_exists)
+						{
+							store.set('user_blocks', current_blocks.join(" ")+" "+json.target.screen_name);
 						}
 					break;
 					case 'unblock':
-						var current_blocks = $w(store.get('user_blocks')).uniq();
-						var new_blocks = "";
-						current_blocks.each(function(item)
+						var mention_blocks = $w(store.get('user_blocks')).uniq();
+						var user_blocks = $w(store.get('user_blocks')).uniq();
+						var new_mention_blocks = "";
+						var new_user_blocks = "";
+						mention_blocks.each(function(item)
 						{
 							if (item != json.target.screen_name)
 							{
-								new_blocks += item+" ";
+								new_mention_blocks += item+" ";
 							}
 						});
-						store.set('user_blocks', new_blocks);
+						user_blocks.each(function(item)
+						{
+							if (item != json.target.screen_name)
+							{
+								new_user_blocks += item+" ";
+							}
+						});
+						store.set('mention_blocks', new_mention_blocks);
+						store.set('user_blocks', new_user_blocks);
 					break;
 					case 'favorite':
 						if (json.source.screen_name != screen_name)
@@ -1358,7 +1380,7 @@ function z_engine_tweet(data, output)
 			{
 				entities.hashtags.uniq().each(function(tag)
 				{
-					if (item == tag)
+					if (item.replace("'","") == tag)
 					{
 						hashtag_blocked = true;
 						$break;
