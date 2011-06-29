@@ -35,6 +35,7 @@ var kloutinfo_params = {
 	targetJoint: ['left', 'top'],
 	tipJoint: ['right', 'bottom']
 }
+var latest_threaded_id = 0;
 var latit = false; //hold our latitude
 var loaded = false; //not loaded
 var longit = false; //hold our longitude
@@ -629,8 +630,9 @@ function z_engine_clicker(id, this_id)
 			{
 				duration: 1
 			});
-			$("threaded-timeline").update();
 		}
+		$("threaded-timeline").update();
+		latest_threaded_id = 0;
 	});
 }
 
@@ -731,24 +733,7 @@ function z_engine_drop_tweet(id)
 		}
 		setTimeout(function()
 		{
-			new S2.FX.Parallel(
-			[
-				new Effect.Fade('comment-'+id,
-				{
-					duration: 1.25,
-					mode: 'relative',
-					transition: 'easeOutSine'
-				}),
-				new Effect.BlindUp('comment-'+id,
-				{
-					duration: 1,
-					mode: 'relative',
-					transition: 'easeOutSine'
-				})
-			],
-			{
-				duration: 1.5
-			});
+			z_engine_fade_up("comment-"+id);
 		},3000);
 	}
 	if ($("comment-"+id+"-mentioned"))
@@ -771,24 +756,7 @@ function z_engine_drop_tweet(id)
 		}
 		setTimeout(function()
 		{
-			new S2.FX.Parallel(
-			[
-				new Effect.Fade('comment-'+id+'-mentioned',
-				{
-					duration: 1.25,
-					mode: 'relative',
-					transition: 'easeOutSine'
-				}),
-				new Effect.BlindUp('comment-'+id+'-mentioned',
-				{
-					duration: 1,
-					mode: 'relative',
-					transition: 'easeOutSine'
-				})
-			],
-			{
-				duration: 1.5
-			});
+			z_engine_fade_up("comment-"+id+"-mentioned");
 		},3000);
 	}
 	if ($("comment-"+id+"-threaded"))
@@ -811,24 +779,7 @@ function z_engine_drop_tweet(id)
 		}
 		setTimeout(function()
 		{
-			new S2.FX.Parallel(
-			[
-				new Effect.Fade('comment-'+id+'-threaded',
-				{
-					duration: 1.25,
-					mode: 'relative',
-					transition: 'easeOutSine'
-				}),
-				new Effect.BlindUp('comment-'+id+'-threaded',
-				{
-					duration: 1,
-					mode: 'relative',
-					transition: 'easeOutSine'
-				})
-			],
-			{
-				duration: 1.5
-			});
+			z_engine_fade_up("comment-"+id+"-threaded");
 		},3000);
 	}
 }
@@ -851,10 +802,10 @@ function z_engine_dropped_image(image)
 				var form = new FormData();
 				form.append("image", image);
 				form.append("key", imgur_key);
-				var xhr = new XMLHttpRequest();
+				var xhr = new XMLHttpRequest(); //this would be written in prototypes ajax method but only this works
 				xhr.onreadystatechange = function()
 				{
-					if(this.readyState == 3)
+					if(this.readyState == 3 || this.readyState == 2)
 					{
 						$("image").setStyle("border-color: yellow;");
 					}
@@ -894,6 +845,7 @@ function z_engine_dropped_image(image)
 	}
 }
 
+/* the fading + blind down animation */
 function z_engine_fade_down(id)
 {
 	new S2.FX.Parallel(
@@ -907,6 +859,29 @@ function z_engine_fade_down(id)
 		new Effect.BlindDown(id,
 		{
 			duration: 0.7,
+			mode: 'relative',
+			transition: 'easeOutSine'
+		})
+	],
+	{
+		duration: 1.5
+	});
+}
+
+/* the fading + blind up animation */
+function z_engine_fade_up(id)
+{
+	new S2.FX.Parallel(
+	[
+		new Effect.Fade(id,
+		{
+			duration: 1.25,
+			mode: 'relative',
+			transition: 'easeOutSine'
+		}),
+		new Effect.BlindUp(id,
+		{
+			duration: 1,
 			mode: 'relative',
 			transition: 'easeOutSine'
 		})
@@ -1122,7 +1097,7 @@ function z_engine_retweet(id, author, text)
 		}
 		else
 		{
-			reply_id = id; //set this as a reply
+			reply_id = id; //set this as a reply, it looks nicer
 			$("new-tweet").setValue("RT @"+author+" "+text);
 			$("new-tweet").focus();
 		}
@@ -1255,6 +1230,7 @@ function z_engine_stream_queue()
 	}
 }
 
+/* the threaded engine */
 function z_engine_threaded(init, id)
 {
 	if (init)
@@ -1327,7 +1303,7 @@ function z_engine_tweet(data, output)
 			var following = data.user.friends_count;
 			var id = data.id_str;
 			var location = data.user.location;
-			var locked = data.user["protected"]; //prevent an issue in ie
+			var locked = data.user["protected"];
 			var name = data.user.name;
 			var place = data.place;
 			var reply = data.in_reply_to_screen_name;
@@ -1353,7 +1329,7 @@ function z_engine_tweet(data, output)
 			var following = data.retweeted_status.user.friends_count;
 			var id = data.retweeted_status.id_str;
 			var location = data.retweeted_status.user.location;
-			var locked = data.retweeted_status.user["protected"]; //prevent an issue in ie
+			var locked = data.retweeted_status.user["protected"];
 			var name = data.retweeted_status.user.name;
 			var place = data.retweeted_status.place;
 			var reply = data.retweeted_status.in_reply_to_screen_name;
@@ -1527,7 +1503,7 @@ function z_engine_tweet(data, output)
 									}
 									else
 									{
-										var in_reply_to_link_element = new Element('a', {'onclick': 'z_engine_threaded("'+id+'","'+replyid+'");', 'href': '#'});
+										var in_reply_to_link_element = new Element('span', {'onclick': 'z_engine_threaded("'+id+'","'+replyid+'");', 'style': 'cursor: pointer;'});
 									}
 									in_reply_to_link_element.update(reply+' ');
 									left_element.insert(in_reply_to_element);
@@ -1599,9 +1575,10 @@ function z_engine_tweet(data, output)
 			container_element.insert(profile_wrapper_element);
 			container_element.insert({'bottom': comment_content_element});
 			container_element.insert({'bottom': clearer_element});
+		new Element.extend(container_element);
+		new Element.extend(gravatar_author_img_element);
 		new Element.extend(left_element);
 		new Element.extend(right2_element);
-		new Element.extend(container_element);
 		switch (output)
 		{
 			case 'dms':
@@ -1631,11 +1608,8 @@ function z_engine_tweet(data, output)
 			new Element.extend(mentioned_clone);
 			$("mentions-timeline").insert({'top': mentioned_clone});
 			z_engine_tweet_buttons("mentions", id, author, userid, text, locked, faved, mentions_string, userinfo);
-			if (output != "threaded")
-			{
-				z_engine_notification(avatar, "@"+author+" mentioned you!", text);
-			}
-			z_engine_fade_down("comment-"+id+"-mentioned");;
+			z_engine_notification(avatar, "@"+author+" mentioned you!", text);
+			z_engine_fade_down("comment-"+id+"-mentioned");
 		}
 		if (output == "threaded")
 		{
@@ -1649,7 +1623,7 @@ function z_engine_tweet(data, output)
 			z_engine_tweet_buttons("threaded", id, author, userid, text, locked, faved, mentions_string, userinfo);
 			z_engine_fade_down("comment-"+id+"-threaded");
 		}
-		if ($('comment-'+id))
+		if ($("comment-"+id))
 		{
 			z_engine_tweet_buttons(output, id, author, userid, text, locked, faved, mentions_string, userinfo);
 			z_engine_fade_down("comment-"+id);
@@ -1661,7 +1635,7 @@ function z_engine_tweet(data, output)
 	}
 }
 
-/* the reply / rt / fave buttons */
+/* the reply / rt / fave / delete / klout buttons */
 function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, usermentions, userinfo)
 {
 	var escaper = new Element('textarea').update(escape_string(text.replace(/</g,"&lt;").replace(/>/g,"&gt;")));
@@ -1689,7 +1663,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 			{
 				$("av-"+id).addTip(z_engine_parse_tweet(userinfo), userinfo_params);
 			}
-			if (!$('klout-'+id))
+			if ($("left-"+id) && !$('klout-'+id))
 			{
 				var klout_element = new Element('span', {'class': 'klout'});
 				klout_element.update(" ");
@@ -1697,10 +1671,6 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 				klout_element.insert({'top': klout_img_element});
 				new Element.extend(klout_img_element);
 				$("left-"+id).insert({'top': klout_element});
-				if (klout[userid])
-				{
-					z_engine_set_klout(data.users, id);
-				}
 			}
 			if (author != screen_name)
 			{
@@ -1742,18 +1712,14 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 			{
 				$("av-"+id+"-mentioned").addTip(z_engine_parse_tweet(userinfo), userinfo_params);
 			}
-			if (!$('klout-'+id))
+			if ($("left-"+id+"-mentioned") && !$('klout-'+id+'-mentioned'))
 			{
 				var klout_element = new Element('span', {'class': 'klout'});
 				klout_element.update(" ");
-				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score'});
+				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id+'-mentioned', 'alt': '', 'title': 'click to get this users klout score'});
 				klout_element.insert({'top': klout_img_element});
 				new Element.extend(klout_img_element);
-				$("left-"+id).insert({'top': klout_element});
-				if (klout[userid])
-				{
-					z_engine_set_klout(data.users, id);
-				}
+				$("left-"+id+"-mentioned").insert({'top': klout_element});
 			}
 			if (author != screen_name)
 			{
