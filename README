@@ -35,5 +35,5 @@ optional:
 		trunk requirements:
 		npm install redis
 
-		requirements:
+		leaf requirements:
 		npm install connect-redis
