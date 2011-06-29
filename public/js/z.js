@@ -1365,7 +1365,7 @@ function z_engine_tweet(data, output)
 	{
 		$w(store.get('client_blocks')).uniq().each(function(item)
 		{
-			if (item == source)
+			if (item.replace("'","") == source)
 			{
 				client_blocked = true;
 				$break;
@@ -1380,7 +1380,7 @@ function z_engine_tweet(data, output)
 			{
 				entities.hashtags.uniq().each(function(tag)
 				{
-					if (item.replace("'","") == tag)
+					if (item == tag)
 					{
 						hashtag_blocked = true;
 						$break;
