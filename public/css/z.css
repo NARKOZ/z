@@ -103,13 +103,108 @@ li
 }
 
 /*
+ * animations
+ */
+/*@keyframes fadein-blinddown
+{
+	from {display: none; height: 0; opacity: 0;}
+	to {display: block; max-height: 500px; opacity: 1;}
+}
+@-moz-keyframes fadein-blinddown
+{
+	from {display: none; height: 0; opacity: 0;}
+	to {display: block; max-height: 500px; opacity: 1;}
+}
+@-webkit-keyframes fadein-blinddown
+{
+	from {display: none; height: 0; opacity: 0;}
+	to {display: block; max-height: 500px; opacity: 1;}
+}*/
+@keyframes fadein-blinddown
+{
+	from {display: none; opacity: 0;}
+	to {display: block; opacity: 1;}
+}
+@-moz-keyframes fadein-blinddown
+{
+	from {display: none; opacity: 0;}
+	to {display: block; opacity: 1;}
+}
+@-webkit-keyframes fadein-blinddown
+{
+	from {display: none; opacity: 0;}
+	to {display: block; opacity: 1;}
+}
+@keyframes fadein
+{
+	from {display: none; opacity: 0;}
+	to {display: block; opacity: 1;}
+}
+@-moz-keyframes fadein
+{
+	from {display: none; opacity: 0;}
+	to {display: block; opacity: 1;}
+}
+@-webkit-keyframes fadein
+{
+	from {display: none; opacity: 0;}
+	to {display: block; opacity: 1;}
+}
+@keyframes fadeout
+{
+	from {display: block; opacity: 1;}
+	to {display: none; opacity: 0;}
+}
+@-moz-keyframes fadeout
+{
+	from {display: block; opacity: 1;}
+	to {display: none; opacity: 0;}
+}
+@-webkit-keyframes fadeout
+{
+	from {display: block; opacity: 1;}
+	to {display: none; opacity: 0;}
+}
+
+/*
+ * fade in between containers
+ */
+.hider
+{
+	display: none;
+	animation: fadeout 0.5s;
+	animation-timing-function: ease-in-out;
+	-moz-animation: fadeout 0.5s;
+	-moz-animation-timing-function: ease-in-out;
+	-webkit-animation: fadeout 0.5s;
+	-webkit-animation-timing-function: ease-in-out;
+}
+.shower
+{
+	display: block;
+	animation: fadein 0.5s;
+	animation-timing-function: ease-in-out;
+	-moz-animation: fadein 0.5s;
+	-moz-animation-timing-function: ease-in-out;
+	-webkit-animation: fadein 0.5s;
+	-webkit-animation-timing-function: ease-in-out;
+}
+
+/*
  * tweet related css
  */
 .comment-parent
 {
+	display: block;
 	margin-top: 15px;
 	margin-bottom: 15px;
 	z-index: 50;
+	animation: fadein-blinddown 1s;
+	animation-timing-function: ease-in-out;
+	-moz-animation: fadein-blinddown 1s;
+	-moz-animation-timing-function: ease-in-out;
+	-webkit-animation: fadein-blinddown 1s;
+	-webkit-animation-timing-function: ease-in-out;
 }
 .comment-list ul.children, #comments #respond ul
 {
@@ -202,9 +297,7 @@ li
 }
 .comment-list-wrapper
 {
-	min-height: 100%;
 	padding: 5px 12px 10px 7px;
-	behavior: url(border-radius.htc);
 }
 .comment-input-text textarea
 {
@@ -238,10 +331,12 @@ li
 }
 .comment-content-wrapper
 {
+	display: inline-block;
 	float: right;
 }
 .comment-profile-wrapper
 {
+	display: inline-block;
 	text-align: center;
 }
 
@@ -764,6 +859,26 @@ div.growls div.large
 /*
  * other
  */
+#container
+{
+	margin-top: 100px;
+}
+#float
+{
+	box-shadow: 0 0 5px 5px #f6f6f6;
+	background-color: #f6f6f6;
+	display: block;
+	height: 100px;
+	width: 99%;
+	left: 0px;
+	position: fixed;
+	top: 0px;
+	z-index: 500;
+	-khtml-box-shadow: 0 0 5px 5px #f6f6f6;
+	-moz-box-shadow: 0 0 5px 5px #f6f6f6;
+	-o-box-shadow: 0 0 5px 5px #f6f6f6;
+	-webkit-box-shadow: 0 0 5px 5px #f6f6f6;
+}
 .login-inner
 {
 	display: inline-block;
@@ -802,6 +917,7 @@ div.growls div.large
 }
 .loading
 {
+	z-index: 1px;
 	display: inline-block;
 	margin: auto;
 }
@@ -847,7 +963,6 @@ body
 	color: #3a3a4a;
 	font: normal 75% "Open Sans", sans-serif;
 	font-smoothing: subpixel-antialiased;
-	height: 100%;
 	line-height: 1.5;
 	margin: 0 auto;
 	position: relative;

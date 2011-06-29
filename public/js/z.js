@@ -79,8 +79,6 @@ if (!store.get('users'))
 {
 	store.set('users', "");
 }
-/*var window_height =  document.viewport.getDimensions().height-Number(30);
-var window_width =  document.viewport.getDimensions().width-Number(30);*/
 
 /* set up some of our effects */
 new S2.FX.Base(
@@ -314,8 +312,7 @@ function z_engine_attrition()
 			}
 			else if (json.event)
 			{
-				var event = json.event;
-				switch (event)
+				switch (json.event)
 				{
 					case 'block':
 						var current_blocks = $w(store.get('user_blocks')).uniq();
@@ -631,8 +628,11 @@ function z_engine_clicker(id, this_id)
 				duration: 1
 			});
 		}
-		$("threaded-timeline").update();
-		latest_threaded_id = 0;
+		setTimeout(function()
+		{
+			$("threaded-timeline").update();
+			latest_threaded_id = 0;
+		},1000);
 	});
 }
 
@@ -710,6 +710,7 @@ function z_engine_destroy(id, method)
 	}
 }
 
+/* drop tweet */
 function z_engine_drop_tweet(id)
 {
 	if ($("comment-"+id))
@@ -733,7 +734,7 @@ function z_engine_drop_tweet(id)
 		}
 		setTimeout(function()
 		{
-			z_engine_fade_up("comment-"+id);
+			$("comment-"+id).remove();
 		},3000);
 	}
 	if ($("comment-"+id+"-mentioned"))
@@ -756,7 +757,7 @@ function z_engine_drop_tweet(id)
 		}
 		setTimeout(function()
 		{
-			z_engine_fade_up("comment-"+id+"-mentioned");
+			$("comment-"+id+"-mentioned").remove();
 		},3000);
 	}
 	if ($("comment-"+id+"-threaded"))
@@ -779,7 +780,7 @@ function z_engine_drop_tweet(id)
 		}
 		setTimeout(function()
 		{
-			z_engine_fade_up("comment-"+id+"-threaded");
+			$("comment-"+id+"-threaded").remove();
 		},3000);
 	}
 }
@@ -843,52 +844,6 @@ function z_engine_dropped_image(image)
 			break;
 		}
 	}
-}
-
-/* the fading + blind down animation */
-function z_engine_fade_down(id)
-{
-	new S2.FX.Parallel(
-	[
-		new Effect.Appear(id,
-		{
-			duration: 1.25,
-			mode: 'relative',
-			transition: 'easeOutSine'
-		}),
-		new Effect.BlindDown(id,
-		{
-			duration: 0.7,
-			mode: 'relative',
-			transition: 'easeOutSine'
-		})
-	],
-	{
-		duration: 1.5
-	});
-}
-
-/* the fading + blind up animation */
-function z_engine_fade_up(id)
-{
-	new S2.FX.Parallel(
-	[
-		new Effect.Fade(id,
-		{
-			duration: 1.25,
-			mode: 'relative',
-			transition: 'easeOutSine'
-		}),
-		new Effect.BlindUp(id,
-		{
-			duration: 1,
-			mode: 'relative',
-			transition: 'easeOutSine'
-		})
-	],
-	{
-		duration: 1.5
-	});
 }
 
 /* favorite a tweet */
@@ -1445,7 +1400,6 @@ function z_engine_tweet(data, output)
 		userinfo += 'tweets: <strong>'+tweets+'</strong><br />';
 		userinfo += 'following: <strong>'+following+'</strong><br />';
 		userinfo += 'followers: <strong>'+followers+'</strong>';
-		var linebreak = new Element('br');
 		if (!entities)
 		{
 			var mentioned = false;
@@ -1456,7 +1410,8 @@ function z_engine_tweet(data, output)
 			var mentioned = z_engine_tweet_mentioned(entities);
 			var mentions_string = z_engine_tweet_mentioned_string(entities);
 		}
-		var container_element = new Element('li', {'id': 'comment-'+id, 'class': 'comment-parent', 'style': 'display: none; opacity: 0;'});
+		var linebreak = new Element('br');
+		var container_element = new Element('div', {'id': 'comment-'+id, 'class': 'comment-parent'});
 			var profile_wrapper_element = new Element('div', {'class': 'comment-profile-wrapper left'});
 				var gravatar_element = new Element('div', {'class': 'comment-gravatar'});
 					var gravatar_author_img_element = new Element('img', {'id': 'av-'+id, 'src': avatar, 'style': 'height: 50px; width: 50px; cursor: pointer;', 'alt': ''});
@@ -1583,10 +1538,10 @@ function z_engine_tweet(data, output)
 			container_element.insert(profile_wrapper_element);
 			container_element.insert({'bottom': comment_content_element});
 			container_element.insert({'bottom': clearer_element});
-		new Element.extend(container_element);
 		new Element.extend(gravatar_author_img_element);
 		new Element.extend(left_element);
 		new Element.extend(right2_element);
+		new Element.extend(container_element);
 		switch (output)
 		{
 			case 'dms':
@@ -1617,7 +1572,6 @@ function z_engine_tweet(data, output)
 			$("mentions-timeline").insert({'top': mentioned_clone});
 			z_engine_tweet_buttons("mentions", id, author, userid, text, locked, faved, mentions_string, userinfo);
 			z_engine_notification(avatar, "@"+author+" mentioned you!", text);
-			z_engine_fade_down("comment-"+id+"-mentioned");
 		}
 		if (output == "threaded")
 		{
@@ -1629,12 +1583,10 @@ function z_engine_tweet(data, output)
 			new Element.extend(threaded_clone);
 			$("threaded-timeline").insert({'bottom': threaded_clone});
 			z_engine_tweet_buttons("threaded", id, author, userid, text, locked, faved, mentions_string, userinfo);
-			z_engine_fade_down("comment-"+id+"-threaded");
 		}
 		if ($("comment-"+id))
 		{
 			z_engine_tweet_buttons(output, id, author, userid, text, locked, faved, mentions_string, userinfo);
-			z_engine_fade_down("comment-"+id);
 		}
 	}
 	if (output == "threaded" && replyid)

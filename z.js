@@ -205,10 +205,6 @@ socket.on('sconnection', function(client, session)
 			console.error('oauth session issue: '+sys.inspect(e));
 		}
 	}
-	else
-	{
-		//it appears this user has a session but no oauth tokens, just ignore
-	}
 });
 
 /* log to console that an invalid session was found but do nothing further than this */
