@@ -48,6 +48,10 @@ else
 {
 	var max_fps = 120; //otherwise open the throttle all the way for effects
 }
+if (!store.get('mention_blocks'))
+{
+	store.set('mention_blocks', "");
+}
 var mentions_cutoff = 150; //max amount of tweets to display before pruning occurs on the mentions timeline
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var pttid = 0; //this serves as the (#) amount displayed when paused
