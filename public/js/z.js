@@ -16,7 +16,7 @@ store.set('connect_id', CONNECT_SID);
 var check_ratelimit_interval = 300; //check every 5 minutes
 var content_queued = Array(); //holds our realtime tweets
 var content_stored = Array(); //stores all tweets
-var dms_cutoff = 50; //max amount of tweets to display before pruning occurs on all dms
+var dms_cutoff = 100; //max amount of tweets to display before pruning occurs on all dms
 var dms_loaded = 0; //quick method to hide each dm timelines loading image without needing to write a ton of code to do it
 var dm_to = false; //catch dm reply
 var following = Array(); //holds our following id's array
@@ -26,7 +26,7 @@ if (!store.get('hashtag_blocks'))
 {
 	store.set('hashtag_blocks', "");
 }
-var home_cutoff = 150; //max amount of tweets to display before pruning occurs on the home timeline
+var home_cutoff = 200; //max amount of tweets to display before pruning occurs on the home timeline
 var klout = Array(); //holds klout data
 var kloutinfo_params = {
 	className: 'klout',
@@ -48,7 +48,7 @@ else
 {
 	var max_fps = 120; //otherwise open the throttle all the way for effects
 }
-var mentions_cutoff = 100; //max amount of tweets to display before pruning occurs on the mentions timeline
+var mentions_cutoff = 150; //max amount of tweets to display before pruning occurs on the mentions timeline
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var pttid = 0; //this serves as the (#) amount displayed when paused
 var prune_tweets_interval = 60; //start the pruning loop over again every minute
@@ -275,7 +275,7 @@ function z_engine_attrition()
 			}
 			else if (json["delete"]) //catch it like this, it can cause errors in other browsers like opera
 			{
-				if (typeof(json["delete"].status) == 'object')
+				if (typeof(json["delete"].status) == "object")
 				{
 					var id = json["delete"].status.id_str;
 				}
@@ -1012,51 +1012,63 @@ function z_engine_parse_tweet(text)
 function z_engine_prune_tweets()
 {
 	var tweet_elements = $("home-timeline").childElements();
-	tweet_elements.each(function(item, index)
+	if (tweet_elements.length >= home_cutoff)
 	{
-		if (index > home_cutoff)
+		tweet_elements.each(function(item, index)
 		{
-			$(item).remove();
-		}
-	});
-	setTimeout(function()
-	{
-		var mention_elements = $("mentions-timeline").childElements();
-		mention_elements.each(function(item, index)
-		{
-			if (index > mentions_cutoff)
+			if (index > home_cutoff)
 			{
 				$(item).remove();
 			}
 		});
+	}
+	setTimeout(function()
+	{
+		var mention_elements = $("mentions-timeline").childElements();
+		if (mention_elements.length >= mentions_cutoff)
+		{
+			mention_elements.each(function(item, index)
+			{
+				if (index > mentions_cutoff)
+				{
+					$(item).remove();
+				}
+			});
+		}
 	},10000);
 	setTimeout(function()
 	{
 		var dm_elements = $("dms-inbox-timeline").childElements();
-		dm_elements.each(function(item, index)
+		if (dm_elements.length >= dms_cutoff)
 		{
-			if (index > dms_cutoff)
+			dm_elements.each(function(item, index)
 			{
-				$(item).remove();
-			}
-		});
+				if (index > dms_cutoff)
+				{
+					$(item).remove();
+				}
+			});
+		}
 	},20000);
 	setTimeout(function()
 	{
 		var dm_sent_elements = $("dms-outbox-timeline").childElements();
-		dm_sent_elements.each(function(item, index)
+		if (dm_sent_elements.length >= dms_cutoff)
 		{
-			if (index > dms_cutoff)
+			dm_sent_elements.each(function(item, index)
 			{
-				$(item).remove();
-			}
-		});
+				if (index > dms_cutoff)
+				{
+					$(item).remove();
+				}
+			});
+		}
 	},30000);
 	setTimeout(function()
 	{
-		if ($$("#threaded-timeline").length > 0)
+		var threaded_elements = $("threaded-timeline").childElements();
+		if (threaded_elements.length >= home_cutoff)
 		{
-			var threaded_elements = $("threaded-timeline").childElements();
 			threaded_elements.each(function(item, index)
 			{
 				if (index > home_cutoff)
@@ -1161,7 +1173,7 @@ function z_engine_send_tweet()
 /* set the klout icon up properly */
 function z_engine_set_klout(data, id)
 {
-	if (typeof(data) === "object")
+	if (typeof(data) == "object")
 	{
 		if (data.length > 0 && typeof(id) == "string")
 		{
@@ -1215,11 +1227,7 @@ function z_engine_stream_queue()
 	if (content_queued.length > 0)
 	{
 		var queue = content_queued.shift();
-		if (typeof(queue) === "undefined")
-		{
-			//do nothing
-		}
-		else
+		if (typeof(queue) == "string")
 		{
 			if (queue.isJSON())
 			{
