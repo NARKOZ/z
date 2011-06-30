@@ -90,6 +90,11 @@ var BrowserDetect = {
 			identity: "Mozilla",
 			versionSearch: "rv"
 		},
+		{
+			string: navigator.userAgent,
+			subString: "AppleWebKit",
+			identity: "Webkit",
+		},
 		{ 		// for older Netscapes (4-)
 			string: navigator.userAgent,
 			subString: "Mozilla",

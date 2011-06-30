@@ -873,6 +873,58 @@ function z_engine_dropped_image(image)
 	}
 }
 
+/* the fading + blind down animation */
+function z_engine_fade_down(id)
+{
+	if (BrowserDetect.browser != "Webkit" || BrowserDetect.browser != "Firefox" || BrowserDetect.browser == "Firefox" && BrowserDetect.version < 5)
+	{
+		new S2.FX.Parallel(
+		[
+			new Effect.Appear(id,
+			{
+				duration: 1.25,
+				mode: 'relative',
+				transition: 'easeOutSine'
+			}),
+			new Effect.BlindDown(id,
+			{
+				duration: 0.7,
+				mode: 'relative',
+				transition: 'easeOutSine'
+			})
+		],
+		{
+			duration: 1.5
+		});
+	}
+}
+
+/* the fading + blind up animation */
+function z_engine_fade_up(id)
+{
+	if (BrowserDetect.browser != "Webkit" || BrowserDetect.browser != "Firefox" || BrowserDetect.browser == "Firefox" && BrowserDetect.version < 5)
+	{
+		new S2.FX.Parallel(
+		[
+			new Effect.Fade(id,
+			{
+				duration: 1.25,
+				mode: 'relative',
+				transition: 'easeOutSine'
+			}),
+			new Effect.BlindUp(id,
+			{
+				duration: 1,
+				mode: 'relative',
+				transition: 'easeOutSine'
+			})
+		],
+		{
+			duration: 1.5
+		});
+	}
+}
+
 /* favorite a tweet */
 function z_engine_favorite(id)
 {
@@ -1598,6 +1650,7 @@ function z_engine_tweet(data, output)
 			$("mentions-timeline").insert({'top': mentioned_clone});
 			z_engine_tweet_buttons("mentions", id, author, userid, text, locked, faved, mentions_string, userinfo);
 			z_engine_notification(avatar, "@"+author+" mentioned you!", text);
+			z_engine_fade_down("comment-"+id+"-mentioned");
 		}
 		if (output == "threaded")
 		{
@@ -1609,6 +1662,7 @@ function z_engine_tweet(data, output)
 			new Element.extend(threaded_clone);
 			$("threaded-timeline").insert({'bottom': threaded_clone});
 			z_engine_tweet_buttons("threaded", id, author, userid, text, locked, faved, mentions_string, userinfo);
+			z_engine_fade_down("comment-"+id+"-threaded");
 		}
 		if ($("comment-"+id))
 		{

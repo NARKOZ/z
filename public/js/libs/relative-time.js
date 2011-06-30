@@ -1,17 +1,9 @@
 // originally from http://widgets.twimg.com/j/1/widget.js
-var K = function ()
-{
-	var a = navigator.userAgent;
-	return{
-		ie: a.match(/MSIE\s([^;]*)/)
-	}
-}();
-
 var relative_time = function (a)
 {
 	var b = new Date();
 	var c = new Date(a);
-	if (K.ie)
+	if (BrowserDetect.browser == "MSIE")
 	{
 		c = Date.parse(a.replace(/( \+)/, ' UTC$1'))
 	}
