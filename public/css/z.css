@@ -14,19 +14,24 @@ article, aside, figure, figure img, figcaption, hgroup, footer, header, nav, sec
 {
 	display: block;
 }
-a img
+a
 {
-	border: 0;
+	color: #456;
+	text-decoration: none;
+	-khtml-transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
+	-ms-transition: all .20s ease-in-out;
+	-o-transition: all .20s ease-in-out;
+	-webkit-transition: all .20s ease-in-out;
 }
 a:focus, a:hover
 {
 	color: #039;
 	text-decoration: none;
 }
-a
+a img
 {
-	color: #456;
-	text-decoration: none;
+	border: 0;
 }
 li
 {
@@ -632,6 +637,7 @@ div.growls div.large
  */
 div.menu
 {
+	animation: fadein 0.5s ease-in-out;
 	background-color: white;
 	border-radius: 4px;
 	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
@@ -644,12 +650,14 @@ div.menu
 	-khtml-border-radius: 4px;
 	-khtml-user-select: text;
 	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	-moz-animation: fadein 0.5s ease-in-out;
 	-moz-border-radius: 4px;
 	-moz-user-select: text;
 	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-o-border-radius: 4px;
 	-o-user-select: text;
 	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	-webkit-animation: fadein 0.5s ease-in-out;
 	-webkit-border-radius: 4px;
 	-webkit-user-select: text;
 	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
