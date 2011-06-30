@@ -18,18 +18,15 @@ a img
 {
 	border: 0;
 }
-a:focus,a:hover
+a:focus, a:hover
 {
 	color: #039;
+	text-decoration: none;
 }
 a
 {
 	color: #456;
 	text-decoration: none;
-}
-a:hover
-{
-	text-decoration: underline;
 }
 li
 {
@@ -105,36 +102,6 @@ li
 /*
  * animations
  */
-/*@keyframes fadein-blinddown
-{
-	from {display: none; height: 0; opacity: 0;}
-	to {display: block; max-height: 500px; opacity: 1;}
-}
-@-moz-keyframes fadein-blinddown
-{
-	from {display: none; height: 0; opacity: 0;}
-	to {display: block; max-height: 500px; opacity: 1;}
-}
-@-webkit-keyframes fadein-blinddown
-{
-	from {display: none; height: 0; opacity: 0;}
-	to {display: block; max-height: 500px; opacity: 1;}
-}*/
-@keyframes fadein-blinddown
-{
-	from {display: none; opacity: 0;}
-	to {display: block; opacity: 1;}
-}
-@-moz-keyframes fadein-blinddown
-{
-	from {display: none; opacity: 0;}
-	to {display: block; opacity: 1;}
-}
-@-webkit-keyframes fadein-blinddown
-{
-	from {display: none; opacity: 0;}
-	to {display: block; opacity: 1;}
-}
 @keyframes fadein
 {
 	from {display: none; opacity: 0;}
@@ -182,12 +149,9 @@ li
 .shower
 {
 	display: block;
-	animation: fadein 0.5s;
-	animation-timing-function: ease-in-out;
-	-moz-animation: fadein 0.5s;
-	-moz-animation-timing-function: ease-in-out;
-	-webkit-animation: fadein 0.5s;
-	-webkit-animation-timing-function: ease-in-out;
+	animation: fadein 0.5s ease-in-out;
+	-moz-animation: fadein 0.5s ease-in-out;
+	-webkit-animation: fadein 0.5s ease-in-out;
 }
 
 /*
@@ -195,16 +159,23 @@ li
  */
 .comment-parent
 {
+	animation: fadein 1s ease-in-out;
 	display: block;
 	margin-top: 15px;
 	margin-bottom: 15px;
 	z-index: 50;
-	animation: fadein-blinddown 1s;
-	animation-timing-function: ease-in-out;
-	-moz-animation: fadein-blinddown 1s;
-	-moz-animation-timing-function: ease-in-out;
-	-webkit-animation: fadein-blinddown 1s;
-	-webkit-animation-timing-function: ease-in-out;
+	-moz-animation: fadein 1s ease-in-out;
+	-webkit-animation: fadein 1s ease-in-out;
+}
+.comment-parent-drop
+{
+	animation: fadeout 1s ease-in-out;
+	display: none;
+	margin-top: 15px;
+	margin-bottom: 15px;
+	z-index: 50;
+	-moz-animation: fadeout 1s ease-in-out;
+	-webkit-animation: fadeout 1s ease-in-out;
 }
 .comment-list ul.children, #comments #respond ul
 {
@@ -371,6 +342,7 @@ input, textarea
 	-moz-border-radius: 4px;
 	-moz-box-shadow: 0 0 4px #eee, inset 0 0 4px #eee;
 	-moz-transition: all .20s ease-in-out;
+	-ms-transition: all .20s ease-in-out;
 	-o-border-radius: 4px;
 	-o-box-shadow: 0 0 4px #eee, inset 0 0 4px #eee;
 	-o-transition: all .20s ease-in-out;
@@ -388,6 +360,7 @@ textarea, textarea:hover, textarea:focus, textarea:disabled
 	transition: all .20s ease-in-out;
 	-khtml-transition: all .20s ease-in-out;
 	-moz-transition: all .20s ease-in-out;
+	-ms-transition: all .20s ease-in-out;
 	-o-transition: all .20s ease-in-out;
 	-webkit-transition: all .20s ease-in-out;
 }
@@ -448,6 +421,7 @@ input[type="text"]:disabled, textarea:disabled
 	-moz-border-radius: 2px;
 	-moz-box-shadow: 0 0 2px 2px #F6F6F6;
 	-moz-transition: all .20s ease-in-out;
+	-ms-transition: all .20s ease-in-out;
 	-o-border-radius: 2px;
 	-o-box-shadow: 0 0 2px 2px #F6F6F6;
 	-o-transition: all .20s ease-in-out;
@@ -482,6 +456,7 @@ input[type="text"]:disabled, textarea:disabled
 	-moz-border-radius: 2px;
 	-moz-box-shadow: 0 0 2px 2px #F6F6F6;
 	-moz-transition: all .20s ease-in-out;
+	-ms-transition: all .20s ease-in-out;
 	-o-border-radius: 2px;
 	-o-box-shadow: 0 0 2px 2px #F6F6F6;
 	-o-transition: all .20s ease-in-out;
@@ -506,6 +481,7 @@ input[type="text"]:disabled, textarea:disabled
 	transition: all .20s ease-in-out;
 	-khtml-transition: all .20s ease-in-out;
 	-moz-transition: all .20s ease-in-out;
+	-ms-transition: all .20s ease-in-out;
 	-o-transition: all .20s ease-in-out;
 	-webkit-transition: all .20s ease-in-out;
 }
@@ -519,6 +495,7 @@ input[type="text"]:disabled, textarea:disabled
 	-khtml-transition: all .20s ease-in-out;
 	-moz-box-shadow: 0 0 2px 2px #FFF;
 	-moz-transition: all .20s ease-in-out;
+	-ms-transition: all .20s ease-in-out;
 	-o-box-shadow: 0 0 2px 2px #FFF;
 	-o-transition: all .20s ease-in-out;
 	-webkit-box-shadow: 0 0 2px 2px #FFF;
@@ -629,25 +606,88 @@ div.growls div.large
  */
 .dialog-window
 {
-	border-radius: 5px;
+	background: white;
+	border-radius: 4px;
 	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
-	-khtml-border-radius: 5px;
+	border: 1px solid #DDD;
+	padding: 1px 12px 0 9px;
+	-khtml-border-radius: 4px;
 	-khtml-user-select: text;
 	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
-	-moz-border-radius: 5px;
+	-moz-border-radius: 4px;
 	-moz-user-select: text;
 	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
-	-o-border-radius: 5px;
+	-o-border-radius: 4px;
 	-o-user-select: text;
 	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
-	-webkit-border-radius: 5px;
+	-webkit-border-radius: 4px;
 	-webkit-user-select: text;
 	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	user-select: text;
-	background: #FFF;
-	border: 1px solid #DDD;
-	padding: 1px 12px 0 9px;
 	behavior: url(border-radius.htc);
+}
+
+/*
+ * click menu stuff
+ */
+div.menu
+{
+	background-color: white;
+	border-radius: 4px;
+	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	border: 1px solid #DDD;
+	left: 0;
+	font-size: 0.87em;
+	margin-top: -100px;
+	position: absolute;
+	top: 0;
+	-khtml-border-radius: 4px;
+	-khtml-user-select: text;
+	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	-moz-border-radius: 4px;
+	-moz-user-select: text;
+	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	-o-border-radius: 4px;
+	-o-user-select: text;
+	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	-webkit-border-radius: 4px;
+	-webkit-user-select: text;
+	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	user-select: text;
+	behavior: url(border-radius.htc);
+}
+div.menu a
+{
+	padding: 5px;
+	display: block;
+	outline: none;
+	border-radius: 4px;
+	-khtml-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-o-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	behavior: url(border-radius.htc);
+}
+div.menu a:hover
+{
+	background-color: #f6f6f6;
+}
+.menu .separator
+{
+	height: 2px;
+	padding: 0;
+	overflow: hidden;
+	display: block;
+}
+.menu ul, .menu li
+{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.menu li
+{
+	list-style-position: outside;
 }
 
 /*
@@ -667,6 +707,8 @@ div.growls div.large
 	-khtml-transition-property: left, top;
 	-moz-transition-duration: 0.2s, 0.2s;
 	-moz-transition-property: left, top;
+	-ms-transition-duration: 0.2s, 0.2s;
+	-ms-transition-property: left, top;
 	-o-transition-duration: 0.2s, 0.2s;
 	-o-transition-property: left, top;
 	-webkit-transition-duration: 0.2s, 0.2s;
@@ -808,6 +850,8 @@ div.growls div.large
 	-khtml-transition-property: opacity, -khtml-transform;
 	-moz-transition-duration: 1s;
 	-moz-transition-property: opacity, -moz-transform;
+	-ms-transition-duration: 1s;
+	-ms-transition-property: opacity, -moz-transform;
 	-o-transition-duration: 1s;
 	-o-transition-property: opacity, -moz-transform;
 	-webkit-transition-duration: 1s;
@@ -831,6 +875,7 @@ div.growls div.large
 	transform: scale(0);
 	-khtml-transform: scale(0);
 	-moz-transform: scale(0);
+	-ms-transform: scale(0);
 	-o-transform: scale(0);
 	-webkit-transform: scale(0);
 }
@@ -841,6 +886,7 @@ div.growls div.large
 	transform: scaleY(0);
 	-khtml-transform: scaleY(0);
 	-moz-transform: scaleY(0);
+	-ms-transform: scaleY(0);
 	-o-transform: scaleY(0);
 	-webkit-transform: scaleY(0);
 	opacity: 0;
@@ -851,6 +897,7 @@ div.growls div.large
 	transform: scale(5);
 	-khtml-transform: scale(5);
 	-moz-transform: scale(5);
+	-ms-transform: scale(5);
 	-o-transform: scale(5);
 	-webkit-transform: scale(5);
 	opacity: 0;
@@ -898,6 +945,8 @@ div.growls div.large
 	-moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	-moz-transition-duration: 0.35s;
 	-moz-transition-property: all, -moz-transform;
+	-ms-transition-duration: 0.35s;
+	-ms-transition-property: all, -moz-transform;
 	-o-border-radius: 5px;
 	-o-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	-o-transition-duration: 0.35s;
@@ -912,6 +961,7 @@ div.growls div.large
 	transform: scale(1.15);
 	-khtml-transform: scale(1.15);
 	-moz-transform: scale(1.15);
+	-ms-transform: scale(1.15);
 	-o-transform: scale(1.15);
 	-webkit-transform: scale(1.15);
 }
@@ -972,6 +1022,8 @@ body
 	-khtml-user-select: none;
 	-moz-font-smoothing: subpixel-antialiased;
 	-moz-user-select: none;
+	-ms-font-smoothing: subpixel-antialiased;
+	-ms-user-select: none;
 	-o-font-smoothing: subpixel-antialiased;
 	-o-user-select: none;
 	-webkit-font-smoothing: subpixel-antialiased;
