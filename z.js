@@ -60,7 +60,7 @@ server.configure(function()
 server.configure('development', function()
 {
 	express.logger('development node');
-	server.use(express.errorHandler({dumpExceptions:true,showStack:true})); 
+	server.use(express.errorHandler({dumpExceptions: true, showStack: true})); 
 });
 
 server.configure('production', function()
@@ -100,7 +100,10 @@ server.get('/',function(req, res)
 		}
 		else
 		{
-			res.redirect("/oauth/logout");
+			req.session.destroy(function()
+			{
+				res.redirect("/");
+			});
 		}
 	}
 });
@@ -181,7 +184,7 @@ gzip.gzip({matchType: /socket.io/});
 /* the socket connection event which gets the gears started */
 socket.on('sconnection', function(client, session)
 {
-	if (typeof(session.oauth) === "object")
+	if (typeof(session.oauth) == "object")
 	{
 		try
 		{

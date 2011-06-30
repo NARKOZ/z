@@ -475,22 +475,23 @@ function z_engine_attrition()
 			else if (json.retweet_info)  //catch what we just retweeted, change the clicking event and icon
 			{
 				var data = json.retweet_info;
-				if ($("comment-"+data.retweeted_status.id_str))
+				var id = data.retweeted_status.id_str;
+				if ($("comment-"+id))
 				{
-					if ($("rt-"+data.retweeted_status.id_str))
+					if ($("rt-"+id))
 					{
-						$("rt-"+data.retweeted_status.id_str).writeAttribute("src","img/rtd.png");
-						$("rt-"+data.retweeted_status.id_str).writeAttribute("onclick","z_engine_destroy('"+data.id_str+"','rt');");
+						$("rt-"+id).writeAttribute("src","img/rtd.png");
+						$("rt-"+id).writeAttribute("onclick","z_engine_destroy('"+data.id_str+"','rt');");
 					}
-					if ($("rt-"+data.retweeted_status.id_str+"-mentioned"))
+					if ($("rt-"+id+"-mentioned"))
 					{
-						$("rt-"+data.retweeted_status.id_str+"-mentioned").writeAttribute("src","img/rtd.png");
-						$("rt-"+data.retweeted_status.id_str+"-mentioned").writeAttribute("onclick","z_engine_destroy('"+data.id_str+"','rt');");
+						$("rt-"+id+"-mentioned").writeAttribute("src","img/rtd.png");
+						$("rt-"+id+"-mentioned").writeAttribute("onclick","z_engine_destroy('"+data.id_str+"','rt');");
 					}
-					if ($("rt-"+data.retweeted_status.id_str+"-threaded"))
+					if ($("rt-"+id+"-threaded"))
 					{
-						$("rt-"+data.retweeted_status.id_str+"-threaded").writeAttribute("src","img/rtd.png");
-						$("rt-"+data.retweeted_status.id_str+"-threaded").writeAttribute("onclick","z_engine_destroy('"+data.id_str+"','rt');");
+						$("rt-"+id+"-threaded").writeAttribute("src","img/rtd.png");
+						$("rt-"+id+"-threaded").writeAttribute("onclick","z_engine_destroy('"+data.id_str+"','rt');");
 					}
 				}
 			}
@@ -1699,14 +1700,14 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 		}
 	},
 	{
-		name: 'retweet',
+		name: 'rt (new)',
 		callback: function()
 		{
 			z_engine_retweet(id);
 		}
 	},
 	{
-		name: 'rt + comment',
+		name: 'rt (old)',
 		callback: function()
 		{
 			z_engine_retweet_comment(id, author, text);
