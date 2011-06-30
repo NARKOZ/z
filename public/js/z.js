@@ -1145,24 +1145,20 @@ function z_engine_reply_dm(id, user)
 	$("new-tweet").focus();
 }
 
-/* retweet a tweet */
-function z_engine_retweet(id, author, text)
+/* retweet a tweet (official way) */
+function z_engine_retweet(id)
 {
-	var confirm_rt1 = confirm("\nare you sure you want to retweet this?\n");
-	if (confirm_rt1)
-	{
-		var confirm_rt2 = confirm("ok for normal retweet\ncancel for commented retweet");
-		if (confirm_rt2)
-		{
-			socket.emit("message", {retweet: {status: {id_str: id}}});
-		}
-		else
-		{
-			reply_id = id; //set this as a reply, it looks nicer
-			$("new-tweet").setValue("RT @"+author+" "+text);
-			$("new-tweet").focus();
-		}
-	}
+	socket.emit("message", {retweet: {status: {id_str: id}}});
+}
+
+/* retweet a tweet (old way) */
+function z_engine_retweet_comment(id, author, text)
+{
+	reply_id = id; //set this as a reply, it looks nicer
+	var escaped = new Element('textarea').update(escape_string(text.replace(/</g,"&lt;").replace(/>/g,"&gt;")));
+	$("new-tweet").setValue("RT @"+author+" "+escaped.getValue());
+	$("new-tweet").focus();
+	escaped = "";
 }
 
 /* send our tweet */
@@ -1202,7 +1198,7 @@ function z_engine_send_tweet()
 		{
 			if (temp_element.startsWith("~"))
 			{
-				temp_element.replace(/~/i,"");
+				temp_element = temp_element.replace(/~/i,"");
 			}
 			var send = {
 				direct_message: {
@@ -1257,7 +1253,7 @@ function z_engine_set_klout(data, id)
 	}
 }
 
-/* shorten urls to goo.gl */
+/* shorten urls */
 function z_engine_shorten_urls()
 {
 	var current_tweet = $("new-tweet").getValue();
@@ -1694,9 +1690,6 @@ function z_engine_tweet(data, output)
 /* the reply / rt / fave / delete / klout buttons */
 function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, usermentions, userinfo)
 {
-	var escaper = new Element('textarea').update(escape_string(text.replace(/</g,"&lt;").replace(/>/g,"&gt;")));
-	var escaped_rt = escaper.getValue();
-	var escaper = "";
 	var tweet_menu_elements = [
 	{
 		name: 'reply',
@@ -1709,7 +1702,14 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 		name: 'retweet',
 		callback: function()
 		{
-			z_engine_retweet(id, author, escaped_rt);
+			z_engine_retweet(id);
+		}
+	},
+	{
+		name: 'rt + comment',
+		callback: function()
+		{
+			z_engine_retweet_comment(id, author, text);
 		}
 	},
 	{
@@ -1721,10 +1721,10 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 	}];
 	var my_tweet_menu_elements = [
 	{
-		name: 'reply',
+		name: 'delete',
 		callback: function()
 		{
-			z_engine_reply(author, id, usermentions);
+			z_engine_destroy(id, "tweet");
 		}
 	}];
 	var dm_menu_elements = [
@@ -1733,6 +1733,21 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 		callback: function()
 		{
 			z_engine_reply(author, id, usermentions);
+		}
+	},
+	{
+		name: 'delete',
+		callback: function()
+		{
+			z_engine_destroy(id, "dm");
+		}
+	}];
+	var my_dm_menu_elements = [
+	{
+		name: 'delete',
+		callback: function()
+		{
+			z_engine_destroy(id, "dm");
 		}
 	}];
 	switch (type)
@@ -1747,16 +1762,25 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 				var reply_img_element = new Element('img', {'onclick': 'z_engine_reply_dm("'+userid+'", "'+author+'");', 'src': 'img/rep.png', 'id': 'reply-'+id, 'alt': ''});
 				new Element.extend(reply_img_element);
 				$("right-"+id).insert(reply_img_element);
+				new Proto.Menu(
+				{
+					selector: "#comment-"+id,
+					className: "menu",
+					menuItems: dm_menu_elements
+				});
+			}
+			else
+			{
+				new Proto.Menu(
+				{
+					selector: "#comment-"+id,
+					className: "menu",
+					menuItems: my_dm_menu_elements
+				});
 			}
 			var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "dm");', 'src': 'img/del.png', 'id': 'del-'+id, 'alt': ''});
 			new Element.extend(del_img_element);
 			$("right-"+id).insert({'bottom': del_img_element});
-			new Proto.Menu(
-			{
-				selector: "#comment-"+id,
-				className: "menu",
-				menuItems: dm_menu_elements
-			});
 		break;
 		case 'home':
 			if ($("av-"+id))
@@ -1778,7 +1802,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
-					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'", "'+author+'", "'+escaped_rt+'");', 'id': 'rt-'+id, 'alt': ''});
+					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id, 'alt': ''});
 					new Element.extend(rt_img_element);
 				}
 				else
@@ -1839,7 +1863,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
-					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'", "'+author+'", "'+escaped_rt+'");', 'id': 'rt-'+id+'-mentioned', 'alt': ''});
+					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id+'-mentioned', 'alt': ''});
 					new Element.extend(rt_img_element);
 				}
 				else
@@ -1869,12 +1893,24 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 					$("right-"+id+"-mentioned").insert({'bottom': rt_img_element});
 					$("right-"+id+"-mentioned").insert({'bottom': fave_img_element});
 				}
-				new Proto.Menu(
+				if ($("comment-"+id))
 				{
-					selector: "#comment-"+id+"-mentioned",
-					className: "menu",
-					menuItems: tweet_menu_elements
-				});
+					new Proto.Menu(
+					{
+						selector: "#comment-"+id,
+						className: "menu",
+						menuItems: tweet_menu_elements
+					});
+				}
+				if ($("comment-"+id+"-mentioned"))
+				{
+					new Proto.Menu(
+					{
+						selector: "#comment-"+id+"-mentioned",
+						className: "menu",
+						menuItems: tweet_menu_elements
+					});
+				}
 			}
 			else
 			{
@@ -1909,7 +1945,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
-					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'", "'+author+'", "'+escaped_rt+'");', 'id': 'rt-'+id+'-threaded', 'alt': ''});
+					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id+'-threaded', 'alt': ''});
 					new Element.extend(rt_img_element);
 				}
 				else
