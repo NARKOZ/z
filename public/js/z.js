@@ -1166,7 +1166,6 @@ function z_engine_remember_author(author)
 		new_users = author+" "+new_users;
 	}
 	store.set('users', new_users);
-	console.log(users.length);
 }
 
 /* reply to a specific tweet */
