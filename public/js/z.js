@@ -44,14 +44,6 @@ var latitude = false; //hold our latitude
 var loaded = false; //not loaded
 var longitude = false; //hold our longitude
 var max_file_size = 2; //in megabytes
-if (!S2.Extensions.HardwareAcceleratedCSSTransitions)
-{
-	var max_fps = 30; //limit all effects to no more than this amount of fps so we dont have hanging / major chopping
-}
-else
-{
-	var max_fps = 120; //otherwise open the throttle all the way for effects
-}
 if (!store.get('mention_blocks'))
 {
 	store.set('mention_blocks', "");
@@ -88,12 +80,6 @@ if (!store.get('users'))
 {
 	store.set('users', "");
 }
-
-/* set up some of our effects */
-new S2.FX.Base(
-{
-	fps: max_fps
-});
 
 z_engine_attrition(); //call the below function
 
@@ -181,9 +167,8 @@ function z_engine_attrition()
 				});
 				z_engine_clicker("home-timeline-click", "home-timeline");
 				z_engine_clicker("mentions-timeline-click", "mentions-timeline");
-				z_engine_clicker("dms-timeline-click", "dms-timeline");
-				z_engine_clicker_dms("dms-inbox-timeline-click", "dms-inbox-timeline");
-				z_engine_clicker_dms("dms-outbox-timeline-click", "dms-outbox-timeline");
+				z_engine_clicker("dms-inbox-timeline-click", "dms-inbox-timeline");
+				z_engine_clicker("dms-outbox-timeline-click", "dms-outbox-timeline");
 				z_engine_check_ratelimit();
 				socket.emit("message", {fetch: "home"});
 				var populate_mentions_tab = setTimeout(function()
@@ -537,60 +522,6 @@ function z_engine_clicker(id, this_id)
 	new Event.observe(id, "click", function(event)
 	{
 		Event.stop(event);
-		if (this_id == "dms-timeline")
-		{
-			new S2.FX.Parallel(
-			[
-				new Effect.Fade("dms-timeline-click",
-				{
-					duration: 0.25,
-					mode: 'relative'
-				}),
-				new Effect.Appear("dms-inbox-timeline-click",
-				{
-					delay: 0.1,
-					duration: 0.25,
-					mode: 'relative'
-				}),
-				new Effect.Appear("dms-outbox-timeline-click",
-				{
-					delay: 0.1,
-					duration: 0.25,
-					mode: 'relative'
-				})
-			],
-			{
-				duration: 1
-			});
-		}
-		else
-		{
-			if ($("dms-inbox-timeline-click").visible() || $("dms-outbox-timeline-click").visible())
-			{
-				new S2.FX.Parallel(
-				[
-					new Effect.Fade("dms-outbox-timeline-click",
-					{
-						duration: 0.15,
-						mode: 'relative'
-					}),
-					new Effect.Fade("dms-inbox-timeline-click",
-					{
-						duration: 0.15,
-						mode: 'relative'
-					}),
-					new Effect.Appear("dms-timeline-click",
-					{
-						delay: 0.15,
-						duration: 0.25,
-						mode: 'relative'
-					})
-				],
-				{
-					duration: 1
-				});
-			}
-		}
 		if (!$(this_id).visible())
 		{
 			if ($("home-timeline").visible())
@@ -605,79 +536,67 @@ function z_engine_clicker(id, this_id)
 			{
 				var hide = "threaded-timeline";
 			}
-			if ($("dms-timeline").visible())
+			if ($("dms-inbox-timeline").visible())
 			{
-				var hide = "dms-timeline";
+				var hide = "dms-inbox-timeline";
 			}
-			if (BrowserDetect.browser != "Webkit" || BrowserDetect.browser != "Firefox" || BrowserDetect.browser == "Firefox" && BrowserDetect.version < 5)
-			{
-				new S2.FX.Parallel(
-				[
-					new Effect.Fade(hide,
-					{
-						duration: 0.25,
-						mode: 'relative'
-					}),
-					new Effect.Appear(this_id,
-					{
-						delay: 0.25,
-						duration: 0.25,
-						mode: 'relative'
-					})
-				],
-				{
-					duration: 1
-				});
-			}
-			else
-			{
-				$(hide).addClassName("hider").removeClass("shower");
-				$(this_id).addClassName("shower").removeClass("hider");
-			}
-		}
-		setTimeout(function()
-		{
-			$("threaded-timeline").update();
-			latest_threaded_id = 0;
-		},1000);
-	});
-}
-
-/* a more specific clicker for the inbox / outbox page */
-function z_engine_clicker_dms(id, this_id)
-{
-	new Event.observe(id, "click", function(event)
-	{
-		Event.stop(event);
-		if (!$(this_id).visible())
-		{
 			if ($("dms-outbox-timeline").visible())
 			{
 				var hide = "dms-outbox-timeline";
 			}
-			else if ($("dms-inbox-timeline").visible())
+			if (!z_engine_css3())
 			{
-				var hide = "dms-inbox-timeline";
+				new Effect.Parallel(
+				[
+					new Effect.Fade(hide,
+					{
+						duration: 0.5,
+						mode: 'relative'
+					}),
+					new Effect.Appear(this_id,
+					{
+						delay: 0.51,
+						duration: 0.5,
+						mode: 'relative'
+					})
+				],
+				{
+					duration: 1,
+					afterFinish: function()
+					{
+						$("threaded-timeline").update();
+						latest_threaded_id = 0;
+					}
+				});
 			}
-			new S2.FX.Parallel(
-			[
-				new Effect.Fade(hide,
-				{
-					duration: 0.4,
-					mode: 'relative'
-				}),
-				new Effect.Appear(this_id,
-				{
-					delay: 0.35,
-					duration: 0.4,
-					mode: 'relative'
-				})
-			],
+			else
 			{
-				duration: 1
-			});
+				$(hide).addClassName("hider").removeClassName("shower");
+				setTimeout(function()
+				{
+					$(this_id).addClassName("shower").removeClassName("hider");
+				},500);
+				setTimeout(function()
+				{
+					$("threaded-timeline").update();
+					latest_threaded_id = 0;
+				},1000);
+			}
 		}
 	});
+}
+
+/* check to see if css3 is possible */
+function z_engine_css3()
+{
+	if (BrowserDetect.browser == "Firefox" && BrowserDetect.version >= 5 || BrowserDetect.browser != "Chrome" || BrowserDetect.browser != "Safari")
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
 }
 
 /* delete a tweet / dm */
@@ -795,31 +714,31 @@ function z_engine_drop_tweet(id)
 /* the fading + blind down animation */
 function z_engine_fade_down(id)
 {
-	new Effect.BlindDown(id,
+	if (!z_engine_css3())
 	{
-		duration: 0.7,
-		mode: 'relative',
-		transition: 'easeOutSine'
-	});
+		new Effect.Appear(id,
+		{
+			duration: 1,
+			transition: Effect.Transitions.sinoidal
+		});
+	}
 }
 
 /* the fading + blind up animation */
 function z_engine_fade_up(id)
 {
-	new Effect.BlindUp(id,
+	if (!z_engine_css3())
 	{
-		duration: 1,
-		mode: 'relative',
-		transition: 'easeOutSine',
-		before: function()
+		new Effect.Fade(id,
 		{
-			$(id).addClassName("comment-parent-drop").removeClassName("comment-parent");
-		},
-		after: function()
-		{
-			$(id).remove();
-		}
-	});
+			duration: 1,
+			transition: Effect.Transitions.sinoidal
+		});
+	}
+	else
+	{
+		$(id).addClassName("comment-parent-drop").removeClassName("comment-parent");
+	}
 }
 
 /* favorite a tweet */
@@ -885,7 +804,6 @@ function z_engine_image_dropper()
 {
 	if (window.File && window.FileReader && window.FileList && window.Blob)
 	{
-		$("image").setAttribute("title", "drop images here!");
 		$("image").show();
 		$("image").ondragover = function(event)
 		{
@@ -1358,23 +1276,34 @@ function z_engine_threaded(init, id)
 		{
 			var hide = "mentions-timeline";
 		}
-		new S2.FX.Parallel(
-		[
-			new Effect.Fade(hide,
-			{
-				duration: 0.4,
-				mode: 'relative'
-			}),
-			new Effect.Appear("threaded-timeline",
-			{
-				delay: 0.35,
-				duration: 0.4,
-				mode: 'relative'
-			})
-		],
+		if (!z_engine_css3())
 		{
-			duration: 1
-		});
+			new Effect.Parallel(
+			[
+				new Effect.Fade(hide,
+				{
+					duration: 0.5,
+					mode: 'relative'
+				}),
+				new Effect.Appear("threaded-timeline",
+				{
+					delay: 0.51,
+					duration: 0.5,
+					mode: 'relative'
+				})
+			],
+			{
+				duration: 1
+			});
+		}
+		else
+		{
+			$(hide).addClassName("hider").removeClassName("shower");
+			setTimeout(function()
+			{
+				$("threaded-timeline").addClassName("shower").removeClassName("hider");
+			}, 500);
+		}
 		socket.emit("message", {show: {id_str: init}});
 	}
 	else
@@ -2080,7 +2009,7 @@ function z_engine_tweet_pause()
 	if (!paused)
 	{
 		paused = true;
-		$("pause").update("unpause");
+		$("pause").update("start");
 		$("paused-count").appear();
 	}
 	else
@@ -2088,7 +2017,7 @@ function z_engine_tweet_pause()
 		paused = false;
 		$("paused-count").fade();
 		$("paused-count").update("(0)");
-		$("pause").update("pause");
+		$("pause").update("stop");
 		pttid = 0;
 	}
 }

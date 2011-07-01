@@ -2,24 +2,22 @@
   #sub-nav(class='navigation')
     ul.tabbed
       li(style='float:right;')
-        a#logout(href='#') logout
+        a#logout(href='#') exit
       li(style='float:right;')
-        a#shorten(href='#') shorten
-      li#image(style='display: none; float: right;') image
+        a#shorten(href='#', title='click to shorten urls!') shorten
+      li#image(style='display: none; float: right;', title='drop images here!') image
       li(style='float:right')
-        a#pause(href='#') pause
+        a#pause(href='#') stop
       li(style='float:right')
         span#paused-count(style='display:none;') (0)
       li
         a#home-timeline-click(href='#', onclick='return false;') home
       li
-        a#mentions-timeline-click(href='#', onclick='return false;') mentions
+        a#mentions-timeline-click(href='#', onclick='return false;') reply
       li
-        a#dms-timeline-click(href='#', onclick='return false;') messages
+        a#dms-inbox-timeline-click(href='#', onclick='return false;') inbox
       li
-        a#dms-inbox-timeline-click(href='#', onclick='return false;', style='display:none;') inbox
-      li
-        a#dms-outbox-timeline-click(href='#', onclick='return false;', style='display:none;') outbox
+        a#dms-outbox-timeline-click(href='#', onclick='return false;') outbox
     .clearer &nbsp;
   form#new-tweet-form(autocomplete='off')
     ul.tabbed
@@ -30,14 +28,13 @@
 
 #container(class='comment-list-wrapper')
   #home-timeline
-    img#loading-home(src='img/spinner.gif', class='loading')
+    img#loading-home(src='/img/spinner.gif', class='loading')
   #mentions-timeline(style='display:none;')
-    img#loading-mentions(src='img/spinner.gif', class='loading', style='display:none;')
-  #dms-timeline(style='display:none;')
-    #dms-inbox-timeline
-      img#loading-inbox(src='img/spinner.gif', class='loading', style='display:none;')
-    #dms-outbox-timeline(style='display:none;')
-      img#loading-outbox(src='img/spinner.gif', class='loading', style='display:none;')
+    img#loading-mentions(src='/img/spinner.gif', class='loading', style='display:none;')
+  #dms-inbox-timeline(style='display:none;')
+    img#loading-inbox(src='/img/spinner.gif', class='loading', style='display:none;')
+  #dms-outbox-timeline(style='display:none;')
+    img#loading-outbox(src='/img/spinner.gif', class='loading', style='display:none;')
   #threaded-timeline(style='display:none;')
 
 script(type='text/javascript', src='/socket.io/socket.io-sessions.js?'+(new Date()).getTime())

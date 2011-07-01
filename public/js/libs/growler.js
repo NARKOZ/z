@@ -5,11 +5,11 @@
 // Growler is freely distributable under the terms of an MIT-style license.
 // Updated to work with "scripty2"
 
-const DEFAULT_INIT_OPTIONS = {
+var DEFAULT_INIT_OPTIONS = {
 	location: 'bottom-right'
 }
 
-const DEFAULT_GROWL_OPTIONS = {
+var DEFAULT_GROWL_OPTIONS = {
 	growl_speed: 0.4,
 	ungrowl_speed: 0.4,
 	growl_direction: { y: 0, x: 0 },
@@ -37,6 +37,23 @@ function removeGrowl(growl, options)
 	else
 	{
 		options = combine(options, DEFAULT_GROWL_OPTIONS);
+		new Effect.Parallel(
+		[
+			new Effect.Opacity(growl, { to: 0.0 }),
+			new Effect.Move(growl, { x: options.ungrowl_direction.x, y: options.ungrowl_direction.y, mode: 'relative' })
+		],
+		{
+			duration: options.ungrowl_speed,
+			afterFinish: function()
+			{
+				try
+				{
+					growl.remove();
+				}
+				catch(e)
+				{}
+			}
+		});
 		new Effect.DropOut(growl, {duration: options.ungrowl_speed});
 	}
 }
@@ -61,7 +78,14 @@ function insertGrowl(growls, title, message, options)
 	{
 		removeGrowl.delay(options.duration, growl, options);
 	}
-	$(growl).morph("opacity: "+options.opacity, {duration: options.growl_speed});
+	new Effect.Parallel(
+	[
+		new Effect.Opacity(growl, { to: options.opacity }),
+		new Effect.Move(growl, { x: options.growl_direction.x, y: options.growl_direction.y, mode: 'relative' })
+	],
+	{
+		duration: options.growl_speed
+	});
 }
 
 var Growler = Class.create(

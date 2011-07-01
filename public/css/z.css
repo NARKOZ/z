@@ -304,13 +304,17 @@ li
 }
 .comment-content-wrapper
 {
+	clear: right;
 	display: inline-block;
 	float: right;
+	width: 100%;
 }
 .comment-profile-wrapper
 {
+	clear: left;
 	display: inline-block;
-	text-align: center;
+	float: left;
+	width: 100%;
 }
 
 /*
