@@ -795,61 +795,31 @@ function z_engine_drop_tweet(id)
 /* the fading + blind down animation */
 function z_engine_fade_down(id)
 {
-	if (BrowserDetect.browser != "Webkit" || BrowserDetect.browser != "Firefox" || BrowserDetect.browser == "Firefox" && BrowserDetect.version < 5)
+	new Effect.BlindDown(id,
 	{
-		new S2.FX.Parallel(
-		[
-			new Effect.Appear(id,
-			{
-				duration: 1.25,
-				mode: 'relative',
-				transition: 'easeOutSine'
-			}),
-			new Effect.BlindDown(id,
-			{
-				duration: 0.7,
-				mode: 'relative',
-				transition: 'easeOutSine'
-			})
-		],
-		{
-			duration: 1.5
-		});
-	}
+		duration: 0.7,
+		mode: 'relative',
+		transition: 'easeOutSine'
+	});
 }
 
 /* the fading + blind up animation */
 function z_engine_fade_up(id)
 {
-	if (BrowserDetect.browser != "Webkit" || BrowserDetect.browser != "Firefox" || BrowserDetect.browser == "Firefox" && BrowserDetect.version < 5)
+	new Effect.BlindUp(id,
 	{
-		new S2.FX.Parallel(
-		[
-			new Effect.Fade(id,
-			{
-				duration: 1.25,
-				mode: 'relative',
-				transition: 'easeOutSine'
-			}),
-			new Effect.BlindUp(id,
-			{
-				duration: 1,
-				mode: 'relative',
-				transition: 'easeOutSine'
-			})
-		],
+		duration: 1,
+		mode: 'relative',
+		transition: 'easeOutSine',
+		before: function()
 		{
-			duration: 1.5
-		});
-	}
-	else
-	{
-		$(id).addClassName("comment-parent-drop").removeClassName("comment-parent");
-	}
-	setTimeout(function()
-	{
-		$(id).remove();
-	},5000);
+			$(id).addClassName("comment-parent-drop").removeClassName("comment-parent");
+		},
+		after: function()
+		{
+			$(id).remove();
+		}
+	});
 }
 
 /* favorite a tweet */
@@ -1756,6 +1726,7 @@ function z_engine_tweet(data, output)
 		if ($("comment-"+id))
 		{
 			z_engine_tweet_buttons(output, id, author, userid, text, locked, faved, mentions_string, userinfo);
+			z_engine_fade_down("comment-"+id);
 		}
 	}
 	if (output == "threaded" && replyid)
