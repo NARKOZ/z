@@ -1405,25 +1405,11 @@ function z_engine_threaded(init, id)
 		{
 			duration: 1
 		});
-		if (!content_stored[init])
-		{
-			socket.emit("message", {show: {id_str: init}});
-		}
-		else
-		{
-			content_threads_queued.push(content_stored[init]);
-		}
+		socket.emit("message", {show: {id_str: init}});
 	}
 	else
 	{
-		if (!content_stored[id])
-		{
-			socket.emit("message", {show: {id_str: id}}); //continue the loop until nothing is left
-		}
-		else
-		{
-			content_threads_queued.push(content_stored[id]);
-		}
+		socket.emit("message", {show: {id_str: id}}); //continue the loop until nothing is left
 	}
 }
 
@@ -1567,7 +1553,7 @@ function z_engine_tweet(data, output)
 	});
 	if (!shown && !client_blocked && !hashtag_blocked && !mention_blocked && !user_blocked)
 	{
-		content_stored[id] = JSON.stringify(data);
+		content_stored[id] = true;
 		z_engine_remember_author(author);
 		var userinfo = "";
 		if (description != null)
