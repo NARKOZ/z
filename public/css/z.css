@@ -144,12 +144,9 @@ li
 .hider
 {
 	display: none;
-	animation: fadeout 0.5s;
-	animation-timing-function: ease-in-out;
-	-moz-animation: fadeout 0.5s;
-	-moz-animation-timing-function: ease-in-out;
-	-webkit-animation: fadeout 0.5s;
-	-webkit-animation-timing-function: ease-in-out;
+	animation: fadeout 0.5s ease-in-out;
+	-moz-animation: fadeout 0.5s ease-in-out;
+	-webkit-animation: fadeout 0.5s ease-in-out;
 }
 .shower
 {
@@ -635,9 +632,8 @@ div.growls div.large
 /*
  * click menu stuff
  */
-div.menu
+div.menu, div.menu-fadeout
 {
-	animation: fadein 0.5s ease-in-out;
 	background-color: white;
 	border-radius: 4px;
 	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
@@ -647,22 +643,32 @@ div.menu
 	margin-top: -100px;
 	position: absolute;
 	top: 0;
+	z-index: 100;
 	-khtml-border-radius: 4px;
 	-khtml-user-select: text;
 	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
-	-moz-animation: fadein 0.5s ease-in-out;
 	-moz-border-radius: 4px;
 	-moz-user-select: text;
 	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-o-border-radius: 4px;
 	-o-user-select: text;
 	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
-	-webkit-animation: fadein 0.5s ease-in-out;
 	-webkit-border-radius: 4px;
 	-webkit-user-select: text;
 	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
-	user-select: text;
 	behavior: url(border-radius.htc);
+}
+div.menu
+{
+	animation: fadein 0.5s ease-in-out;
+	-moz-animation: fadein 0.5s ease-in-out;
+	-webkit-animation: fadein 0.5s ease-in-out;
+}
+div.menu-fadeout
+{
+	animation: fadeout 0.5s ease-in-out;
+	-moz-animation: fadeout 0.5s ease-in-out;
+	-webkit-animation: fadeout 0.5s ease-in-out;
 }
 div.menu a
 {
