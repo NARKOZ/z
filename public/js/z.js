@@ -24,7 +24,8 @@ var dms_loaded = 0; //quick method to hide each dm timelines loading image witho
 var dm_to = false; //catch dm reply
 var following = Array(); //holds our following id's array
 var geo_high_accuracy = false; //disable high accuracy on geo readings
-var geo_timeout = 12000; //give to two minutes to figure out where you are
+var geo_refresh_interval = 300; //refresh our geo
+var geo_timeout = 120; //give to two minutes to figure out where you are
 if (!store.get('hashtag_blocks'))
 {
 	store.set('hashtag_blocks', "");
@@ -39,9 +40,9 @@ var kloutinfo_params = {
 	tipJoint: ['right', 'bottom']
 }
 var latest_threaded_id = 0;
-var latit = false; //hold our latitude
+var latitude = false; //hold our latitude
 var loaded = false; //not loaded
-var longit = false; //hold our longitude
+var longitude = false; //hold our longitude
 var max_file_size = 2; //in megabytes
 if (!S2.Extensions.HardwareAcceleratedCSSTransitions)
 {
@@ -99,52 +100,8 @@ z_engine_attrition(); //call the below function
 /* the websocket itself */
 function z_engine_attrition()
 {
-	if (navigator.geolocation)
-	{
-		navigator.geolocation.getCurrentPosition(z_engine_get_geolocation, z_engine_geolocation_error,
-		{
-			enableHighAccuracy: geo_high_accuracy,
-			maximumAge: 0,
-			timeout: geo_timeout
-		});
-	}
-	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1)
-	{
-		window.webkitNotifications.requestPermission();
-	}
 	if (!loaded)
 	{
-		if (window.File && window.FileReader && window.FileList && window.Blob)
-		{
-			var image = $("image");
-			image.setAttribute("title", "drop images here!");
-			image.show();
-			image.ondragover = function(event)
-			{
-				event.preventDefault();
-				image.setStyle("border-color: #aaa;");
-				return false;
-			}
-			image.ondragend = function(event)
-			{
-				event.preventDefault();
-				image.setStyle("border-color: #ddd;");
-				return false;
-			}
-			image.ondrop = function(event)
-			{
-				event.preventDefault();
-				var dropped = event.dataTransfer.files[0];
-				z_engine_dropped_image(dropped);
-				return false;
-			}
-			image.ondragleave = function(event)
-			{
-				event.preventDefault();
-				image.setStyle("border-color: #ddd;");
-				return false;
-			}
-		}
 		$("loading-home").center(8);
 		$("loading-mentions").center(8);
 		$("loading-inbox").center(8);
@@ -195,6 +152,9 @@ function z_engine_attrition()
 				$("new-tweet").setStyle("color: red;");
 			}
 		});
+		z_engine_geo();
+		z_engine_image_dropper();
+		z_engine_notification_setup();
 	}
 	socket.on("connect",function()
 	{
@@ -275,6 +235,10 @@ function z_engine_attrition()
 						z_engine_stream_queue();
 					}
 				},stream_queue_interval * 1000);
+				var geo_refresh = setInterval(function()
+				{
+					z_engine_geo();
+				},geo_refresh_interval * 1000);
 			}
 			else if (json.loaded && loaded)
 			{
@@ -323,8 +287,8 @@ function z_engine_attrition()
 				switch (json.event)
 				{
 					case 'block':
-						var _mention_blocks = $w(store.get('mention_blocks')).uniq();
-						var user_blocks = $w(store.get('user_blocks')).uniq();
+						var mention_blocks = $w(store.get('mention_blocks')).uniq().strip();
+						var user_blocks = $w(store.get('user_blocks')).uniq().strip();
 						var mention_exists = false;
 						var user_exists = false;
 						mention_blocks.each(function(item)
@@ -353,8 +317,8 @@ function z_engine_attrition()
 						}
 					break;
 					case 'unblock':
-						var mention_blocks = $w(store.get('user_blocks')).uniq();
-						var user_blocks = $w(store.get('user_blocks')).uniq();
+						var mention_blocks = $w(store.get('user_blocks')).uniq().strip();
+						var user_blocks = $w(store.get('user_blocks')).uniq().strip();
 						var new_mention_blocks = "";
 						var new_user_blocks = "";
 						mention_blocks.each(function(item)
@@ -828,67 +792,6 @@ function z_engine_drop_tweet(id)
 	}
 }
 
-/* handle image uploads */
-function z_engine_dropped_image(image)
-{
-	if (image.size <= max_file_size * 1024 * 1024)
-	{
-		switch(image.type)
-		{
-			case 'application/pdf':
-			case 'image/apng':
-			case 'image/bmp':
-			case 'image/gif':
-			case 'image/jpeg':
-			case 'image/jpg':
-			case 'image/png':
-			case 'image/tiff':
-				var form = new FormData();
-				form.append("image", image);
-				form.append("key", imgur_key);
-				var xhr = new XMLHttpRequest(); //this would be written in prototypes ajax method but only this works
-				xhr.onreadystatechange = function()
-				{
-					if(this.readyState == 3 || this.readyState == 2)
-					{
-						$("image").setStyle("border-color: yellow;");
-					}
-					if(this.readyState == 4 && this.status == 200)
-					{
-						var response = this.responseText.evalJSON(true);
-						var image_url = response.upload.links.original;
-						var current_tweet = $("new-tweet").getValue();
-						if (current_tweet.length > 0)
-						{
-							var new_tweet = current_tweet+" "+image_url;
-						}
-						else if (current_tweet.length == 0)
-						{
-							var new_tweet = image_url;
-						}
-						$("new-tweet").setValue(new_tweet);
-						$("image").setStyle("border-color: green;");
-						setTimeout(function()
-						{
-							$("image").setStyle("border-color: #ddd;");
-						},1500);
-					}
-					if(this.readyState == 4 && this.status != 200)
-					{
-						$("image").setStyle("border-color: red;");
-						setTimeout(function()
-						{
-							$("image").setStyle("border-color: #ddd;");
-						},1500);
-					}
-				}
-				xhr.open("POST", "http://api.imgur.com/2/upload.json", true);
-				xhr.send(form);
-			break;
-		}
-	}
-}
-
 /* the fading + blind down animation */
 function z_engine_fade_down(id)
 {
@@ -970,25 +873,131 @@ function z_engine_favorite(id)
 	}
 }
 
-/* get geolocation, set vars */
-function z_engine_get_geolocation(position)
+/* get geolocation information */
+function z_engine_geo()
 {
-	latit = position.coords.latitude;
-	longit = position.coords.longitude;
+	if (navigator.geolocation)
+	{
+		navigator.geolocation.getCurrentPosition(z_engine_geo_set, z_engine_geo_error,
+		{
+			enableHighAccuracy: geo_high_accuracy,
+			maximumAge: 0,
+			timeout: geo_timeout * 1000
+		});
+	}
 }
 
-/* if we have some bizarre error, handle it down here (currently just keeps everything set to false) */
-function z_engine_geolocation_error(err)
+
+/* handle geo errors down here */
+function z_engine_geo_error(error)
 {
-	switch (err.code)
+	switch (error.code)
 	{
 		case 0: //unknown error
 		case 1: //denied
 		case 2: //unavailable
 		case 3: //timeout
-			latit = false;
-			longit = false;
+			latitude = false;
+			longitude = false;
 		break;
+	}
+}
+
+/* set the geolocation vars */
+function z_engine_geo_set(position)
+{
+	latitude = position.coords.latitude;
+	longitude = position.coords.longitude;
+}
+
+/* automatically determine if the browser supports file dropping */
+function z_engine_image_dropper()
+{
+	if (window.File && window.FileReader && window.FileList && window.Blob)
+	{
+		$("image").setAttribute("title", "drop images here!");
+		$("image").show();
+		$("image").ondragover = function(event)
+		{
+			event.preventDefault();
+			$("image").setStyle("border-color: #aaa;");
+			return false;
+		}
+		$("image").ondragend = function(event)
+		{
+			event.preventDefault();
+			$("image").setStyle("border-color: #ddd;");
+			return false;
+		}
+		$("image").ondrop = function(event)
+		{
+			event.preventDefault();
+			var image = event.dataTransfer.files[0];
+			if (image.size <= max_file_size * 1024 * 1024)
+			{
+				switch(image.type)
+				{
+					case 'application/pdf':
+					case 'image/apng':
+					case 'image/bmp':
+					case 'image/gif':
+					case 'image/jpeg':
+					case 'image/jpg':
+					case 'image/png':
+					case 'image/tiff':
+						var form = new FormData();
+						form.append("image", image);
+						form.append("key", imgur_key);
+						var xhr = new XMLHttpRequest(); //this would be written in prototypes ajax method but only this works
+						xhr.onreadystatechange = function()
+						{
+							if(this.readyState == 3 || this.readyState == 2)
+							{
+								$("image").setStyle("border-color: yellow;");
+							}
+							if(this.readyState == 4 && this.status == 200)
+							{
+								var response = this.responseText.evalJSON(true);
+								var image_url = response.upload.links.original;
+								var current_tweet = $("new-tweet").getValue();
+								if (current_tweet.length > 0)
+								{
+									var new_tweet = current_tweet+" "+image_url;
+								}
+								else if (current_tweet.length == 0)
+								{
+									var new_tweet = image_url;
+								}
+								$("new-tweet").setValue(new_tweet);
+								$("image").setStyle("border-color: green;");
+								setTimeout(function()
+								{
+									$("image").setStyle("border-color: #ddd;");
+								},1500);
+							}
+							if(this.readyState == 4 && this.status != 200)
+							{
+								$("image").setStyle("border-color: red;");
+								setTimeout(function()
+								{
+									$("image").setStyle("border-color: #ddd;");
+								},1500);
+							}
+						}
+						xhr.open("POST", "http://api.imgur.com/2/upload.json", true);
+						xhr.send(form);
+					break;
+				}
+			}
+			z_engine_dropped_image(dropped);
+			return false;
+		}
+		$("image").ondragleave = function(event)
+		{
+			event.preventDefault();
+			$("image").setStyle("border-color: #ddd;");
+			return false;
+		}
 	}
 }
 
@@ -1047,6 +1056,15 @@ function z_engine_notification(av, head, text)
 	{
 		//todo: support avatars in here as well
 		growler.growl(z_engine_parse_tweet(head), z_engine_parse_tweet(text));
+	}
+}
+
+/* currently for webkit browsers only (requests permission to use webkit notifications) */
+function z_engine_notification_setup()
+{
+	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1)
+	{
+		window.webkitNotifications.requestPermission();
 	}
 }
 
@@ -1165,7 +1183,7 @@ function z_engine_remember_author(author)
 	{
 		new_users = author+" "+new_users;
 	}
-	store.set('users', new_users);
+	store.set('users', new_users.strip());
 }
 
 /* reply to a specific tweet */
@@ -1194,7 +1212,7 @@ function z_engine_retweet(id)
 function z_engine_retweet_comment(id, author, text)
 {
 	reply_id = id; //set this as a reply, it looks nicer
-	var escaped = new Element('textarea').update(escape_string(text.replace(/</g,"&lt;").replace(/>/g,"&gt;")));
+	var escaped = new Element('textarea').update(escape_string(text.replace(/</g,"&lt;").replace(/>/g,"&gt;").strip()));
 	$("new-tweet").setValue("RT @"+author+" "+escaped.getValue());
 	$("new-tweet").focus();
 	escaped = "";
@@ -1216,12 +1234,12 @@ function z_engine_send_tweet()
 					include_entities: true
 				}
 			}
-			if (latit && longit)
+			if (latitude && longitude)
 			{
 				var geo = {
 					display_coordinates: true,
-					lat: latit,
-					'long': longit
+					lat: latitude,
+					'long': longitude
 				}
 				new Object.extend(send.status, geo);
 			}
