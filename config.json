@@ -4,7 +4,7 @@
 	"imgur_key": "",
 	"klout_key": "",
 	"port": 8080,
-	"startup_count": 50,
+	"startup_count": 25,
 	"storage_fingerprint": "",
 	"storage_secret": "",
 	"storage_type": "memory"

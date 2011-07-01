@@ -14,9 +14,12 @@ if (!store.get('client_blocks'))
 }
 store.set('connect_id', CONNECT_SID);
 var check_ratelimit_interval = 300; //check every 5 minutes
-var content_queued = Array(); //holds our realtime tweets
+var content_dms_queued = Array(); //outputs our dms tweets nicely
+var content_mentions_queued = Array(); //outputs our mentions tweets nicely
+var content_queued = Array(); //outputs our tweets nicely
+var content_threads_queued = Array(); //outputs our threads tweets nicely
 var content_stored = Array(); //stores all tweets
-var dms_cutoff = 100; //max amount of tweets to display before pruning occurs on all dms
+var dms_cutoff = 50; //max amount of tweets to display before pruning occurs on all dms
 var dms_loaded = 0; //quick method to hide each dm timelines loading image without needing to write a ton of code to do it
 var dm_to = false; //catch dm reply
 var following = Array(); //holds our following id's array
@@ -52,7 +55,7 @@ if (!store.get('mention_blocks'))
 {
 	store.set('mention_blocks', "");
 }
-var mentions_cutoff = 150; //max amount of tweets to display before pruning occurs on the mentions timeline
+var mentions_cutoff = 100; //max amount of tweets to display before pruning occurs on the mentions timeline
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var pttid = 0; //this serves as the (#) amount displayed when paused
 var prune_tweets_interval = 60; //start the pruning loop over again every minute
@@ -61,6 +64,7 @@ var reply_id = false; //catch reply
 var screen_name = ""; //our own screen name
 var socket = io.connectWithSession();
 var stream_queue_interval = 1.5; //every one and a half seconds
+var threaded_cutoff = 50; //max amount of tweets to display before pruning occurs on the threaded timeline
 var update_relative_dms_interval = 60; //once a minute
 var update_relative_home_interval = 15; //every 15 seconds
 var update_relative_mentions_interval = 30; //every 30 seconds
@@ -301,8 +305,7 @@ function z_engine_attrition()
 				dms_loaded++;
 				json.dms.each(function(item)
 				{
-					z_engine_tweet(item, "dms");
-
+					content_dms_queued.push(JSON.stringify(item));
 				});
 				switch (dms_loaded)
 				{
@@ -426,7 +429,7 @@ function z_engine_attrition()
 			{
 				json.home.each(function(item)
 				{
-					z_engine_tweet(item, "home");
+					content_queued.push(JSON.stringify(item));
 				});
 				$("loading-home").fade();
 				$("loading-mentions").appear();
@@ -463,7 +466,7 @@ function z_engine_attrition()
 			{
 				json.mentions.each(function(item)
 				{
-					z_engine_tweet(item, "mentions");
+					content_mentions_queued.push(JSON.stringify(item));
 				});
 				$("loading-mentions").fade();
 				$("loading-inbox").appear();
@@ -471,6 +474,10 @@ function z_engine_attrition()
 			else if (json.rates)
 			{
 				rates = JSON.stringify(json.rates);
+				if (json.rates.remaining_hits <= 10)
+				{
+					z_engine_notification("","notice!","you have "+json.rates.remaining_hits+" (of "+json.rates.hourly_limit+") request tokens left!");
+				}
 			}
 			else if (json.retweet_info)  //catch what we just retweeted, change the clicking event and icon
 			{
@@ -1117,17 +1124,49 @@ function z_engine_prune_tweets()
 	setTimeout(function()
 	{
 		var threaded_elements = $("threaded-timeline").childElements();
-		if (threaded_elements.length >= home_cutoff)
+		if (threaded_elements.length >= threaded_cutoff)
 		{
 			threaded_elements.each(function(item, index)
 			{
-				if (index > home_cutoff)
+				if (index > threaded_cutoff)
 				{
 					$(item).remove();
 				}
 			});
 		}
 	},40000);
+}
+
+/* remember usernames (autocompleter related) */
+function z_engine_remember_author(author)
+{
+	var new_users = "";
+	var user_found = false;
+	var users = $w(store.get('users')).uniq();
+	users.each(function(item, index)
+	{
+		if (index <= 199) //max of 200
+		{
+			if (item == author)
+			{
+				user_found = true;
+			}
+			else
+			{
+				new_users += " "+item;
+			}
+		}
+		else
+		{
+			$break;
+		}
+	});
+	if (!user_found)
+	{
+		new_users = author+" "+new_users;
+	}
+	store.set('users', new_users);
+	console.log(users.length);
 }
 
 /* reply to a specific tweet */
@@ -1267,7 +1306,7 @@ function z_engine_shorten_urls()
 	}
 }
 
-/* output at max one tweet per second */
+/* streamlines our timelines nicely by outputting only one tweet every second or so */
 function z_engine_stream_queue()
 {
 	if (content_queued.length > 0)
@@ -1279,6 +1318,42 @@ function z_engine_stream_queue()
 			{
 				var data = queue.evalJSON(true);
 				z_engine_tweet(data, "home");
+			}
+		}
+	}
+	if (content_mentions_queued.length > 0)
+	{
+		var queue = content_mentions_queued.shift();
+		if (typeof(queue) == "string")
+		{
+			if (queue.isJSON())
+			{
+				var data = queue.evalJSON(true);
+				z_engine_tweet(data, "mentions");
+			}
+		}
+	}
+	if (content_dms_queued.length > 0)
+	{
+		var queue = content_dms_queued.shift();
+		if (typeof(queue) == "string")
+		{
+			if (queue.isJSON())
+			{
+				var data = queue.evalJSON(true);
+				z_engine_tweet(data, "dms");
+			}
+		}
+	}
+	if (content_threads_queued.length > 0)
+	{
+		var queue = content_threads_queued.shift();
+		if (typeof(queue) == "string")
+		{
+			if (queue.isJSON())
+			{
+				var data = queue.evalJSON(true);
+				z_engine_tweet(data, "threaded");
 			}
 		}
 	}
@@ -1320,8 +1395,7 @@ function z_engine_threaded(init, id)
 		}
 		else
 		{
-			var data = content_stored[init].evalJSON(true);
-			z_engine_tweet(data, "threaded");
+			content_threads_queued.push(content_stored[init]);
 		}
 	}
 	else
@@ -1332,8 +1406,7 @@ function z_engine_threaded(init, id)
 		}
 		else
 		{
-			var data = content_stored[id].evalJSON(true);
-			z_engine_tweet(data, "threaded");
+			content_threads_queued.push(content_stored[id]);
 		}
 	}
 }
@@ -1479,6 +1552,7 @@ function z_engine_tweet(data, output)
 	if (!shown && !client_blocked && !hashtag_blocked && !mention_blocked && !user_blocked)
 	{
 		content_stored[id] = JSON.stringify(data);
+		z_engine_remember_author(author);
 		var userinfo = "";
 		if (description != null)
 		{
@@ -1649,7 +1723,7 @@ function z_engine_tweet(data, output)
 				$("home-timeline").insert({'top': container_element});
 			break;
 			case 'mentions':
-				$("mentions-timeline").insert({'bottom': container_element});
+				$("mentions-timeline").insert({'top': container_element});
 			break;
 		}
 		if (mentioned && output != "mentions" && output != "threaded" && author != screen_name && !data.retweeted_status)
