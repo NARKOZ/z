@@ -488,7 +488,7 @@ function z_engine_attrition()
 			}
 			else if (json.show)
 			{
-				z_engine_tweet(json.show, "threaded");
+				content_threads_queued.push(JSON.stringify(json.show));
 			}
 			else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
 			{
