@@ -989,7 +989,6 @@ function z_engine_image_dropper()
 					break;
 				}
 			}
-			z_engine_dropped_image(dropped);
 			return false;
 		}
 		$("image").ondragleave = function(event)
