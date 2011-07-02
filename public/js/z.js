@@ -1579,11 +1579,11 @@ function z_engine_tweet(data, output)
 							{
 								if (retweet_count > 0)
 								{
-									var rt_title = "retweeted by "+author+" and "+retweet_count+" others!";
+									var rt_title = "retweeted by "+author2+" and "+retweet_count+" others!";
 								}
 								else
 								{
-									var rt_title = "retweeted by "+author+"!";
+									var rt_title = "retweeted by "+author2+"!";
 								}
 								var rtd_element = new Element('span', {'class': 'rtd'});
 								rtd_element.update(" ");
