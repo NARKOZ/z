@@ -605,19 +605,14 @@ div.autocomplete
 {
 	background-color: white;
 	border-radius: 4px;
-	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	border: 1px solid #DDD;
 	margin: 0px;
 	padding: 0px;
 	position: absolute;
 	-khtml-border-radius: 4px;
-	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-moz-border-radius: 4px;
-	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-o-border-radius: 4px;
-	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-webkit-border-radius: 4px;
-	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	behavior: url(border-radius.htc);
 }
 div.autocomplete ul
@@ -639,7 +634,13 @@ div.autocomplete ul li
 {
 	cursor: pointer;
 	margin: 0;
-	padding: 5px;
+	padding: 3px;
+	transition: all .20s ease-in-out;
+	-khtml-transition: all .20s ease-in-out;
+	-moz-transition: all .20s ease-in-out;
+	-ms-transition: all .20s ease-in-out;
+	-o-transition: all .20s ease-in-out;
+	-webkit-transition: all .20s ease-in-out;
 }
 
 /*
