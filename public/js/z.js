@@ -92,20 +92,25 @@ function z_engine_attrition()
 		$("loading-mentions").center(8);
 		$("loading-inbox").center(8);
 		$("loading-outbox").center(8);
+		new Autocompleter.Local("new-tweet", "autocompleter", $w(store.get('users')).uniq(),
+		{
+			choices: 18,
+			minChars: 3
+		});
 		new Event.observe("logout","click",function(event)
 		{
 			Event.stop(event);
-			return z_engine_logout();
+			z_engine_logout();
 		});
 		new Event.observe("pause","click",function(event)
 		{
 			Event.stop(event);
-			return z_engine_tweet_pause();
+			z_engine_tweet_pause();
 		});
 		new Event.observe("shorten","click",function(event)
 		{
 			Event.stop(event);
-			return z_engine_shorten_urls();
+			z_engine_shorten_urls();
 		});
 		new Event.observe("new-tweet","keyup",function(event)
 		{
@@ -174,56 +179,56 @@ function z_engine_attrition()
 				var populate_mentions_tab = setTimeout(function()
 				{
 					socket.emit("message", {fetch: "mentions"});
-				},10000);
+				}, 10000);
 				var populate_dms_inbox_tab = setTimeout(function()
 				{
 					socket.emit("message", {fetch: "dms-inbox"});
-				},20000);
+				}, 20000);
 				var populate_dms_outbox_tab = setTimeout(function()
 				{
 					socket.emit("message", {fetch: "dms-outbox"});
-				},30000);
+				}, 30000);
 				var check_ratelimit = setInterval(function()
 				{
 					z_engine_check_ratelimit();
-				},check_ratelimit_interval * 1000);
+				}, check_ratelimit_interval * 1000);
 				var update_relative_home = setInterval(function()
 				{
 					z_engine_update_relative_time("time.home");
-				},update_relative_home_interval * 1000);
+				}, update_relative_home_interval * 1000);
 				var update_relative_mentions = setInterval(function()
 				{
 					z_engine_update_relative_time("time.mentions");
-				},update_relative_mentions_interval * 1000);
+				}, update_relative_mentions_interval * 1000);
 				var update_relative_dms = setInterval(function()
 				{
 					z_engine_update_relative_time("time.dms");
-				},update_relative_dms_interval * 1000);
+				}, update_relative_dms_interval * 1000);
 				var update_relative_threaded = setInterval(function()
 				{
 					if ($$("time.threaded").length > 0)
 					{
 						z_engine_update_relative_time("time.threaded");
 					}
-				},update_relative_home_interval * 1000);
+				}, update_relative_home_interval * 1000);
 				var prune_old_tweets = setInterval(function()
 				{
 					if (!paused)
 					{
 						z_engine_prune_tweets();
 					}
-				},prune_tweets_interval * 1000);
+				}, prune_tweets_interval * 1000);
 				var run_stream_queue = setInterval(function()
 				{
 					if (!paused)
 					{
 						z_engine_stream_queue();
 					}
-				},stream_queue_interval * 1000);
+				}, stream_queue_interval * 1000);
 				var geo_refresh = setInterval(function()
 				{
 					z_engine_geo();
-				},geo_refresh_interval * 1000);
+				}, geo_refresh_interval * 1000);
 			}
 			else if (json.loaded && loaded)
 			{
@@ -1045,6 +1050,7 @@ function z_engine_prune_tweets()
 /* remember usernames (autocompleter related) */
 function z_engine_remember_author(author)
 {
+	author = "@"+author;
 	var new_users = "";
 	var user_found = false;
 	var users = $w(store.get('users')).uniq();
@@ -1452,6 +1458,7 @@ function z_engine_tweet(data, output)
 	});
 	if (!shown && !client_blocked && !hashtag_blocked && !mention_blocked && !user_blocked)
 	{
+		(new Image()).src = avatar; //load av in the background
 		content_stored[id] = true;
 		z_engine_remember_author(author);
 		var userinfo = "";

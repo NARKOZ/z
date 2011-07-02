@@ -281,14 +281,6 @@ li
 	margin: 0;
 	padding: 0;
 }
-.comment-list li
-{
-	list-style: none;
-}
-.comment-list ul
-{
-	margin-bottom: 0;
-}
 .comment-gravatar
 {
 	margin-bottom: 3px;
@@ -510,7 +502,6 @@ input[type="text"]:disabled, textarea:disabled
 }
 ul.tabbed li
 {
-	list-style: none;
 	margin-top: 0;
 }
 ul.tabbed
@@ -608,29 +599,47 @@ div.growls div.large
 }
 
 /*
- * dialog stuff
+ * autocompleter
  */
-.dialog-window
+div.autocomplete
 {
-	background: white;
+	background-color: white;
 	border-radius: 4px;
 	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	border: 1px solid #DDD;
-	padding: 1px 12px 0 9px;
+	margin: 0px;
+	padding: 0px;
+	position: absolute;
 	-khtml-border-radius: 4px;
-	-khtml-user-select: text;
 	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-moz-border-radius: 4px;
-	-moz-user-select: text;
 	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-o-border-radius: 4px;
-	-o-user-select: text;
 	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-webkit-border-radius: 4px;
-	-webkit-user-select: text;
 	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
-	user-select: text;
 	behavior: url(border-radius.htc);
+}
+div.autocomplete ul
+{
+	margin: 0px;
+	padding: 0px;
+}
+div.autocomplete ul li.selected
+{
+	border-radius: 4px;
+	background-color: #f6f6f6;
+	-khtml-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-o-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	behavior: url(border-radius.htc);
+}
+div.autocomplete ul li
+{
+	cursor: pointer;
+	margin: 0;
+	padding: 5px;
 }
 
 /*
@@ -649,16 +658,12 @@ div.menu, div.menu-fadeout
 	top: 0;
 	z-index: 100;
 	-khtml-border-radius: 4px;
-	-khtml-user-select: text;
 	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-moz-border-radius: 4px;
-	-moz-user-select: text;
 	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-o-border-radius: 4px;
-	-o-user-select: text;
 	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-webkit-border-radius: 4px;
-	-webkit-user-select: text;
 	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	behavior: url(border-radius.htc);
 }
@@ -694,19 +699,14 @@ div.menu a:hover
 {
 	background-color: #f6f6f6;
 	display: block;
-	height: 2px;
+	height: 1px;
 	padding: 0;
 	overflow: hidden;
 }
 .menu ul, .menu li
 {
-	list-style: none;
 	margin: 0;
 	padding: 0;
-}
-.menu li
-{
-	list-style-position: outside;
 }
 
 /*
