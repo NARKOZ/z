@@ -1110,7 +1110,7 @@ function z_engine_retweet(id)
 function z_engine_retweet_comment(id, author, text)
 {
 	reply_id = id; //set this as a reply, it looks nicer
-	var escaped = new Element('textarea').update(escape_string(text.replace(/</g,"&lt;").replace(/>/g,"&gt;").strip()));
+	var escaped = new Element('textarea').update(text.replace(/</g,"&lt;").replace(/>/g,"&gt;").strip());
 	$("new-tweet").setValue("RT @"+author+" "+escaped.getValue());
 	$("new-tweet").focus();
 	escaped = "";
@@ -1214,7 +1214,7 @@ function z_engine_shorten_urls()
 	var current_tweet = $("new-tweet").getValue();
 	if (current_tweet.length > 0)
 	{
-		current_tweet.replace(/((https?\:\/\/)|(www\.))([^ ]+)/g,function(url)
+		current_tweet.replace(/((https?\:\/\/)|(www\.))([^ \(\)\{\}\[\]]+)/g,function(url)
 		{
 			socket.emit("message", {shorten: url});
 		});
@@ -2013,17 +2013,16 @@ function z_engine_tweet_mentioned(entities)
 /* returns a premade string from all mentions in entities.user_mentions */
 function z_engine_tweet_mentioned_string(entities)
 {
-	var mentioned_array = new Array();
 	var mentioned = "";
 	entities.user_mentions.uniq().each(function(item)
 	{
-		if (item.screen_name != screen_name && !mentioned_array[item.screen_name])
+		if (item.screen_name != screen_name)
 		{
-			mentioned_array[item.screen_name] = true;
-			mentioned += "@"+item.screen_name+" ";
+			var mention = "@"+item.screen_name+" ";
+			mentioned += mention;
 		}
 	});
-	return mentioned;
+	return $w(mentioned).uniq().join(" ");
 }
 
 /* tweets are temporarily stored and will be displayed when you click unpause */

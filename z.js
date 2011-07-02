@@ -60,13 +60,13 @@ server.configure(function()
 server.configure('development', function()
 {
 	express.logger('development node');
-	server.use(express.errorHandler({dumpExceptions: true, showStack: true})); 
+	server.use(express.errorHandler({dumpExceptions: true, showStack: true}));
 });
 
 server.configure('production', function()
 {
 	express.logger('production node');
-	server.use(express.errorHandler()); 
+	server.use(express.errorHandler());
 });
 
 server.dynamicHelpers(
@@ -118,7 +118,7 @@ server.get('/oauth/login', function(req, res)
 		{
 			req.session.destroy(function()
 			{
-				res.send("there was an issue building the url..<a href='/'>return</a>");
+				res.send("there was an issue building the url...<br /><br /><a href='/'>return</a>");
 			});
 		}
 		else
@@ -145,7 +145,7 @@ server.get('/oauth/callback', function(req, res)
 			{
 				req.session.destroy(function()
 				{
-					res.send("there was an issue getting the token..<a href='/'>return</a>");
+					res.send("there was an issue getting the token...<br /><br /><a href='/'>return</a>");
 				});
 			}
 			else
@@ -203,9 +203,9 @@ socket.on('sconnection', function(client, session)
 				});
 			}
 		}
-		catch(e)
+		catch(error)
 		{
-			console.error('oauth session issue: '+sys.inspect(e));
+			console.error('oauth session issue: '+sys.inspect(error));
 		}
 	}
 });
@@ -226,131 +226,138 @@ socket.on('error', function(error)
 /* callback function to handle message based events coming from our client via websocket */
 function z_engine_message_handler(tw, session, client, message)
 {
-	if (message.status)
+	try
 	{
-		tw.update(message.status);
-	}
-	else if (message.destroy)
-	{
-		tw.destroy(message.destroy.status.id_str);
-	}
-	else if (message.destroy_dm)
-	{
-		tw.destroy_dm(message.destroy_dm.status.id_str);
-	}
-	else if (message.direct_message)
-	{
-		tw.direct_message(message.direct_message);
-	}
-	else if (message.fetch)
-	{
-		switch (message.fetch)
+		if (message.status)
 		{
-			case 'dms-inbox':
-				tw.getInbox({count: startup_count, include_entities: true}, function(error, data, response)
-				{
-					if(!error)
+			tw.update(message.status);
+		}
+		else if (message.destroy)
+		{
+			tw.destroy(message.destroy.status.id_str);
+		}
+		else if (message.destroy_dm)
+		{
+			tw.destroy_dm(message.destroy_dm.status.id_str);
+		}
+		else if (message.direct_message)
+		{
+			tw.direct_message(message.direct_message);
+		}
+		else if (message.fetch)
+		{
+			switch (message.fetch)
+			{
+				case 'dms-inbox':
+					tw.getInbox({count: startup_count, include_entities: true}, function(error, data, response)
 					{
-						client.json.send({dms: data.reverse()});
-					}
-				});
-			break;
-			case 'dms-outbox':
-				tw.getOutbox({count: startup_count, include_entities: true}, function(error, data, response)
-				{
-					if(!error)
+						if(!error)
+						{
+							client.json.send({dms: data.reverse()});
+						}
+					});
+				break;
+				case 'dms-outbox':
+					tw.getOutbox({count: startup_count, include_entities: true}, function(error, data, response)
 					{
-						client.json.send({dms: data.reverse()});
-					}
-				});
-			break;
-			case 'home':
-				tw.getTimeline({type: 'home_timeline', count: startup_count, include_entities: true}, function(error, data, response)
-				{
-					if(!error)
+						if(!error)
+						{
+							client.json.send({dms: data.reverse()});
+						}
+					});
+				break;
+				case 'home':
+					tw.getTimeline({type: 'home_timeline', count: startup_count, include_entities: true}, function(error, data, response)
 					{
-						client.json.send({home: data.reverse()});
-					}
-				});
-			break;
-			case 'mentions':
-				tw.getTimeline({type: 'mentions', count: startup_count, include_entities: true}, function(error, data, response)
-				{
-					if(!error)
+						if(!error)
+						{
+							client.json.send({home: data.reverse()});
+						}
+					});
+				break;
+				case 'mentions':
+					tw.getTimeline({type: 'mentions', count: startup_count, include_entities: true}, function(error, data, response)
 					{
-						client.json.send({mentions: data.reverse()});
-					}
-				});
-			break;
-			case 'rates':
-				tw.rateLimit(function(error, data, response)
-				{
-					if(!error)
+						if(!error)
+						{
+							client.json.send({mentions: data.reverse()});
+						}
+					});
+				break;
+				case 'rates':
+					tw.rateLimit(function(error, data, response)
 					{
-						client.json.send({rates: data});
-					}
-				});
-			break;
-			case 'userstream':
-				z_engine_streaming_handler(tw, client, session);
-			break;
+						if(!error)
+						{
+							client.json.send({rates: data});
+						}
+					});
+				break;
+				case 'userstream':
+					z_engine_streaming_handler(tw, client, session);
+				break;
+			}
+		}
+		else if (message.favorite)
+		{
+			tw.favorite(message.favorite.status.id_str);
+		}
+		else if (message.klout)
+		{
+			klout.show(message.klout, function(error, data)
+			{
+				if(error)
+				{
+					client.json.send({klout: "error", id_str: message.id_str});
+				}
+				else
+				{
+					client.json.send({klout: data, id_str: message.id_str});
+				}
+			});
+		}
+		else if (message.retweet)
+		{
+			tw.retweet(message.retweet.status.id_str, function(error, data, response)
+			{
+				if(!error)
+				{
+					client.json.send({retweet_info: data});
+				}
+			});
+		}
+		else if (message.shorten)
+		{
+			shorten.fetch(message.shorten, function(error, data)
+			{
+				if (!error)
+				{
+					client.json.send({shorten: data, original: message.shorten});
+				}
+			});
+		}
+		else if (message.show)
+		{
+			tw.show(message.show.id_str, {include_entities: true}, function(error, data, response)
+			{
+				if(error)
+				{
+					console.log(error);
+				}
+				else
+				{
+					client.json.send({show: data});
+				}
+			});
+		}
+		else if (message.unfavorite)
+		{
+			tw.unfavorite(message.unfavorite.status.id_str);
 		}
 	}
-	else if (message.favorite)
+	catch(error)
 	{
-		tw.favorite(message.favorite.status.id_str);
-	}
-	else if (message.klout)
-	{
-		klout.show(message.klout, function(error, data)
-		{
-			if(error)
-			{
-				client.json.send({klout: "error", id_str: message.id_str});
-			}
-			else
-			{
-				client.json.send({klout: data, id_str: message.id_str});
-			}
-		});
-	}
-	else if (message.retweet)
-	{
-		tw.retweet(message.retweet.status.id_str, function(error, data, response)
-		{
-			if(!error)
-			{
-				client.json.send({retweet_info: data});
-			}
-		});
-	}
-	else if (message.shorten)
-	{
-		shorten.fetch(message.shorten, function(error, data)
-		{
-			if (!error)
-			{
-				client.json.send({shorten: data, original: message.shorten});
-			}
-		});
-	}
-	else if (message.show)
-	{
-		tw.show(message.show.id_str, {include_entities: true}, function(error, data, response)
-		{
-			if(error)
-			{
-				console.log(error);
-			}
-			else
-			{
-				client.json.send({show: data});
-			}
-		});
-	}
-	else if (message.unfavorite)
-	{
-		tw.unfavorite(message.unfavorite.status.id_str);
+		console.error('message error: '+sys.inspect(error));
 	}
 }
 
@@ -367,9 +374,9 @@ function z_engine_streaming_handler(tw, client, session)
 				{
 					client.json.send(data);
 				}
-				catch(e)
+				catch(error)
 				{
-					console.error('userstream message error: '+sys.inspect(e));
+					console.error('userstream message error: '+sys.inspect(error));
 				}
 			});
 			client.on('disconnect', function()
