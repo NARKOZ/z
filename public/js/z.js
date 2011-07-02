@@ -95,7 +95,12 @@ function z_engine_attrition()
 		new Autocompleter.Local("new-tweet", "autocompleter", $w(store.get('users')).uniq(),
 		{
 			choices: 15,
-			minChars: 2
+			minChars: 2,
+			tokens: ' ',
+			afterUpdateElement: function(item)
+			{
+				$("new-tweet").setValue($("new-tweet").getValue()+" ");
+			}
 		});
 		new Event.observe("logout","click",function(event)
 		{
