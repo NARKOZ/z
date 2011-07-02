@@ -94,8 +94,8 @@ function z_engine_attrition()
 		$("loading-outbox").center(8);
 		new Autocompleter.Local("new-tweet", "autocompleter", $w(store.get('users')).uniq(),
 		{
-			choices: 18,
-			minChars: 3
+			choices: 15,
+			minChars: 2
 		});
 		new Event.observe("logout","click",function(event)
 		{
@@ -1342,6 +1342,7 @@ function z_engine_tweet(data, output)
 			var place = data.place;
 			var reply = data.in_reply_to_screen_name;
 			var replyid = data.in_reply_to_status_id_str;
+			var retweet_count = data.retweet_count;
 			var rtd = false;
 			var source = data.source.stripTags();
 			var text = data.text;
@@ -1368,6 +1369,7 @@ function z_engine_tweet(data, output)
 			var place = data.retweeted_status.place;
 			var reply = data.retweeted_status.in_reply_to_screen_name;
 			var replyid = data.retweeted_status.in_reply_to_status_id_str;
+			var retweet_count = data.retweeted_status.retweet_count;
 			var rtd = true;
 			var source = data.retweeted_status.source.stripTags();
 			var text = data.retweeted_status.text;
@@ -1391,6 +1393,7 @@ function z_engine_tweet(data, output)
 		var location = data.sender.location;
 		var locked = false;
 		var reply = data.recipient.screen_name;
+		var retweet_count = 0;
 		var rtd = false;
 		var text = data.text;
 		var tweets = data.sender.statuses_count;
@@ -1574,9 +1577,17 @@ function z_engine_tweet(data, output)
 						var right_element = new Element('div', {'class': 'right'});
 							if (rtd)
 							{
+								if (retweet_count > 0)
+								{
+									var rt_title = "retweeted by "+author+" and "+retweet_count+" others!";
+								}
+								else
+								{
+									var rt_title = "retweeted by "+author+"!";
+								}
 								var rtd_element = new Element('span', {'class': 'rtd'});
 								rtd_element.update(" ");
-								var rtd_img_element = new Element('img', {'src': 'img/rtd2.png', 'alt': ''});
+								var rtd_img_element = new Element('img', {'src': 'img/rtd2.png', 'alt': '', 'title': rt_title});
 								var rtd_author_link_element = new Element('a', {'target': '_blank', 'href': 'http://twitter.com/'+author2});
 								rtd_author_link_element.update(author2);
 								rtd_element.insert({'top': rtd_img_element});
