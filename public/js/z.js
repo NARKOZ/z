@@ -81,7 +81,15 @@ if (!store.get('users'))
 	store.set('users', "");
 }
 
-z_engine_attrition(); //call the below function
+/* determine if we should start the engine */
+if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser == "Firefox" && BrowserDetect.version >= 3.6 || BrowserDetect.browser == "Chrome" || BrowserDetect.browser == "Opera" && BrowserDetect.version >= 9 || BrowserDetect.browser == "Safari")
+{
+	z_engine_attrition(); //call the below function
+}
+else
+{
+	$("new-tweet").setValue("sorry, your browser may not support this client!");
+}
 
 /* the websocket itself */
 function z_engine_attrition()
