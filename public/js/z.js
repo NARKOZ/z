@@ -772,6 +772,13 @@ function z_engine_drop_tweet(id)
 	}
 }
 
+/* convert entities, etc */
+function z_engine_escape(text)
+{
+	var escaped = new Element('textarea').update(text.replace(/</g,"&lt;").replace(/>/g,"&gt;").strip());
+	return escaped.getValue();
+}
+
 /* the fading + blind down animation */
 function z_engine_fade_down(id)
 {
@@ -976,7 +983,7 @@ function z_engine_logout()
 }
 
 /* send a notification to the client */
-function z_engine_notification(av, head, text)
+function z_engine_notification(av, title, text)
 {
 	if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser != "MSIE")
 	{
@@ -988,7 +995,7 @@ function z_engine_notification(av, head, text)
 	}
 	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) //we can access webkit notifications
 	{
-		var notification = window.webkitNotifications.createNotification(av, head, text);
+		var notification = window.webkitNotifications.createNotification(av, z_engine_escape(title), z_engine_escape(text));
 		notification.show();
 		setTimeout(function()
 		{
@@ -998,12 +1005,12 @@ function z_engine_notification(av, head, text)
 	else if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1) //we might be able to access them if the user allows us to
 	{
 		window.webkitNotifications.requestPermission();
-		growler.growl(z_engine_parse_tweet(head), z_engine_parse_tweet(text)); //send a growler notification anyway
+		growler.growl(z_engine_parse_tweet(title), z_engine_parse_tweet(text)); //send a growler notification anyway
 	}
 	else if (!window.webkitNotifications || window.webkitNotifications && window.webkitNotifications.checkPermission() == 2) //we cant access notifications
 	{
 		//todo: support avatars in here as well
-		growler.growl(z_engine_parse_tweet(head), z_engine_parse_tweet(text));
+		growler.growl(z_engine_parse_tweet(title), z_engine_parse_tweet(text));
 	}
 }
 
@@ -1025,9 +1032,10 @@ function z_engine_parse_tweet(text)
 	}
 	else
 	{
-		text = twttr.txt.autoLink(text); //autolink everything
-		text = text.replace(/\n\r?/g, '<br />'); //convert linebreaks into html linebreaks
-		return text;
+		var escaped = z_engine_escape(text);
+		escaped = twttr.txt.autoLink(escaped); //autolink everything
+		escaped = escaped.replace(/\n\r?/g, '<br />'); //convert linebreaks into html linebreaks
+		return escaped;
 	}
 }
 
@@ -1160,8 +1168,7 @@ function z_engine_retweet(id)
 function z_engine_retweet_comment(id, author, text)
 {
 	reply_id = id; //set this as a reply, it looks nicer
-	var escaped = new Element('textarea').update(text.replace(/</g,"&lt;").replace(/>/g,"&gt;").strip());
-	$("new-tweet").setValue("RT @"+author+" "+escaped.getValue());
+	$("new-tweet").setValue("RT @"+author+" "+z_engine_escape(text));
 	$("new-tweet").focus();
 	escaped = "";
 }
