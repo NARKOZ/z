@@ -1492,7 +1492,14 @@ function z_engine_tweet(data, output)
 			var mentions_string = z_engine_tweet_mentioned_string(entities);
 		}
 		var linebreak = new Element('br');
-		var container_element = new Element('div', {'id': 'comment-'+id, 'class': 'comment-parent'});
+		if (output != "dms")
+		{
+			var container_element = new Element('div', {'ondblclick': 'z_engine_reply("'+author+'", "'+id+'", "'+mentions_string+'");', 'id': 'comment-'+id, 'class': 'comment-parent'});
+		}
+		else
+		{
+			var container_element = new Element('div', {'ondblclick': 'z_engine_reply_dm("'+userid+'", "'+author+'");', 'id': 'comment-'+id, 'class': 'comment-parent'});
+		}
 			var profile_wrapper_element = new Element('div', {'class': 'comment-profile-wrapper left'});
 				var gravatar_element = new Element('div', {'class': 'comment-gravatar'});
 					var gravatar_author_img_element = new Element('img', {'id': 'av-'+id, 'src': avatar, 'style': 'height: 50px; width: 50px; cursor: pointer;', 'alt': ''});
