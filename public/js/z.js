@@ -2083,10 +2083,13 @@ function z_engine_unfavorite(id)
 /* update all time elements */
 function z_engine_update_relative_time(elements)
 {
-	var time_elements = $$(elements);
-	time_elements.each(function(item)
+	if ($$(elements).length > 0)
 	{
-		var this_stamp = item.getAttribute("datetime");
-		item.update(relative_time(this_stamp));
-	});
+		var time_elements = $$(elements);
+		time_elements.each(function(item)
+		{
+			var this_stamp = item.getAttribute("datetime");
+			item.update(relative_time(this_stamp));
+		});
+	}
 }
