@@ -517,7 +517,10 @@ function z_engine_attrition()
 				}
 				if (json.retweeted_status && json.retweeted_status.user.screen_name == screen_name && json.user.screen_name != screen_name)
 				{
-					z_engine_notification(json.user.profile_image_url, "@"+json.user.screen_name+" retweeted you!", json.retweeted_status.text);
+					var av = json.user.profile_image_url;
+					var text = json.retweeted_status.text;
+					var title = "@"+json.user.screen_name+" retweeted you!";
+					z_engine_notification(av, title, text);
 				}
 			}
 		}
@@ -1721,8 +1724,8 @@ function z_engine_tweet(data, output)
 			new Element.extend(mentioned_clone);
 			$("mentions-timeline").insert({'top': mentioned_clone});
 			z_engine_tweet_buttons("mentions", id, author, userid, text, locked, faved, mentions_string, userinfo);
-			z_engine_notification(avatar, "@"+author+" mentioned you!", text);
 			z_engine_fade_down("comment-"+id+"-mentioned");
+			z_engine_notification(avatar, "@"+author+" mentioned you!", text);
 		}
 		if (output == "threaded")
 		{
