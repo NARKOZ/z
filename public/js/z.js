@@ -2037,7 +2037,7 @@ function z_engine_tweet_mentioned_string(entities)
 			mentioned += mention;
 		}
 	});
-	return $w(mentioned).uniq().join(" ");
+	return $w(mentioned).uniq().join(" ")+" "; //every once in a while you will have a tweet where someone is mentioned twice - prevent that here
 }
 
 /* tweets are temporarily stored and will be displayed when you click unpause */
@@ -2052,10 +2052,15 @@ function z_engine_tweet_pause()
 	else
 	{
 		paused = false;
-		$("paused-count").fade();
-		$("paused-count").update("(0)");
-		$("pause").update("stop");
-		pttid = 0;
+		new Effect.Fade("paused-count",
+		{
+			afterFinish: function()
+			{
+				$("paused-count").update("(0)");
+				$("pause").update("stop");
+				pttid = 0;
+			}
+		});
 	}
 }
 
