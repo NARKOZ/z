@@ -371,7 +371,7 @@ Twitter.prototype.getOutbox = function(params, callback)
 // -----------------------------------------------------------------------------
 Twitter.prototype.getAccount = function(params, callback)
 {
-	if( typeof(params) == 'boolean' )
+	if( typeof(params) == 'boolean')
 	{
 		params = {include_entities: params};
 	}
@@ -383,7 +383,6 @@ Twitter.prototype.getAccount = function(params, callback)
 	var path = '/account/verify_credentials.json';
 	this._doGet(path, params, callback);
 };
-
 Twitter.prototype.rateLimit = function(callback)
 {
 	params = {};
@@ -391,6 +390,23 @@ Twitter.prototype.rateLimit = function(callback)
 	this._doGet(path, params, callback);
 };
 
+// -----------------------------------------------------------------------------
+// Geo Resources
+// -----------------------------------------------------------------------------
+Twitter.prototype.reverseGeo = function(params, callback)
+{
+	if( typeof(params) == 'boolean')
+	{
+		params = {include_entities: params};
+	}
+	else if(typeof(params) == 'function')
+	{
+		callback = params;
+		params = {};
+	}
+	var path = '/geo/reverse_geocode.json';
+	this._doGet(path, params, callback);
+};
 
 // -----------------------------------------------------------------------------
 // Streaming Support

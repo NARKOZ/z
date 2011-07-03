@@ -266,6 +266,15 @@ function z_engine_message_handler(tw, session, client, message)
 						}
 					});
 				break;
+				case 'geo':
+					tw.reverseGeo({lat: message.latitude, 'long': message.longitude}, function(error, data, response)
+					{
+						if(!error)
+						{
+							client.json.send({place: data});
+						}
+					});
+				break;
 				case 'home':
 					tw.getTimeline({type: 'home_timeline', count: startup_count, include_entities: true}, function(error, data, response)
 					{

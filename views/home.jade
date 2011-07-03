@@ -1,15 +1,13 @@
 #float(class='comment-list-wrapper')
   #sub-nav(class='navigation')
     ul.tabbed
-      li(style='float:right;')
+      li(style='float: right;')
         a#logout(href='#') exit
-      li(style='float:right;')
-        a#shorten(href='#', title='click to shorten urls!') shorten
       li#image(style='display: none; float: right;', title='drop images here!') image
-      li(style='float:right')
+      li(style='float: right')
         a#pause(href='#') stop
-      li(style='float:right')
-        span#paused-count(style='display:none;') (0)
+      li(style='float: right')
+        span#paused-count(style='display: none;') (0)
       li
         a#home-timeline-click(href='#', onclick='return false;') home
       li
@@ -18,26 +16,30 @@
         a#dms-inbox-timeline-click(href='#', onclick='return false;') inbox
       li
         a#dms-outbox-timeline-click(href='#', onclick='return false;') outbox
+      li
+        input#new-dm-user(type='text', maxlength='16', placeholder='send a dm to', style='display: none; font-size: 0.65em; max-height: 5px; max-width: 85px;')
+        #autocompleter-dm(class='autocomplete', style='width: 98%; display: none;')
     .clearer &nbsp;
   form#new-tweet-form(autocomplete='off')
     ul.tabbed
       li#new-tweet-input-li
-        input#new-tweet(type='text', disabled='disabled', placeholder='write your tweet here and submit!', style='width:98%;', value='loading...')
-        #autocompleter(class='autocomplete', style='display:none')
+        input#new-tweet(type='text', disabled='disabled', placeholder='write your status here and submit!', style='width: 98%;', value='loading...')
+        #autocompleter(class='autocomplete', style='width: 98%; display: none;')
+
   .hr
 
 #container(class='comment-list-wrapper')
-  #home-timeline
+  #home-timeline(class='shower')
     img#loading-home(src='/img/spinner.gif', class='loading')
-  #mentions-timeline(style='display:none;')
-    img#loading-mentions(src='/img/spinner.gif', class='loading', style='display:none;')
-  #dms-inbox-timeline(style='display:none;')
-    img#loading-inbox(src='/img/spinner.gif', class='loading', style='display:none;')
-  #dms-outbox-timeline(style='display:none;')
-    img#loading-outbox(src='/img/spinner.gif', class='loading', style='display:none;')
-  #threaded-timeline(style='display:none;')
+  #mentions-timeline(style='display: none;')
+    img#loading-mentions(src='/img/spinner.gif', class='loading', style='display: none;')
+  #dms-inbox-timeline(style='display: none;')
+    img#loading-inbox(src='/img/spinner.gif', class='loading', style='display: none;')
+  #dms-outbox-timeline(style='display: none;')
+    img#loading-outbox(src='/img/spinner.gif', class='loading', style='display: none;')
+  #threaded-timeline(style='display: none;')
 
 script(type='text/javascript', src='/socket.io/socket.io-sessions.js?'+(new Date()).getTime())
-script(type='text/javascript', src='/js/z.min.js')
+script(type='text/javascript', src='/js/z.min.js?'+(new Date()).getTime())
 script var growler = new Growler(); //we need this here for the growler to work properly
 script= imgur_script
