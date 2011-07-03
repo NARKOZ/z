@@ -2095,7 +2095,14 @@ function z_engine_tweet_mentioned_string(entities)
 				mentioned += mention;
 			}
 		});
-		return $w(mentioned).uniq().join(" ")+" "; //every once in a while you will have a tweet where someone is mentioned twice - prevent that here
+		if (mentioned.length > 0)
+		{
+			return $w(mentioned).uniq().join(" ")+" "; //every once in a while you will have a tweet where someone is mentioned twice - prevent that here
+		}
+		else
+		{
+			return "";
+		}
 	}
 	else
 	{
