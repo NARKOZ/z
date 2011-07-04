@@ -2002,7 +2002,14 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, r
 					$("right-"+id+"-mentioned").insert({'bottom': del_img_element});
 				}
 			}
-			z_engine_tweet_right_click(id, "comment-"+id+"-mentioned", author, userid, usermentions, faved, rtd, locked, type);
+			if ($("comment-"+id))
+			{
+				z_engine_tweet_right_click(id, "comment-"+id, author, userid, usermentions, faved, rtd, locked, type);
+			}
+			if ($("comment-"+id+"-mentioned"))
+			{
+				z_engine_tweet_right_click(id, "comment-"+id+"-mentioned", author, userid, usermentions, faved, rtd, locked, type);
+			}
 		break;
 		case 'threaded':
 			if ($("av-"+id+"-threaded"))
