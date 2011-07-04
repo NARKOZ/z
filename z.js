@@ -174,6 +174,7 @@ if (!module.parent)
 /* gzipping */
 gzip.gzip({matchType: /audio/});
 gzip.gzip({matchType: /css/});
+gzip.gzip({matchType: /img/});
 gzip.gzip({matchType: /js/});
 gzip.gzip({matchType: /socket.io/});
 

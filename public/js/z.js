@@ -52,6 +52,7 @@ var paused = false; //allow the engine itself to be momentarily 'paused'..not su
 var prune_tweets_interval = 60; //start the pruning loop over again every minute
 var pttid = 0; //this serves as the (#) amount displayed when paused
 var rates = "";
+var rememeber_cutoff = 399; //the maximum amount of names to store for autocompletion
 var reply_id = false; //catch reply
 var screen_name = ""; //our own screen name
 var shortened = false;
@@ -197,15 +198,25 @@ function z_engine_attrition()
 					z_engine_send_tweet();
 				});
 				var autocomplete_users = $w(store.get('users').strip()).uniq();
+				var autocomplete_users_dm = "";
+				autocomplete_users.each(function(item)
+				{
+					autocomplete_users_dm += item.replace(/@/i,"")+" ";
+				});
 				new Autocompleter.Local("new-tweet", "autocompleter", autocomplete_users,
 				{
-					choices: 15,
+					choices: 20,
 					minChars: 2,
 					tokens: ' ',
 					afterUpdateElement: function(item)
 					{
 						$("new-tweet").setValue($("new-tweet").getValue()+" ");
 					}
+				});
+				new Autocompleter.Local("new-dm-user", "autocompleter-dm", $w(autocomplete_users_dm.strip()).uniq(),
+				{
+					choices: 20,
+					minChars: 2
 				});
 				new Event.observe("new-tweet","keyup",function(event)
 				{
@@ -518,8 +529,20 @@ function z_engine_attrition()
 				if (json.retweeted_status && json.retweeted_status.user.screen_name == screen_name && json.user.screen_name != screen_name)
 				{
 					var av = json.user.profile_image_url;
+					var rtd = json.retweeted_status.retweet_count;
 					var text = json.retweeted_status.text;
-					var title = "@"+json.user.screen_name+" retweeted you!";
+					if (rtd > 1)
+					{
+						var title = "@"+json.user.screen_name+" and "+rtd+" others rt'd you!";
+					}
+					else if (rtd == 1)
+					{
+						var title = "@"+json.user.screen_name+" and "+rtd+" other rt'd you!";
+					}
+					else if (rtd == 0)
+					{
+						var title = "@"+json.user.screen_name+" retweeted you!";
+					}
 					z_engine_notification(av, title, text);
 				}
 			}
@@ -581,6 +604,8 @@ function z_engine_clicker(id, this_id)
 		{
 			if (!z_engine_css3())
 			{
+				$(hide).removeClassName("current-tab");
+				$(this_id).addClassName("current-tab");
 				new Effect.Parallel(
 				[
 					new Effect.Fade(hide,
@@ -650,7 +675,7 @@ function z_engine_clicker(id, this_id)
 /* check to see if css3 is possible */
 function z_engine_css3()
 {
-	if (BrowserDetect.browser == "Firefox" && BrowserDetect.version >= 5 || BrowserDetect.browser != "Chrome" || BrowserDetect.browser != "Safari")
+	if (BrowserDetect.browser == "Firefox" && BrowserDetect.version <= 5 || BrowserDetect.browser != "Chrome" || BrowserDetect.browser != "Safari")
 	{
 		return false;
 	}
@@ -1032,10 +1057,9 @@ function z_engine_parse_tweet(text)
 	}
 	else
 	{
-		var escaped = z_engine_escape(text);
-		escaped = twttr.txt.autoLink(escaped); //autolink everything
-		escaped = escaped.replace(/\n\r?/g, '<br />'); //convert linebreaks into html linebreaks
-		return escaped;
+		text = twttr.txt.autoLink(text); //autolink everything
+		text = text.replace(/\n\r?/g, '<br />'); //convert linebreaks into html linebreaks
+		return text;
 	}
 }
 
@@ -1120,7 +1144,7 @@ function z_engine_remember_author(author)
 	var users = $w(store.get('users')).uniq();
 	users.each(function(item, index)
 	{
-		if (index <= 199) //max of 200
+		if (index <= remember_cutoff)
 		{
 			if (item == author)
 			{
