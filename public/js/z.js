@@ -169,10 +169,7 @@ function z_engine_attrition()
 				}, update_relative_dms_interval * 1000);
 				setInterval(function()
 				{
-					if ($$("time.threaded").length > 0)
-					{
-						z_engine_update_relative_time("time.threaded");
-					}
+					z_engine_update_relative_time("time.threaded");
 				}, update_relative_home_interval * 1000);
 				setInterval(function()
 				{
@@ -529,7 +526,7 @@ function z_engine_attrition()
 				if (json.retweeted_status && json.retweeted_status.user.screen_name == screen_name && json.user.screen_name != screen_name)
 				{
 					var av = json.user.profile_image_url;
-					var rtd = json.retweeted_status.retweet_count;
+					var rtd = json.retweeted_status.retweet_count - 1;
 					var text = json.retweeted_status.text;
 					if (rtd > 1)
 					{
@@ -1141,7 +1138,7 @@ function z_engine_remember_author(author)
 	author = "@"+author;
 	var new_users = "";
 	var user_found = false;
-	var users = $w(store.get('users')).uniq();
+	var users = $w(store.get('users')).uniq().compact();
 	users.each(function(item, index)
 	{
 		if (index <= remember_cutoff)
@@ -1827,7 +1824,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, u
 		name: 'reply',
 		callback: function()
 		{
-			z_engine_reply(author, id, usermentions);
+			z_engine_reply_dm(userid, author);
 		}
 	},
 	{
