@@ -1017,7 +1017,7 @@ function z_engine_notification(av, title, text)
 	}
 	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) //we can access webkit notifications
 	{
-		var notification = window.webkitNotifications.createNotification(av, z_engine_escape(title), z_engine_escape(text));
+		var notification = window.webkitNotifications.createNotification(av, title, text);
 		notification.show();
 		setTimeout(function()
 		{
@@ -1027,12 +1027,12 @@ function z_engine_notification(av, title, text)
 	else if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1) //we might be able to access them if the user allows us to
 	{
 		window.webkitNotifications.requestPermission();
-		growler.growl(z_engine_parse_tweet(title), z_engine_parse_tweet(text)); //send a growler notification anyway
+		growler.growl(title, text); //send a growler notification anyway
 	}
 	else if (!window.webkitNotifications || window.webkitNotifications && window.webkitNotifications.checkPermission() == 2) //we cant access notifications
 	{
 		//todo: support avatars in here as well
-		growler.growl(z_engine_parse_tweet(title), z_engine_parse_tweet(text));
+		growler.growl(title, text);
 	}
 }
 
@@ -1432,7 +1432,7 @@ function z_engine_tweet(data, output)
 			var place = data.place;
 			var reply = data.in_reply_to_screen_name;
 			var replyid = data.in_reply_to_status_id_str;
-			var retweet_count = data.retweet_count;
+			var retweet_count = data.retweet_count - 1;
 			var rtd = false;
 			var source = data.source.stripTags();
 			var text = data.text;
@@ -1459,7 +1459,7 @@ function z_engine_tweet(data, output)
 			var place = data.retweeted_status.place;
 			var reply = data.retweeted_status.in_reply_to_screen_name;
 			var replyid = data.retweeted_status.in_reply_to_status_id_str;
-			var retweet_count = data.retweeted_status.retweet_count;
+			var retweet_count = data.retweeted_status.retweet_count - 1;
 			var rtd = true;
 			var source = data.retweeted_status.source.stripTags();
 			var text = data.retweeted_status.text;
