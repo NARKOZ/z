@@ -141,9 +141,9 @@ function z_engine_attrition()
 				z_engine_clicker("mentions-timeline-click", "mentions-timeline");
 				z_engine_clicker("dms-inbox-timeline-click", "dms-inbox-timeline");
 				z_engine_clicker("dms-outbox-timeline-click", "dms-outbox-timeline");
-				//z_engine_check_ratelimit();
+				z_engine_check_ratelimit();
 				socket.emit("message", {fetch: "home"});
-				/*setTimeout(function()
+				setTimeout(function()
 				{
 					socket.emit("message", {fetch: "mentions"});
 				}, 10000);
@@ -158,7 +158,7 @@ function z_engine_attrition()
 				setInterval(function()
 				{
 					z_engine_check_ratelimit();
-				}, check_ratelimit_interval * 1000);*/
+				}, check_ratelimit_interval * 1000);
 				setInterval(function()
 				{
 					z_engine_update_relative_time("time.home");
@@ -461,7 +461,7 @@ function z_engine_attrition()
 				});
 				$("loading-home").fade();
 				$("loading-mentions").appear();
-				//socket.emit("message", {fetch: "userstream"});
+				socket.emit("message", {fetch: "userstream"});
 			}
 			else if (json.info)
 			{
