@@ -43,7 +43,7 @@ var paused = false; //allow the engine itself to be momentarily 'paused'..not su
 var prune_tweets_interval = 60; //start the pruning loop over again every minute
 var pttid = 0; //this serves as the (#) amount displayed when paused
 var rates = "";
-var remember_cutoff = 399; //the maximum amount of names to store for autocompletion
+var remember_cutoff = 199; //the maximum amount of names to store for autocompletion
 var reply_id = false; //catch reply
 var screen_name = ""; //our own screen name
 var shortened = false;
@@ -219,32 +219,28 @@ function z_engine_attrition()
 					z_engine_clear_timeline();
 				},
 				{
-					shiftKey: true,
-					ctrlKey: false
+					shiftKey: true
 				});
 				new HotKey('g',function(event)
 				{
 					z_engine_geo();
 				},
 				{
-					shiftKey: true,
-					ctrlKey: false
+					shiftKey: true
 				});
 				new HotKey('p',function(event)
 				{
 					z_engine_tweet_pause();
 				},
 				{
-					shiftKey: true,
-					ctrlKey: false
+					shiftKey: true
 				});
 				new HotKey('s',function(event)
 				{
 					z_engine_shorten_urls();
 				},
 				{
-					shiftKey: true,
-					ctrlKey: false
+					shiftKey: true
 				});
 				new Event.observe("new-tweet","keyup",function(event)
 				{
