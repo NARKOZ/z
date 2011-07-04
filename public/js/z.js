@@ -1,13 +1,4 @@
 /* initial variables */
-var audio = new Audio();
-if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser == "Safari")
-{
-	audio.src = "/audio/notify.mp3"; //use mp3 for ie and safari
-}
-else
-{
-	audio.src = "/audio/notify.ogg"; //and ogg for anyone else who supports the audio api
-}
 if (!store.get('client_blocks'))
 {
 	store.set('client_blocks', "");
@@ -57,6 +48,26 @@ var reply_id = false; //catch reply
 var screen_name = ""; //our own screen name
 var shortened = false;
 var socket = io.connectWithSession();
+if (!store.get('sound'))
+{
+	store.set('sound', "on");
+}
+if (!store.get('sound-src'))
+{
+	if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser == "Safari")
+	{
+		store.set('sound-src', "/audio/notify.mp3"); //use mp3 for ie and safari
+	}
+	else
+	{
+		store.set('sound-src', "/audio/notify.ogg");
+	}
+}
+if (store.get('sound') == "on")
+{
+	var audio = new Audio();
+	audio.src = store.get('sound-src'); //and ogg for anyone else who supports the audio api
+}
 var stream_queue_interval = 1.5; //every one and a half seconds
 var threaded_cutoff = 50; //max amount of tweets to display before pruning occurs on the threaded timeline
 var update_relative_dms_interval = 60; //once a minute
@@ -111,15 +122,8 @@ function z_engine_attrition()
 	{
 		if (!loaded)
 		{
-			new Event.observe("pause","click",function(event)
-			{
-				Event.stop(event);
-				z_engine_tweet_pause();
-			});
 			$("new-tweet").setValue("connected...");
 			z_engine_geo();
-			z_engine_image_dropper();
-			z_engine_notification_setup();
 		}
 	});
 	socket.on("message", function(json)
@@ -189,11 +193,6 @@ function z_engine_attrition()
 				{
 					z_engine_geo();
 				}, geo_refresh_interval * 1000);
-				new Event.observe("new-tweet-form", "submit", function(event)
-				{
-					Event.stop(event);
-					z_engine_send_tweet();
-				});
 				var autocomplete_users = $w(store.get('users').strip()).uniq();
 				var autocomplete_users_dm = "";
 				autocomplete_users.each(function(item)
@@ -214,6 +213,38 @@ function z_engine_attrition()
 				{
 					choices: 20,
 					minChars: 2
+				});
+				new HotKey('c',function(event)
+				{
+					z_engine_clear_timeline();
+				},
+				{
+					shiftKey: true,
+					ctrlKey: false
+				});
+				new HotKey('g',function(event)
+				{
+					z_engine_geo();
+				},
+				{
+					shiftKey: true,
+					ctrlKey: false
+				});
+				new HotKey('p',function(event)
+				{
+					z_engine_tweet_pause();
+				},
+				{
+					shiftKey: true,
+					ctrlKey: false
+				});
+				new HotKey('s',function(event)
+				{
+					z_engine_shorten_urls();
+				},
+				{
+					shiftKey: true,
+					ctrlKey: false
 				});
 				new Event.observe("new-tweet","keyup",function(event)
 				{
@@ -249,6 +280,18 @@ function z_engine_attrition()
 						$("new-tweet").setStyle("color: red;");
 					}
 				});
+				new Event.observe("new-tweet-form", "submit", function(event)
+				{
+					Event.stop(event);
+					z_engine_send_tweet();
+				});
+				new Event.observe("pause", "click", function(event)
+				{
+					Event.stop(event);
+					z_engine_tweet_pause();
+				});
+				z_engine_image_dropper();
+				z_engine_notification_setup();
 			}
 			else if (json.loaded && loaded)
 			{
@@ -566,9 +609,59 @@ function z_engine_attrition()
 	});
 }
 
+/* check the ratelimits */
 function z_engine_check_ratelimit()
 {
 	socket.emit("message", {fetch: "rates"});
+}
+
+/* clear the current timeline */
+function z_engine_clear_timeline()
+{
+	var visible = z_engine_current_timeline();
+	if (!z_engine_css3())
+	{
+		new Effect.Fade(visible,
+		{
+			duration: 0.5,
+			afterFinish: function()
+			{
+				$(visible).update().appear();
+			}
+		});
+	}
+	else
+	{
+		$(visible).addClassName("comment-parent-drop").removeClassName("comment-parent");
+		setTimeout(function()
+		{
+			$(visible).update().appear();
+		});
+	}
+}
+
+function z_engine_current_timeline()
+{
+	if ($("home-timeline").visible())
+	{
+		return "home-timeline";
+	}
+	else if ($("mentions-timeline").visible())
+	{
+		return "mentions-timeline";
+	}
+	else if ($("threaded-timeline").visible())
+	{
+		return "threaded-timeline";
+	}
+	else if ($("dms-inbox-timeline").visible())
+	{
+		return "dms-inbox-timeline";
+	}
+	if ($("dms-outbox-timeline").visible())
+	{
+		return "dms-outbox-timeline";
+	}
 }
 
 /* the "home", "mentions", "messages", etc switcher */
@@ -577,26 +670,7 @@ function z_engine_clicker(id, this_id)
 	new Event.observe(id, "click", function(event)
 	{
 		Event.stop(event);
-		if ($("home-timeline").visible())
-		{
-			var hide = "home-timeline";
-		}
-		if ($("mentions-timeline").visible())
-		{
-			var hide = "mentions-timeline";
-		}
-		if ($("threaded-timeline").visible())
-		{
-			var hide = "threaded-timeline";
-		}
-		if ($("dms-inbox-timeline").visible())
-		{
-			var hide = "dms-inbox-timeline";
-		}
-		if ($("dms-outbox-timeline").visible())
-		{
-			var hide = "dms-outbox-timeline";
-		}
+		var hide = z_engine_current_timeline();
 		if (!$(this_id).visible())
 		{
 			if (!z_engine_css3())
@@ -806,6 +880,7 @@ function z_engine_fade_down(id)
 {
 	if (!z_engine_css3())
 	{
+		$(id).setStyle("display: none;");
 		new Effect.Appear(id,
 		{
 			duration: 1,
@@ -1007,7 +1082,7 @@ function z_engine_logout()
 /* send a notification to the client */
 function z_engine_notification(av, title, text)
 {
-	if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser != "MSIE")
+	if ((store.get('sound') == "on") && (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser != "MSIE"))
 	{
 		audio.play();
 	}

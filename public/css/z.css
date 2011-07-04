@@ -21,7 +21,7 @@ a
 	-khtml-transition: all .20s ease-in-out;
 	-moz-transition: all .20s ease-in-out;
 	-ms-transition: all .20s ease-in-out;
-	-o-transition: all .20s ease-in-out;
+	/*-o-transition: all .20s ease-in-out;*/
 	-webkit-transition: all .20s ease-in-out;
 }
 a:focus, a:hover
