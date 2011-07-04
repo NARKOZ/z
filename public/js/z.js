@@ -579,7 +579,7 @@ function z_engine_attrition()
 					{
 						var title = "@"+json.user.screen_name+" and "+rtd+" other rt'd you!";
 					}
-					else if (rtd == 0)
+					else
 					{
 						var title = "@"+json.user.screen_name+" retweeted you!";
 					}
