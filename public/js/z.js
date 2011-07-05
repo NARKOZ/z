@@ -529,19 +529,19 @@ function z_engine_attrition()
 				{
 					$("rt-"+id).writeAttribute("src","img/rtd.png");
 					$("rt-"+id).writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
-					//z_engine_tweet_right_click(this_id, "rt-"+id, author, userid, usermentions, faved, true, locked, "home");
+					//z_engine_tweet_right_click(this_id, "rt-"+id, author, userid, usermentions, text, faved, true, locked, "home");
 				}
 				if ($("rt-"+id+"-mentioned"))
 				{
 					$("rt-"+id+"-mentioned").writeAttribute("src","img/rtd.png");
 					$("rt-"+id+"-mentioned").writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
-					//z_engine_tweet_right_click(this_id, "rt-"+id+"-mentioned", author, userid, usermentions, faved, true, locked, "mentions");
+					//z_engine_tweet_right_click(this_id, "rt-"+id+"-mentioned", author, userid, usermentions, text, faved, true, locked, "mentions");
 				}
 				if ($("rt-"+id+"-threaded"))
 				{
 					$("rt-"+id+"-threaded").writeAttribute("src","img/rtd.png");
 					$("rt-"+id+"-threaded").writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
-					//z_engine_tweet_right_click(this_id, "rt-"+id+"-threaded", author, userid, usermentions, faved, true, locked, "threaded");
+					//z_engine_tweet_right_click(this_id, "rt-"+id+"-threaded", author, userid, usermentions, text, faved, true, locked, "threaded");
 				}
 			}
 			else if (json.server_event)
@@ -1934,7 +1934,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, r
 				$("right-"+id).update();
 				$("right-"+id).insert({'bottom': del_img_element});
 			}
-			z_engine_tweet_right_click(id, "comment-"+id, author, userid, usermentions, faved, rtd, locked, type);
+			z_engine_tweet_right_click(id, "comment-"+id, author, userid, usermentions, text, faved, rtd, locked, type);
 		break;
 		case 'mentions':
 			if ($("av-"+id+"-mentioned"))
@@ -2004,11 +2004,11 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, r
 			}
 			if ($("comment-"+id))
 			{
-				z_engine_tweet_right_click(id, "comment-"+id, author, userid, usermentions, faved, rtd, locked, type);
+				z_engine_tweet_right_click(id, "comment-"+id, author, userid, usermentions, text, faved, rtd, locked, type);
 			}
 			if ($("comment-"+id+"-mentioned"))
 			{
-				z_engine_tweet_right_click(id, "comment-"+id+"-mentioned", author, userid, usermentions, faved, rtd, locked, type);
+				z_engine_tweet_right_click(id, "comment-"+id+"-mentioned", author, userid, usermentions, text, faved, rtd, locked, type);
 			}
 		break;
 		case 'threaded':
@@ -2056,7 +2056,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, r
 					$("right-"+id+"-threaded").insert({'bottom': del_img_element});
 				}
 			}
-			z_engine_tweet_right_click(id, "comment-"+id+"-threaded", author, userid, usermentions, faved, rtd, locked, type);
+			z_engine_tweet_right_click(id, "comment-"+id+"-threaded", author, userid, usermentions, text, faved, rtd, locked, type);
 		break;
 	}
 }
@@ -2129,7 +2129,7 @@ function z_engine_tweet_pause()
 	}
 }
 
-function z_engine_tweet_right_click(id, divid, author, userid, usermentions, faved, rtd, locked, type)
+function z_engine_tweet_right_click(id, divid, author, userid, usermentions, text, faved, rtd, locked, type)
 {
 	if (author != screen_name)
 	{
@@ -2174,7 +2174,7 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, fav
 							{
 								z_engine_retweet_comment(id, author, text);
 								//context_menu.destroy();
-								z_engine_tweet_right_click(id, divid, author, userid, usermentions, faved, "comment", locked, type);
+								z_engine_tweet_right_click(id, divid, author, userid, usermentions, text, faved, "comment", locked, type);
 							}
 						});
 					}
@@ -2190,7 +2190,7 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, fav
 							{
 								z_engine_destroy(id, "rt");
 								context_menu.destroy();
-								z_engine_tweet_right_click(id, divid, author, userid, usermentions, faved, false, locked, type);
+								z_engine_tweet_right_click(id, divid, author, userid, usermentions, text, faved, false, locked, type);
 							}
 						});
 					}
@@ -2204,7 +2204,7 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, fav
 						{
 							z_engine_favorite(id);
 							context_menu.destroy();
-							z_engine_tweet_right_click(id, divid, author, userid, usermentions, true, rtd, locked, type);
+							z_engine_tweet_right_click(id, divid, author, userid, usermentions, text, true, rtd, locked, type);
 						}
 					});
 				}
@@ -2217,7 +2217,7 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, fav
 						{
 							z_engine_unfavorite(id);
 							context_menu.destroy();
-							z_engine_tweet_right_click(id, divid, author, userid, usermentions, false, rtd, locked, type);
+							z_engine_tweet_right_click(id, divid, author, userid, usermentions, text, false, rtd, locked, type);
 						}
 					});
 				}
