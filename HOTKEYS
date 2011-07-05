@@ -1,6 +1,6 @@
 when unfocused from the textarea, the following should work:
 
-	ctrl + shift + c = clear current timeline
-	ctrl + shift + g = refresh geo latitude and longitude
+	ctrl + shift + l = refresh geo latitude and longitude
+	ctrl + shift + o = clear current timeline
 	ctrl + shift + p = pause the output of all tweets
 	ctrl + shift + s = shorten urls

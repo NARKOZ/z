@@ -214,16 +214,16 @@ function z_engine_attrition()
 					choices: 20,
 					minChars: 2
 				});
-				new HotKey('c',function(event)
+				new HotKey('l',function(event)
 				{
-					z_engine_clear_timeline();
+					z_engine_geo();
 				},
 				{
 					shiftKey: true
 				});
-				new HotKey('g',function(event)
+				new HotKey('o',function(event)
 				{
-					z_engine_geo();
+					z_engine_clear_timeline();
 				},
 				{
 					shiftKey: true
