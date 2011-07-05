@@ -529,19 +529,19 @@ function z_engine_attrition()
 				{
 					$("rt-"+id).writeAttribute("src","img/rtd.png");
 					$("rt-"+id).writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
-					z_engine_tweet_right_click(this_id, "rt-"+id, author, userid, usermentions, faved, true, locked, "home");
+					//z_engine_tweet_right_click(this_id, "rt-"+id, author, userid, usermentions, faved, true, locked, "home");
 				}
 				if ($("rt-"+id+"-mentioned"))
 				{
 					$("rt-"+id+"-mentioned").writeAttribute("src","img/rtd.png");
 					$("rt-"+id+"-mentioned").writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
-					z_engine_tweet_right_click(this_id, "rt-"+id+"-mentioned", author, userid, usermentions, faved, true, locked, "mentions");
+					//z_engine_tweet_right_click(this_id, "rt-"+id+"-mentioned", author, userid, usermentions, faved, true, locked, "mentions");
 				}
 				if ($("rt-"+id+"-threaded"))
 				{
 					$("rt-"+id+"-threaded").writeAttribute("src","img/rtd.png");
 					$("rt-"+id+"-threaded").writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
-					z_engine_tweet_right_click(this_id, "rt-"+id+"-threaded", author, userid, usermentions, faved, true, locked, "threaded");
+					//z_engine_tweet_right_click(this_id, "rt-"+id+"-threaded", author, userid, usermentions, faved, true, locked, "threaded");
 				}
 			}
 			else if (json.server_event)
@@ -2154,8 +2154,8 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, fav
 						z_engine_reply(author, id, usermentions);
 					}
 				});
-				if (!rtd)
-				{
+				//if (!rtd)
+				//{
 					if (!locked)
 					{
 						context_menu.addItem(
@@ -2164,7 +2164,7 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, fav
 							callback: function()
 							{
 								z_engine_retweet(id);
-								context_menu.destroy();
+								//context_menu.destroy();
 							}
 						});
 						context_menu.addItem(
@@ -2173,12 +2173,12 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, fav
 							callback: function()
 							{
 								z_engine_retweet_comment(id, author, text);
-								context_menu.destroy();
+								//context_menu.destroy();
 								z_engine_tweet_right_click(id, divid, author, userid, usermentions, faved, "comment", locked, type);
 							}
 						});
 					}
-				}
+				/*}
 				else
 				{
 					if (rtd != "comment")
@@ -2194,7 +2194,7 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, fav
 							}
 						});
 					}
-				}
+				}*/
 				if (!faved)
 				{
 					context_menu.addItem(
