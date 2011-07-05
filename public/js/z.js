@@ -1884,7 +1884,7 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, r
 			var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "dm");', 'src': 'img/del.png', 'id': 'del-'+id, 'alt': ''});
 			new Element.extend(del_img_element);
 			$("right-"+id).insert({'bottom': del_img_element});
-			z_engine_tweet_right_click(id, "comment-"+id, author, userid, usermentions, faved, rtd, locked, type);
+			z_engine_tweet_right_click(id, "comment-"+id, author, userid, usermentions, text, faved, rtd, locked, type);
 		break;
 		case 'home':
 			if ($("av-"+id))
