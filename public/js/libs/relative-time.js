@@ -8,12 +8,14 @@ function relative_time(a)
 		c = Date.parse(a.replace(/( \+)/, ' UTC$1'))
 	}
 	var d = b - c;
-	var e = 1000, minute = e * 60, hour = minute * 60, day = hour * 24, week = day * 7, month = day * 30, year = month * 12;
-	if (isNaN(d) || d < 0)
-	{
-		return "just now"; //display just now rather than nothing i guess =\
-	}
-	if (d < e * 7)
+	var e = 1000;
+	var minute = e * 60;
+	var hour = minute * 60;
+	var day = hour * 24;
+	var week = day * 7;
+	var month = day * 30;
+	var year = month * 12;
+	if (isNaN(d) || d < 0 || d < e * 5)
 	{
 		return "just now";
 	}
@@ -23,7 +25,7 @@ function relative_time(a)
 	}
 	if (d < minute * 2)
 	{
-		return "about a minute ago";
+		return "a minute ago";
 	}
 	if (d < hour)
 	{
@@ -31,7 +33,7 @@ function relative_time(a)
 	}
 	if (d < hour * 2)
 	{
-		return "about an hour ago";
+		return "an hour ago";
 	}
 	if (d < day)
 	{
