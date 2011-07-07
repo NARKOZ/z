@@ -515,6 +515,7 @@ function z_engine_attrition()
 				var faved = data.retweeted_status.favorited;
 				var id = data.retweeted_status.id_str;
 				var locked = data.retweeted_status.user["protected"];
+				var rtd = true;
 				var this_id = data.id_str;
 				var userid = data.retweeted_status.user.id;
 				if (!entities)
@@ -529,19 +530,19 @@ function z_engine_attrition()
 				{
 					$("rt-"+id).writeAttribute("src","img/rtd.png");
 					$("rt-"+id).writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
-					//z_engine_tweet_right_click(this_id, "rt-"+id, author, userid, usermentions, text, faved, true, locked, "home");
+					//z_engine_tweet_right_click(this_id, "rt-"+id, author, userid, usermentions, text, faved, rtd, locked, "home");
 				}
 				if ($("rt-"+id+"-mentioned"))
 				{
 					$("rt-"+id+"-mentioned").writeAttribute("src","img/rtd.png");
 					$("rt-"+id+"-mentioned").writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
-					//z_engine_tweet_right_click(this_id, "rt-"+id+"-mentioned", author, userid, usermentions, text, faved, true, locked, "mentions");
+					//z_engine_tweet_right_click(this_id, "rt-"+id+"-mentioned", author, userid, usermentions, text, faved, rtd, locked, "mentions");
 				}
 				if ($("rt-"+id+"-threaded"))
 				{
 					$("rt-"+id+"-threaded").writeAttribute("src","img/rtd.png");
 					$("rt-"+id+"-threaded").writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
-					//z_engine_tweet_right_click(this_id, "rt-"+id+"-threaded", author, userid, usermentions, text, faved, true, locked, "threaded");
+					//z_engine_tweet_right_click(this_id, "rt-"+id+"-threaded", author, userid, usermentions, text, faved, rtd, locked, "threaded");
 				}
 			}
 			else if (json.server_event)
@@ -683,10 +684,10 @@ function z_engine_clicker(id, this_id)
 		var hide = z_engine_current_timeline();
 		if (!$(this_id).visible())
 		{
+			$(hide).removeClassName("current-tab");
+			$(this_id).addClassName("current-tab");
 			if (!z_engine_css3())
 			{
-				$(hide).removeClassName("current-tab");
-				$(this_id).addClassName("current-tab");
 				new Effect.Parallel(
 				[
 					new Effect.Fade(hide,
@@ -921,21 +922,6 @@ function z_engine_fade_up(id)
 function z_engine_favorite(id)
 {
 	socket.emit("message", {favorite: {status: {id_str: id}}});
-	if ($("fave-"+id))
-	{
-		$("fave-"+id).writeAttribute("src","img/favd.png");
-		$("fave-"+id).writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
-	}
-	if ($("fave-"+id+"-mentioned"))
-	{
-		$("fave-"+id+"-mentioned").writeAttribute("src","img/favd.png");
-		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
-	}
-	if ($("fave-"+id+"-threaded"))
-	{
-		$("fave-"+id+"-threaded").writeAttribute("src","img/favd.png");
-		$("fave-"+id+"-threaded").writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
-	}
 }
 
 /* get geolocation information */
@@ -1779,7 +1765,7 @@ function z_engine_tweet(data, output)
 							}
 							if (output != "dms" && place && place.full_name)
 							{
-								var place_element = new Element('span', {'class': 'place'});
+								var place_element = new Element('span', {'class': 'place', 'id': 'place-'+id});
 								var place_link_element = new Element('a', {'target': '_blank', href: 'http://maps.google.com?q='+place.full_name});
 								var place_img_element = new Element('img', {'src': 'img/plc.png', 'alt': ''});
 								place_link_element.update(place_img_element);
@@ -1877,11 +1863,11 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, r
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'onclick': 'z_engine_reply_dm("'+userid+'", "'+author+'");', 'src': 'img/rep.png', 'id': 'reply-'+id, 'alt': ''});
+				var reply_img_element = new Element('img', {'onclick': 'z_engine_reply_dm("'+userid+'", "'+author+'");', 'src': '/img/rep.png', 'id': 'reply-'+id, 'alt': ''});
 				new Element.extend(reply_img_element);
 				$("right-"+id).insert(reply_img_element);
 			}
-			var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "dm");', 'src': 'img/del.png', 'id': 'del-'+id, 'alt': ''});
+			var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "dm");', 'src': '/img/del.png', 'id': 'del-'+id, 'alt': ''});
 			new Element.extend(del_img_element);
 			$("right-"+id).insert({'bottom': del_img_element});
 			z_engine_tweet_right_click(id, "comment-"+id, author, userid, usermentions, text, faved, rtd, locked, type);
@@ -1895,41 +1881,31 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, r
 			{
 				var klout_element = new Element('span', {'class': 'klout'});
 				klout_element.update(" ");
-				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score'});
+				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': '/img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score'});
 				klout_element.insert({'top': klout_img_element});
 				new Element.extend(klout_img_element);
 				$("left-"+id).insert({'top': klout_element});
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'id': 'reply-'+id, 'alt': ''});
+				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'id': 'reply-'+id, 'alt': ''});
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
-					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id, 'alt': ''});
+					var rt_img_element = new Element('img', {'src': '/img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id, 'alt': ''});
 					new Element.extend(rt_img_element);
 				}
 				else
 				{
-					var rt_img_element = new Element('img', {'src': 'img/lock.png', 'style': 'cursor: default;', 'alt': ''});
+					var rt_img_element = new Element('img', {'src': '/img/lock.png', 'style': 'cursor: default;', 'alt': ''});
 				}
-				if (!faved)
-				{
-					var fave_img_element = new Element('img', {'src': 'img/fav.png', 'onclick': 'z_engine_favorite("'+id+'");', 'id': 'fave-'+id, 'alt': ''});
-				}
-				else
-				{
-					var fave_img_element = new Element('img', {'src': 'img/favd.png', 'onclick': 'z_engine_unfavorite("'+id+'");', 'id': 'fave-'+id, 'alt': ''});
-				}
-				new Element.extend(fave_img_element);
 				$("right-"+id).update();
 				$("right-"+id).insert(reply_img_element);
 				$("right-"+id).insert({'bottom': rt_img_element});
-				$("right-"+id).insert({'bottom': fave_img_element});
 			}
 			else
 			{
-				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': 'img/del.png', 'id': 'del-'+id, 'alt': ''});
+				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': '/img/del.png', 'id': 'del-'+id, 'alt': ''});
 				new Element.extend(del_img_element);
 				$("right-"+id).update();
 				$("right-"+id).insert({'bottom': del_img_element});
@@ -1941,55 +1917,53 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, r
 			{
 				$("av-"+id+"-mentioned").addTip(z_engine_parse_tweet(userinfo), userinfo_params);
 			}
-			if ($("left-"+id+"-mentioned") && !$('klout-'+id+'-mentioned'))
+			if ($("left-"+id) && !$('klout-'+id))
 			{
 				var klout_element = new Element('span', {'class': 'klout'});
 				klout_element.update(" ");
-				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': 'img/klt.png', 'id': 'klout-'+id+'-mentioned', 'alt': '', 'title': 'click to get this users klout score'});
+				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': '/img/klt.png', 'id': 'klout-'+id+'-mentioned', 'alt': '', 'title': 'click to get this users klout score'});
+				klout_element.insert({'top': klout_img_element});
+				new Element.extend(klout_img_element);
+				$("left-"+id).insert({'top': klout_element});
+			}
+			/*if ($("left-"+id+"-mentioned") && !$('klout-'+id+'-mentioned'))
+			{
+				var klout_element = new Element('span', {'class': 'klout'});
+				klout_element.update(" ");
+				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': '/img/klt.png', 'id': 'klout-'+id+'-mentioned', 'alt': '', 'title': 'click to get this users klout score'});
 				klout_element.insert({'top': klout_img_element});
 				new Element.extend(klout_img_element);
 				$("left-"+id+"-mentioned").insert({'top': klout_element});
-			}
+			}*/
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'-mentioned", "'+usermentions+'");', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
+				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'-mentioned", "'+usermentions+'");', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
-					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id+'-mentioned', 'alt': ''});
+					var rt_img_element = new Element('img', {'src': '/img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id+'-mentioned', 'alt': ''});
 					new Element.extend(rt_img_element);
 				}
 				else
 				{
-					var rt_img_element = new Element('img', {'src': 'img/lock.png', 'style': 'cursor: default;', 'alt': ''});
+					var rt_img_element = new Element('img', {'src': '/img/lock.png', 'style': 'cursor: default;', 'alt': ''});
 				}
-				if (!faved)
-				{
-					var fave_img_element = new Element('img', {'src': 'img/fav.png', 'onclick': 'z_engine_favorite("'+id+'");', 'id': 'fave-'+id+'-mentioned', 'alt': ''});
-				}
-				else
-				{
-					var fave_img_element = new Element('img', {'src': 'img/favd.png', 'onclick': 'z_engine_unfavorite("'+id+'");', 'id': 'fave-'+id+'-mentioned', 'alt': ''});
-				}
-				new Element.extend(fave_img_element);
 				if ($("right-"+id))
 				{
 					$("right-"+id).update();
 					$("right-"+id).insert(reply_img_element);
 					$("right-"+id).insert({'bottom': rt_img_element});
-					$("right-"+id).insert({'bottom': fave_img_element});
 				}
 				if ($("right-"+id+"-mentioned"))
 				{
 					$("right-"+id+"-mentioned").update();
 					$("right-"+id+"-mentioned").insert(reply_img_element);
 					$("right-"+id+"-mentioned").insert({'bottom': rt_img_element});
-					$("right-"+id+"-mentioned").insert({'bottom': fave_img_element});
 				}
 			}
 			else
 			{
-				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': 'img/del.png', 'id': 'del-'+id+'-mentioned', 'alt': ''});
+				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': '/img/del.png', 'id': 'del-'+id+'-mentioned', 'alt': ''});
 				new Element.extend(del_img_element);
 				if ($("right-"+id))
 				{
@@ -2018,37 +1992,27 @@ function z_engine_tweet_buttons(type, id, author, userid, text, locked, faved, r
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': 'img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'id': 'reply-'+id+'-threaded', 'alt': ''});
+				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'id': 'reply-'+id+'-threaded', 'alt': ''});
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
-					var rt_img_element = new Element('img', {'src': 'img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id+'-threaded', 'alt': ''});
+					var rt_img_element = new Element('img', {'src': '/img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id+'-threaded', 'alt': ''});
 					new Element.extend(rt_img_element);
 				}
 				else
 				{
-					var rt_img_element = new Element('img', {'src': 'img/lock.png', 'style': 'cursor: default;', 'alt': ''});
+					var rt_img_element = new Element('img', {'src': '/img/lock.png', 'style': 'cursor: default;', 'alt': ''});
 				}
-				if (!faved)
-				{
-					var fave_img_element = new Element('img', {'src': 'img/fav.png', 'onclick': 'z_engine_favorite("'+id+'");', 'id': 'fave-'+id+'-threaded', 'alt': ''});
-				}
-				else
-				{
-					var fave_img_element = new Element('img', {'src': 'img/favd.png', 'onclick': 'z_engine_unfavorite("'+id+'");', 'id': 'fave-'+id+'-threaded', 'alt': ''});
-				}
-				new Element.extend(fave_img_element);
 				if ($("right-"+id+"-threaded"))
 				{
 					$("right-"+id+"-threaded").update();
 					$("right-"+id+"-threaded").insert(reply_img_element);
 					$("right-"+id+"-threaded").insert({'bottom': rt_img_element});
-					$("right-"+id+"-threaded").insert({'bottom': fave_img_element});
 				}
 			}
 			else
 			{
-				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': 'img/del.png', 'id': 'del-'+id+'-threaded', 'alt': ''});
+				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': '/img/del.png', 'id': 'del-'+id+'-threaded', 'alt': ''});
 				new Element.extend(del_img_element);
 				if ($("right-"+id+"-threaded"))
 				{
@@ -2148,19 +2112,19 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, tex
 			{
 				context_menu.addItem(
 				{
-					label: 'reply',
+					label: '<img src="/img/rep.png" alt="" />',
 					callback: function()
 					{
 						z_engine_reply(author, id, usermentions);
 					}
 				});
-				//if (!rtd)
-				//{
+				/*if (!rtd)
+				{*/
 					if (!locked)
 					{
 						context_menu.addItem(
 						{
-							label: 'rt (new)',
+							label: '<img src="/img/rt.png" alt="" />',
 							callback: function()
 							{
 								z_engine_retweet(id);
@@ -2169,12 +2133,12 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, tex
 						});
 						context_menu.addItem(
 						{
-							label: 'rt (old)',
+							label: 'RT',
 							callback: function()
 							{
 								z_engine_retweet_comment(id, author, text);
-								//context_menu.destroy();
-								z_engine_tweet_right_click(id, divid, author, userid, usermentions, text, faved, "comment", locked, type);
+								/*context_menu.destroy();
+								z_engine_tweet_right_click(id, divid, author, userid, usermentions, text, faved, "comment", locked, type);*/
 							}
 						});
 					}
@@ -2185,7 +2149,7 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, tex
 					{
 						context_menu.addItem(
 						{
-							label: 'drop',
+							label: '<img src="/img/rtd.png" alt="" />',
 							callback: function()
 							{
 								z_engine_destroy(id, "rt");
@@ -2199,7 +2163,7 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, tex
 				{
 					context_menu.addItem(
 					{
-						label: 'fave',
+						label: '<img src="/img/fav.png" alt="" />',
 						callback: function()
 						{
 							z_engine_favorite(id);
@@ -2212,7 +2176,7 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, tex
 				{
 					context_menu.addItem(
 					{
-						label: 'unfave',
+						label: '<img src="/img/favd.png" alt="" />',
 						callback: function()
 						{
 							z_engine_unfavorite(id);
@@ -2226,7 +2190,7 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, tex
 			{
 				context_menu.addItem(
 				{
-					label: 'drop',
+					label: '<img src="/img/del.png" alt="" />',
 					callback: function()
 					{
 						z_engine_destroy(id, "tweet");
@@ -2239,7 +2203,7 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, tex
 			{
 				context_menu.addItem(
 				{
-					label: 'reply',
+					label: '<img src="/img/rep.png" alt="" />',
 					callback: function()
 					{
 						z_engine_reply_dm(userid, author);
@@ -2248,7 +2212,7 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, tex
 			}
 			context_menu.addItem(
 			{
-				label: 'drop',
+				label: '<img src="/img/del.png" alt="" />',
 				callback: function()
 				{
 					z_engine_destroy(id, "dm");
@@ -2262,21 +2226,6 @@ function z_engine_tweet_right_click(id, divid, author, userid, usermentions, tex
 function z_engine_unfavorite(id)
 {
 	socket.emit("message", {unfavorite: {status: {id_str: id}}});
-	if ($("fave-"+id))
-	{
-		$("fave-"+id).writeAttribute("src","img/fav.png");
-		$("fave-"+id).writeAttribute("onclick","z_engine_favorite('"+id+"');");
-	}
-	if ($("fave-"+id+"mentioned"))
-	{
-		$("fave-"+id+"-mentioned").writeAttribute("src","img/fav.png");
-		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_favorite('"+id+"');");
-	}
-	if ($("fave-"+id+"threaded"))
-	{
-		$("fave-"+id+"-threaded").writeAttribute("src","img/fav.png");
-		$("fave-"+id+"-threaded").writeAttribute("onclick","z_engine_favorite('"+id+"');");
-	}
 }
 
 /* update all time elements */
