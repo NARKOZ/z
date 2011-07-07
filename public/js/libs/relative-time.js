@@ -1,5 +1,5 @@
 // originally from http://widgets.twimg.com/j/1/widget.js
-function relative_time(a)
+var relative_time = function(a)
 {
 	var b = new Date();
 	var c = new Date(a);

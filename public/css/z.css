@@ -50,10 +50,6 @@ li
 .huge, h1
 {
 	text-shadow: rgba(215,215,215,0.3) 5px 5px 8px;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-o-user-select: none;
-	-webkit-user-select: none;
 	cursor: default;
 	font: normal 90% "Open Sans", sans-serif;
 	font-size: 68px;
@@ -206,11 +202,6 @@ li
 {
 	cursor: pointer;
 	margin-left: 10px;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-o-user-select: none;
-	-webkit-user-select: none;
-	user-select: none;
 }
 .post-date, .comment-author
 {
@@ -222,14 +213,9 @@ li
 {
 	border-radius: 5px;
 	-khtml-border-radius: 5px;
-	-khtml-user-select: text;
 	-moz-border-radius: 5px;
-	-moz-user-select: text;
 	-o-border-radius: 5px;
-	-o-user-select: text;
 	-webkit-border-radius: 5px;
-	-webkit-user-select: text;
-	user-select: text;
 	background: #FFF;
 	border: 1px solid #DDD;
 	padding: 1px 12px 0 9px;
@@ -300,14 +286,12 @@ li
 	clear: right;
 	display: inline-block;
 	float: right;
-	width: 100%;
 }
 .comment-profile-wrapper
 {
 	clear: left;
 	display: inline-block;
 	float: left;
-	width: 100%;
 }
 
 /*
@@ -401,6 +385,24 @@ input[type="text"]:disabled, textarea:disabled
 }
 
 /*
+ * dialog window
+ */
+.window
+{  
+	background-color: white;
+	border: 1px solid #ddd;
+	height: 500px;
+	padding: 10px;
+	width: 500px;
+	border-radius: 4px;
+	-khtml-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-o-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	behavior: url(border-radius.htc);
+} 
+
+/*
  * drag n drop / button image upload
  */
 #image
@@ -481,7 +483,7 @@ input[type="text"]:disabled, textarea:disabled
 	-khtml-transition: all .20s ease-in-out;
 	-moz-transition: all .20s ease-in-out;
 	-ms-transition: all .20s ease-in-out;
-	-o-transition: all .20s ease-in-out;
+	/*-o-transition: all .20s ease-in-out;*/
 	-webkit-transition: all .20s ease-in-out;
 }
 #sub-nav li.navigation a:hover
@@ -489,16 +491,10 @@ input[type="text"]:disabled, textarea:disabled
 	box-shadow: 0 0 2px 2px #FFF;
 	background-color: #FFF;
 	color: #039;
-	transition: all .20s ease-in-out;
 	-khtml-box-shadow: 0 0 2px 2px #FFF;
-	-khtml-transition: all .20s ease-in-out;
 	-moz-box-shadow: 0 0 2px 2px #FFF;
-	-moz-transition: all .20s ease-in-out;
-	-ms-transition: all .20s ease-in-out;
 	-o-box-shadow: 0 0 2px 2px #FFF;
-	-o-transition: all .20s ease-in-out;
 	-webkit-box-shadow: 0 0 2px 2px #FFF;
-	-webkit-transition: all .20s ease-in-out;
 	behavior: url(border-radius.htc);
 }
 ul.tabbed li.navigation
@@ -549,6 +545,7 @@ div.growls div.black
 	border-radius: 5px;
 	box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	cursor: pointer;
+	margin: 0 auto;
 	-khtml-border-radius: 4px;
 	-khtml-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	-moz-border-radius: 5px;
@@ -690,7 +687,7 @@ div.autocomplete ul li.selected
 	-moz-animation: fadeout 0.5s ease-in-out;
 	-webkit-animation: fadeout 0.5s ease-in-out;
 }
-#control_contextmenu li
+#control_contextmenu ul li
 {
 	border-radius: 4px;
 	cursor: pointer;
@@ -703,13 +700,18 @@ div.autocomplete ul li.selected
 	-webkit-border-radius: 4px;
 	behavior: url(border-radius.htc);
 }
-#control_contextmenu li:hover
+#control_contextmenu ul li:hover
 {
 	background-color: #f6f6f6;
 }
+#control_contextmenu ul li:hover.disabled
+{
+	background-color: rgba(255,0,0,0.1);
+	cursor: default;
+}
 #control_contextmenu .separator
 {
-	background-color: #f4f4f4;
+	background-color: #ddd;
 	display: block;
 	height: 1px;
 	padding: 0;

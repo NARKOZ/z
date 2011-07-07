@@ -58,14 +58,18 @@ function removeGrowl(growl, options)
 	}
 }
 
-function insertGrowl(growls, title, message, options)
+function insertGrowl(growls, image, title, message, options)
 {
 	if (typeof(growls) == undefined)
 	{
 		return;
 	}
 	options = combine(options, DEFAULT_GROWL_OPTIONS);
-	var growl = new Element("div", {"class": "growl"+' '+options.color+' '+options.size});	
+	var growl = new Element("div", {"class": "growl"+' '+options.color+' '+options.size});
+	/*growl.insert(new Element("div", {"style": "float: left; clear: left: width: 60px"})).update(new Element("img", {"src": image, "style": "height: 50px; width: 50px;", "alt": ""}));
+	var content = growl.insert(new Element("div", {"style": "float: right; clear: right; width: 190px;"}));
+	content.insert(new Element("div", {"class": "title"}).update(title));
+	content.insert(new Element("div", {"class": "message"}).update(message));*/
 	growl.insert(new Element("div", {"class": "title"}).update(title));
 	growl.insert(new Element("div", {"class": "message"}).update(message));
 	growl.observe('click', function()
@@ -96,9 +100,9 @@ var Growler = Class.create(
 		this.growls = new Element("div", { "id": "growls-container", "class" : "growls" + ' ' + options.location });
 		this.growls.wrap(document.body);
 	},
-	growl: function(title, message, options)
+	growl: function(image, title, message, options)
 	{
-		return insertGrowl(this.growls, title, message, options);
+		return insertGrowl(this.growls, image, title, message, options);
 	},
 	roar: function(title, message, color, options)
 	{
