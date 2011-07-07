@@ -1,5 +1,2 @@
-1) fix the clipping issue with some tweets as they come in get displayed
-2) ability to start a new dm session (right now you can only reply to an existing one)
-3) fix some general but minor cloning issues that seem to arise with the increasing complexity of displaying tweets
-4) expand and improve on the javascript to css3 transition
-5) update the menu with faving / retweeting with the appropriate info
+1) fix some general but minor cloning issues that seem to arise with the increasing complexity of displaying tweets
+2) update the menu with retweeted info (so you can undo it)
