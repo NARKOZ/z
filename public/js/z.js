@@ -1979,6 +1979,10 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			z_engine_tweet_right_click(id, "comment-"+id, author, author2, userid, usermentions, text, faved, rtd, locked, type);
 		break;
 		case 'mentions':
+			if ($("av-"+id))
+			{
+				$("av-"+id).addTip(z_engine_parse_tweet(userinfo), userinfo_params);
+			}
 			if ($("av-"+id+"-mentioned"))
 			{
 				$("av-"+id+"-mentioned").addTip(z_engine_parse_tweet(userinfo), userinfo_params);
@@ -2145,12 +2149,12 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 {
 	var is_me = false;
 	var dm_reply_show = true;
+	var show_rt = false;
 	if (author == screen_name)
 	{
 		is_me = true;
 		dm_reply_show = false;
 	}
-	var show_rt = false;
 	if (!rtd)
 	{
 		show_rt = true;
@@ -2195,7 +2199,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 						{
 							z_engine_retweet(id);
 							context_menu.destroy();
-							z_engine_tweet_right_click(id, divid, author, author2, userid, usermentions, text, faved, true, locked, type);
+							z_engine_tweet_right_click(id, divid, author, screen_name, userid, usermentions, text, faved, true, locked, type);
 						}
 					});
 					context_menu.addItem(
@@ -2212,7 +2216,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 						{
 							z_engine_retweet_comment(id, author, text);
 							context_menu.destroy();
-							z_engine_tweet_right_click(id, divid, author, author2, userid, usermentions, text, faved, true, locked, type);
+							z_engine_tweet_right_click(id, divid, author, screen_name, userid, usermentions, text, faved, true, locked, type);
 						}
 					});
 				}

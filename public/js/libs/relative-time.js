@@ -1,5 +1,5 @@
 // originally from http://widgets.twimg.com/j/1/widget.js
-var relative_time = function(a)
+function relative_time(a)
 {
 	var b = new Date();
 	var c = new Date(a);
@@ -15,7 +15,11 @@ var relative_time = function(a)
 	var week = day * 7;
 	var month = day * 30;
 	var year = month * 12;
-	if (isNaN(d) || d < 0 || d < e * 3)
+	if (isNaN(d))
+	{
+		return translation.just_now;
+	}
+	if (d < 0 || d < e * 3)
 	{
 		return translation.just_now;
 	}
