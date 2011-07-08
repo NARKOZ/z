@@ -2,26 +2,26 @@
   #sub-nav
     ul.tabbed
       li(style='float: right;', class='navigation')
-        a#logout(href='#') exit
-      li#image(style='display: none; float: right;', title='drop images here!', class='navigation') image
+        a#logout(href='#')
+      li#image(style='display: none; float: right;', title='drop images here!', class='navigation')
       li(style='float: right;', class='navigation')
-        a#pause(href='#') stop
+        a#pause(href='#')
       li(style='float: right;', class='navigation')
         span#paused-count(style='display: none;') (0)
-      li#home-timeline-click(class='current-tab navigation')
-        a(href='#', onclick='return false;') home
-      li#mentions-timeline-click(class='navigation')
-        a(href='#', onclick='return false;') reply
-      li#dms-inbox-timeline-click(class='navigation')
-        a(href='#', onclick='return false;') inbox
-      li#dms-outbox-timeline-click(class='navigation')
-        a(href='#', onclick='return false;') outbox
+      li(class='current-tab navigation')
+        a#home-timeline-click(href='#', onclick='return false;')
+      li(class='navigation')
+        a#mentions-timeline-click(href='#', onclick='return false;')
+      li(class='navigation')
+        a#dms-inbox-timeline-click(href='#', onclick='return false;')
+      li(class='navigation')
+        a#dms-outbox-timeline-click(href='#', onclick='return false;')
       li
-        input#new-dm-user(type='text', maxlength='16', placeholder='send a dm to', style='display: none; font-size: 0.65em; max-height: 5px; max-width: 85px;')
+        input#new-dm-user(type='text', maxlength='16', style='display: none; font-size: 0.65em; max-height: 5px; max-width: 85px;')
         #autocompleter-dm(class='autocomplete', style='font-size: 0.8em; width: 100%; display: none;')
     .clearer &nbsp;
   form#new-tweet-form(autocomplete='off')
-    input#new-tweet(type='text', disabled='disabled', placeholder='write your status here and submit!', style='width: 98%;', value='loading...')
+    input#new-tweet(type='text', disabled='disabled', style='width: 98%;', value='loading...')
     #autocompleter(class='autocomplete', style='width: 98%; display: none;')
 
 #container(class='comment-list-wrapper')

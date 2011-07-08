@@ -5,7 +5,7 @@
 	"outbox": "outbox",
 	"stop": "stop",
 	"start": "start",
-	"image": "image",
+	"image": "photo",
 	"exit": "exit",
 	"tweet_placeholder": "whats happening?",
 	"dm_to_placeholder": "new message"
