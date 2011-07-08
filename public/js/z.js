@@ -574,11 +574,11 @@ function z_engine_attrition()
 				var data = json.show;
 				if (!data.retweeted_status)
 				{
-					var id = data.retweeted_status.id_str;
+					var id = data.id_str;
 				}
 				else
 				{
-					var id = data.id_str;
+					var id = data.retweeted_status.id_str;
 				}
 				content_threads_stored[id] = JSON.stringify(data);
 				z_engine_tweet(data, "threaded");
