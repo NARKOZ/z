@@ -1,0 +1,12 @@
+{
+	"home": "home",
+	"mentions": "reply",
+	"inbox": "inbox",
+	"outbox": "outbox",
+	"stop": "stop",
+	"start": "start",
+	"image": "image",
+	"exit": "exit",
+	"tweet_placeholder": "whats happening?",
+	"dm_to_placeholder": "new message"
+}

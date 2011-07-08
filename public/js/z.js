@@ -9,7 +9,7 @@ var content_dms_queued = Array(); //outputs our dms tweets nicely
 var content_mentions_queued = Array(); //outputs our mentions tweets nicely
 var content_queued = Array(); //outputs our tweets nicely
 var content_threads_queued = Array(); //outputs our threads tweets nicely
-var content_retweet_stored = Array();
+var content_threads_stored = Array();
 var content_stored = Array(); //stores all tweets
 var dms_cutoff = 50; //max amount of tweets to display before pruning occurs on all dms
 var dms_loaded = 0; //quick method to hide each dm timelines loading image without needing to write a ton of code to do it
@@ -36,6 +36,10 @@ var kloutinfo_params = {
 	target: true,
 	targetJoint: ['left', 'top'],
 	tipJoint: ['right', 'bottom']
+}
+if (!store.get('lang'))
+{
+	store.set('lang', "english");
 }
 var latest_threaded_id = 0;
 var latitude = false; //hold our latitude
@@ -82,6 +86,7 @@ if (store.get('sound') && store.get('sound_src').length > 0)
 }
 var stream_queue_interval = 1.5; //every one and a half seconds
 var threaded_cutoff = 50; //max amount of tweets to display before pruning occurs on the threaded timeline
+var translation = ""; //will hold our translation info
 var update_relative_dms_interval = 60; //once a minute
 var update_relative_home_interval = 15; //every 15 seconds
 var update_relative_mentions_interval = 30; //every 30 seconds
@@ -109,6 +114,7 @@ if (!store.get('users'))
 if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser == "Firefox" && BrowserDetect.version >= 3.6 || BrowserDetect.browser == "Chrome" || BrowserDetect.browser == "Opera" && BrowserDetect.version >= 9 || BrowserDetect.browser == "Safari")
 {
 	z_engine_attrition(); //call the below function
+	z_engine_set_language();
 }
 else
 {
@@ -320,7 +326,7 @@ function z_engine_attrition()
 				dms_loaded++;
 				json.dms.each(function(item)
 				{
-					content_dms_queued.push(JSON.stringify(item));
+					z_engine_tweet(item, "dms");
 				});
 				switch (dms_loaded)
 				{
@@ -456,7 +462,7 @@ function z_engine_attrition()
 			{
 				json.home.each(function(item)
 				{
-					content_queued.push(JSON.stringify(item));
+					z_engine_tweet(item, "home");
 				});
 				$("loading-home").fade();
 				$("loading-mentions").appear();
@@ -493,7 +499,7 @@ function z_engine_attrition()
 			{
 				json.mentions.each(function(item)
 				{
-					content_mentions_queued.push(JSON.stringify(item));
+					z_engine_tweet(item, "mentions");
 				});
 				$("loading-mentions").fade();
 				$("loading-inbox").appear();
@@ -531,19 +537,16 @@ function z_engine_attrition()
 				{
 					$("rt-"+id).writeAttribute("src","img/rtd.png");
 					$("rt-"+id).writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
-					//z_engine_tweet_right_click(this_id, "rt-"+id, author, author2, userid, usermentions, text, faved, rtd, locked, "home");
 				}
 				if ($("rt-"+id+"-mentioned"))
 				{
 					$("rt-"+id+"-mentioned").writeAttribute("src","img/rtd.png");
 					$("rt-"+id+"-mentioned").writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
-					//z_engine_tweet_right_click(this_id, "rt-"+id+"-mentioned", author, author2, userid, usermentions, text, faved, rtd, locked, "mentions");
 				}
 				if ($("rt-"+id+"-threaded"))
 				{
 					$("rt-"+id+"-threaded").writeAttribute("src","img/rtd.png");
 					$("rt-"+id+"-threaded").writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
-					//z_engine_tweet_right_click(this_id, "rt-"+id+"-threaded", author, author2, userid, usermentions, text, faved, rtd, locked, "threaded");
 				}
 			}
 			else if (json.server_event)
@@ -568,7 +571,8 @@ function z_engine_attrition()
 			}
 			else if (json.show)
 			{
-				content_threads_queued.push(JSON.stringify(json.show));
+				content_threads_stored[init] = JSON.stringify(json.show);
+				z_engine_tweet(json.show, "threaded");
 			}
 			else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
 			{
@@ -1287,7 +1291,6 @@ function z_engine_retweet_comment(id, author, text)
 	reply_id = id; //set this as a reply, it looks nicer
 	$("new-tweet").setValue("RT @"+author+" "+z_engine_escape(text));
 	$("new-tweet").focus();
-	escaped = "";
 }
 
 /* send our tweet */
@@ -1387,6 +1390,38 @@ function z_engine_set_klout(data, id)
 	}
 }
 
+/* set up the language for the client */
+function z_engine_set_language()
+{
+	var language = store.get('lang');
+	switch (language)
+	{
+		case 'english':
+		case 'russian':
+			new Ajax.Request('/lang/'+language+'.json',
+			{
+				method: 'GET',
+				onSuccess: function(transport)
+				{
+					translation = transport.responseText.evalJSON(true);
+					$("home-timeline-click").update(translation.home);
+					$("mentions-timeline-click").update(translation.mentions);
+					$("dms-inbox-timeline-click").update(translation.inbox);
+					$("dms-outbox-timeline-click").update(translation.outbox);
+					$("pause").update(translation.stop);
+					$("image").update(translation.image);
+					$("logout").update(translation.exit);
+					$("new-dm-user").placeholder = translation.dm_to_placeholder;
+					$("new-tweet").placeholder = translation.tweet_placeholder;
+				}
+			});
+		break;
+		default:
+			//do something else here?
+		break;
+	}
+}
+
 /* shorten urls */
 function z_engine_shorten_urls()
 {
@@ -1416,42 +1451,6 @@ function z_engine_stream_queue()
 			{
 				var data = queue.evalJSON(true);
 				z_engine_tweet(data, "home");
-			}
-		}
-	}
-	if (content_mentions_queued.length > 0)
-	{
-		var queue = content_mentions_queued.shift();
-		if (typeof(queue) == "string")
-		{
-			if (queue.isJSON())
-			{
-				var data = queue.evalJSON(true);
-				z_engine_tweet(data, "mentions");
-			}
-		}
-	}
-	if (content_dms_queued.length > 0)
-	{
-		var queue = content_dms_queued.shift();
-		if (typeof(queue) == "string")
-		{
-			if (queue.isJSON())
-			{
-				var data = queue.evalJSON(true);
-				z_engine_tweet(data, "dms");
-			}
-		}
-	}
-	if (content_threads_queued.length > 0)
-	{
-		var queue = content_threads_queued.shift();
-		if (typeof(queue) == "string")
-		{
-			if (queue.isJSON())
-			{
-				var data = queue.evalJSON(true);
-				z_engine_tweet(data, "threaded");
 			}
 		}
 	}
@@ -1498,11 +1497,25 @@ function z_engine_threaded(init, id)
 				$("threaded-timeline").addClassName("shower").removeClassName("hider");
 			}, 500);
 		}
-		socket.emit("message", {show: {id_str: init}});
+		if (!content_threads_stored[init])
+		{
+			socket.emit("message", {show: {id_str: init}});
+		}
+		else
+		{
+			content_threads_queued.push(content_threads_stored[init].evalJSON(true));
+		}
 	}
 	else
 	{
-		socket.emit("message", {show: {id_str: id}}); //continue the loop until nothing is left
+		if (!content_threads_stored[id])
+		{
+			socket.emit("message", {show: {id_str: id}}); //continue the loop until nothing is left
+		}
+		else
+		{
+			content_threads_queued.push(content_threads_stored[id].evalJSON(true));
+		}
 	}
 }
 
@@ -1943,7 +1956,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			{
 				$("av-"+id+"-mentioned").addTip(z_engine_parse_tweet(userinfo), userinfo_params);
 			}
-			if ($("left-"+id) && !$('klout-'+id))
+			if (($("left-"+id) && !$('klout-'+id)) && ($("left-"+id+"-mentioned") && !$('klout-'+id+'-mentioned')))
 			{
 				var klout_element = new Element('span', {'class': 'klout'});
 				klout_element.update(" ");
@@ -2101,7 +2114,7 @@ function z_engine_tweet_pause()
 	if (!paused)
 	{
 		paused = true;
-		$("pause").update("start");
+		$("pause").update(translation.start);
 		$("paused-count").appear();
 	}
 	else
@@ -2112,7 +2125,7 @@ function z_engine_tweet_pause()
 			afterFinish: function()
 			{
 				$("paused-count").update("(0)");
-				$("pause").update("stop");
+				$("pause").update(translation.stop);
 				pttid = 0;
 			}
 		});
@@ -2172,7 +2185,8 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 						callback: function()
 						{
 							z_engine_retweet(id);
-							//context_menu.destroy();
+							context_menu.destroy();
+							z_engine_tweet_right_click(id, divid, author, author2, userid, usermentions, text, faved, true, locked, type);
 						}
 					});
 					context_menu.addItem(
@@ -2188,8 +2202,8 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 						callback: function()
 						{
 							z_engine_retweet_comment(id, author, text);
-							//context_menu.destroy();
-							//z_engine_tweet_right_click(id, divid, author, author2, userid, usermentions, text, faved, true, locked, type);
+							context_menu.destroy();
+							z_engine_tweet_right_click(id, divid, author, author2, userid, usermentions, text, faved, true, locked, type);
 						}
 					});
 				}

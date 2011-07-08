@@ -1,0 +1,12 @@
+{
+	"home": "главная",
+	"mentions": "отвечать",
+	"inbox": "вход",
+	"outbox": "выход",
+	"stop": "пауза",
+	"start": "старт",
+	"image": "фото",
+	"exit": "выйти",
+	"tweet_placeholder": "что происходит?",
+	"dm_to_placeholder": "новое сообщение"
+}

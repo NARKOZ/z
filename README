@@ -9,22 +9,22 @@ free template from arcsin.se.
 
 trunk requirements (required by multiple modules below, install these first and in order!):
 
-	npm install formidable
-	npm install mime
-	npm install policyfile
-	npm install qs
-	npm install socket.io-client
+	sudo npm install formidable
+	sudo npm install mime
+	sudo npm install policyfile
+	sudo npm install qs
+	sudo npm install socket.io-client
 
 leaf requirements (install in order!):
 
-	npm install connect
-	npm install connect-gzip
-	npm install express
-	npm install jade
-	npm install jsonreq
-	npm install oauth
-	npm install socket.io
-	npm install socket.io-sessions
+	sudo npm install connect
+	sudo npm install connect-gzip
+	sudo npm install express
+	sudo npm install jade
+	sudo npm install jsonreq
+	sudo npm install oauth
+	sudo npm install socket.io
+	sudo npm install socket.io-sessions
 
 optional:
 
