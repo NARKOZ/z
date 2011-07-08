@@ -1748,7 +1748,7 @@ function z_engine_tweet(data, output)
 							var author_link_element = new Element('a', {'target': '_blank', href: 'http://twitter.com/'+author});
 							author_link_element.update('@'+author+' ');
 							var wrote_this_element = new Element('span');
-							wrote_this_element.update('wrote this ');
+							wrote_this_element.update(translation.wrote_this);
 							if (output != "dms")
 							{
 								var status_link_element = new Element('a', {'target': '_blank', 'id': 'comment-'+id+'-relative-date', href: 'http://twitter.com/'+author+'/status/'+id});
@@ -1767,7 +1767,7 @@ function z_engine_tweet(data, output)
 								if (replyid)
 								{
 									var in_reply_to_element = new Element('span');
-									in_reply_to_element.update(' in reply to ');
+									in_reply_to_element.update(translation.in_reply_to);
 									if (output == "threaded")
 									{
 										var in_reply_to_link_element = new Element('a', {'target': '_blank', 'href': 'http://twitter.com/'+reply+'/status/'+replyid});
@@ -1776,12 +1776,12 @@ function z_engine_tweet(data, output)
 									{
 										var in_reply_to_link_element = new Element('span', {'onclick': 'z_engine_threaded("'+id+'","'+replyid+'");', 'style': 'cursor: pointer;'});
 									}
-									in_reply_to_link_element.update(reply+' ');
+									in_reply_to_link_element.update('@'+reply+' ');
 									left_element.insert(in_reply_to_element);
 									left_element.insert({'bottom': in_reply_to_link_element});
 								}
 								var via_source_element = new Element('span', {'class': 'via'});
-								via_source_element.update(' via '+source);
+								via_source_element.update(translation.via+' '+source);
 								left_element.insert({'bottom': via_source_element});
 							}
 							else

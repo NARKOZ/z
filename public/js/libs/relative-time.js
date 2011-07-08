@@ -15,60 +15,60 @@ var relative_time = function(a)
 	var week = day * 7;
 	var month = day * 30;
 	var year = month * 12;
-	if (isNaN(d) || d < 0 || d < e * 5)
+	if (isNaN(d) || d < 0 || d < e * 3)
 	{
-		return "just now";
+		return translation.just_now;
 	}
 	if (d < minute)
 	{
-		return Math.floor(d / e) + " seconds ago";
+		return Math.floor(d / e) + " "+translation.seconds+" "+translation.ago;
 	}
 	if (d < minute * 2)
 	{
-		return "a minute ago";
+		return +translation.minute+" "+translation.ago;
 	}
 	if (d < hour)
 	{
-		return Math.floor(d / minute) + " minutes ago";
+		return Math.floor(d / minute) + " "+translation.minutes+" "+translation.ago;
 	}
 	if (d < hour * 2)
 	{
-		return "an hour ago";
+		return translation.hour+" "+translation.ago;
 	}
 	if (d < day)
 	{
-		return Math.floor(d / hour) + " hours ago";
+		return Math.floor(d / hour) + " "+translation.hours+" "+translation.ago;
 	}
 	if (d > day && d < day * 2)
 	{
-		return "yesterday";
+		return translation.day;
 	}
 	if (d < week)
 	{
-		return Math.floor(d / day) + " days ago";
+		return Math.floor(d / day) + " "+translation.days+" "+translation.ago;
 	}
 	if (d > week && d < week * 2)
 	{
-		return "last week";
+		return translation.week;
 	}
 	if (d > week && d < month)
 	{
-		return Math.floor(d / week) + " weeks ago";
+		return Math.floor(d / week) + " "+translation.weeks+" "+translation.ago;
 	}
 	if (d > month && d < month * 2)
 	{
-		return "last month";
+		return translation.month;
 	}
 	if (d > month && d < year)
 	{
-		return Math.floor(d / month) + " months ago";
+		return Math.floor(d / month) + " "+translation.months+" "+translation.ago;
 	}
 	if (d > year && d < year * 2)
 	{
-		return "last year";
+		return translation.year;
 	}
 	if (d > year)
 	{
-		return Math.floor(d / year) + " years ago";
+		return Math.floor(d / year) + " "+translation.years+" "+translation.ago;
 	}
 };
