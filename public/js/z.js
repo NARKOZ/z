@@ -571,8 +571,17 @@ function z_engine_attrition()
 			}
 			else if (json.show)
 			{
-				content_threads_stored[init] = JSON.stringify(json.show);
-				z_engine_tweet(json.show, "threaded");
+				var data = json.show;
+				if (!data.retweeted_status)
+				{
+					var id = data.retweeted_status.id_str;
+				}
+				else
+				{
+					var id = data.id_str;
+				}
+				content_threads_stored[id] = JSON.stringify(data);
+				z_engine_tweet(data, "threaded");
 			}
 			else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
 			{
