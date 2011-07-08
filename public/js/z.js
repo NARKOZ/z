@@ -8,7 +8,6 @@ var check_ratelimit_interval = 300; //check every 5 minutes
 var content_dms_queued = Array(); //outputs our dms tweets nicely
 var content_mentions_queued = Array(); //outputs our mentions tweets nicely
 var content_queued = Array(); //outputs our tweets nicely
-var content_threads_queued = Array(); //outputs our threads tweets nicely
 var content_threads_stored = Array();
 var content_stored = Array(); //stores all tweets
 var dms_cutoff = 50; //max amount of tweets to display before pruning occurs on all dms
@@ -16,9 +15,9 @@ var dms_loaded = 0; //quick method to hide each dm timelines loading image witho
 var following = Array(); //holds our following id's array
 if (!store.get('geo'))
 {
-	store.set('geo', true);
+	store.set('geo', "on");
 }
-if (store.get('geo'))
+if (store.get('geo') == "on")
 {
 	var geo_high_accuracy = false; //disable high accuracy on geo readings
 	var geo_refresh_interval = 300; //refresh our geo
@@ -29,13 +28,20 @@ if (!store.get('hashtag_blocks'))
 	store.set('hashtag_blocks', "");
 }
 var home_cutoff = 200; //max amount of tweets to display before pruning occurs on the home timeline
-var klout = Array(); //holds klout data
-var kloutinfo_params = {
-	className: 'klout',
-	stem: true,
-	target: true,
-	targetJoint: ['left', 'top'],
-	tipJoint: ['right', 'bottom']
+if (!store.get('klout'))
+{
+	store.set('klout', "on");
+}
+if (store.get('klout') == "on")
+{
+	var klout = Array(); //holds klout data
+	var kloutinfo_params = {
+		className: 'klout',
+		stem: true,
+		target: true,
+		targetJoint: ['left', 'top'],
+		tipJoint: ['right', 'bottom']
+	}
 }
 if (!store.get('lang'))
 {
@@ -53,7 +59,7 @@ if (!store.get('mention_blocks'))
 var mentions_cutoff = 100; //max amount of tweets to display before pruning occurs on the mentions timeline
 if (!store.get('notifications'))
 {
-	store.set('notifications', true);
+	store.set('notifications', "on");
 }
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var prune_tweets_interval = 60; //start the pruning loop over again every minute
@@ -66,7 +72,7 @@ var shortened = false;
 var socket = io.connectWithSession();
 if (!store.get('sound'))
 {
-	store.set('sound', true);
+	store.set('sound', "on");
 }
 if (!store.get('sound-src'))
 {
@@ -79,7 +85,7 @@ if (!store.get('sound-src'))
 		store.set('sound_src', "/audio/notify.ogg");
 	}
 }
-if (store.get('sound') && store.get('sound_src').length > 0)
+if (store.get('sound') == "on" && store.get('sound_src').length > 0)
 {
 	var audio = new Audio();
 	audio.src = store.get('sound_src'); //and ogg for anyone else who supports the audio api
@@ -141,7 +147,7 @@ function z_engine_attrition()
 		if (!loaded)
 		{
 			$("new-tweet").setValue("connected...");
-			if (store.get('geo'))
+			if (store.get('geo') == "on")
 			{
 				z_engine_geo();
 			}
@@ -210,7 +216,7 @@ function z_engine_attrition()
 						z_engine_stream_queue();
 					}
 				}, stream_queue_interval * 1000);
-				if (store.get('geo'))
+				if (store.get('geo') == "on")
 				{
 					setInterval(function()
 					{
@@ -242,7 +248,7 @@ function z_engine_attrition()
 					choices: 20,
 					minChars: 2
 				});
-				if (store.get('geo'))
+				if (store.get('geo') == "on")
 				{
 					new HotKey('l',function(event)
 					{
@@ -477,21 +483,24 @@ function z_engine_attrition()
 			}
 			else if (json.klout)
 			{
-				var data = json.klout;
-				var id = json.id_str;
-				if (data != "error")
+				if (store.get('klout') == "on")
 				{
-					z_engine_set_klout(data.users, id);
-					var userid = data.users[0].twitter_id;
-					klout[userid] = JSON.stringify(data.users);
-				}
-				else
-				{
-					if ($("klout-"+id))
+					var data = json.klout;
+					var id = json.id_str;
+					if (data != "error")
 					{
-						$("klout-"+id).setStyle('cursor: default;');
-						$("klout-"+id).setAttribute('onclick', '');
-						$("klout-"+id).addTip('<big><strong>?</strong></big>', kloutinfo_params);
+						z_engine_set_klout(data.users, id);
+						var userid = data.users[0].twitter_id;
+						klout[userid] = JSON.stringify(data.users);
+					}
+					else
+					{
+						if ($("klout-"+id))
+						{
+							$("klout-"+id).setStyle('cursor: default;');
+							$("klout-"+id).setAttribute('onclick', '');
+							$("klout-"+id).addTip('<big><strong>?</strong></big>', kloutinfo_params);
+						}
 					}
 				}
 			}
@@ -701,8 +710,8 @@ function z_engine_clicker(id, this_id)
 		{
 			$(hide).removeClassName("current-tab");
 			$(this_id).addClassName("current-tab");
-			if (!z_engine_css3())
-			{
+			/*if (!z_engine_css3())
+			{*/
 				new Effect.Parallel(
 				[
 					new Effect.Fade(hide,
@@ -741,7 +750,7 @@ function z_engine_clicker(id, this_id)
 						}
 					}
 				});
-			}
+			/*}
 			else
 			{
 				switch (this_id)
@@ -764,7 +773,7 @@ function z_engine_clicker(id, this_id)
 						latest_threaded_id = 0;
 					}
 				},500);
-			}
+			}*/
 		}
 	});
 }
@@ -1088,14 +1097,17 @@ function z_engine_input()
 /* get a users klout score */
 function z_engine_get_klout(author, userid, id)
 {
-	if (!klout[userid])
+	if (store.get('klout') == "on")
 	{
-		socket.emit("message", {klout: author, id_str: id});
-	}
-	else
-	{
-		var data = klout[userid].evalJSON(true);
-		z_engine_set_klout(data, id);
+		if (!klout[userid])
+		{
+			socket.emit("message", {klout: author, id_str: id});
+		}
+		else
+		{
+			var data = klout[userid].evalJSON(true);
+			z_engine_set_klout(data, id);
+		}
 	}
 }
 
@@ -1113,9 +1125,9 @@ function z_engine_logout()
 /* send a notification to the client */
 function z_engine_notification(av, title, text)
 {
-	if (store.get('notifications'))
+	if (store.get('notifications') == "on")
 	{
-		if ((store.get('sound') && store.get('sound_src').length > 0) && (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser != "MSIE"))
+		if ((store.get('sound') == "on" && store.get('sound_src').length > 0) && (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser != "MSIE"))
 		{
 			audio.play();
 		}
@@ -1333,7 +1345,7 @@ function z_engine_send_tweet()
 					include_entities: true
 				}
 			}
-			if (store.get('geo') && latitude && longitude)
+			if (store.get('geo') == "on" && latitude && longitude)
 			{
 				var geo = {
 					display_coordinates: true,
@@ -1364,36 +1376,39 @@ function z_engine_send_tweet()
 /* set the klout icon up properly */
 function z_engine_set_klout(data, id)
 {
-	if (typeof(data) == "object")
+	if (store.get('klout') == "on")
 	{
-		if (data.length > 0 && typeof(id) == "string")
+		if (typeof(data) == "object")
 		{
-			var amp = Math.round(data[0].score.amplification_score);
-			var one_day = Math.round(data[0].score.delta_1day);
-			var description = data[0].score.description;
-			var five_days = Math.round(data[0].score.delta_5day);
-			var kclass = data[0].score.kclass;
-			var kclass_description = data[0].score.kclass_description;
-			var kscore = Math.round(data[0].score.kscore);
-			var kscore_description = data[0].score.kscore_description;
-			var net = Math.round(data[0].score.network_score);
-			var reach = Math.round(data[0].score.true_reach);
-			var slope = Math.round(data[0].score.slope);
-			var kloutinfo = 'score: <strong>'+kscore+'</strong><br />';
-			kloutinfo += 'amp: <strong>'+amp+'</strong><br />';
-			kloutinfo += 'network: <strong>'+net+'</strong><br />';
-			kloutinfo += 'reach: <strong>'+reach+'</strong><br />';
-			if ($("klout-"+id))
+			if (data.length > 0 && typeof(id) == "string")
 			{
-				$("klout-"+id).addTip(kloutinfo, kloutinfo_params);
-				$("klout-"+id).setAttribute('src', 'img/kltd.png');
-				$("klout-"+id).setAttribute('title', '');
-			}
-			if ($("klout-"+id+"-mentioned"))
-			{
-				$("klout-"+id+"-mentioned").addTip(kloutinfo, kloutinfo_params);
-				$("klout-"+id+"-mentioned").setAttribute('src', 'img/kltd.png');
-				$("klout-"+id+"-mentioned").setAttribute('title', '');
+				var amp = Math.round(data[0].score.amplification_score);
+				var one_day = Math.round(data[0].score.delta_1day);
+				var description = data[0].score.description;
+				var five_days = Math.round(data[0].score.delta_5day);
+				var kclass = data[0].score.kclass;
+				var kclass_description = data[0].score.kclass_description;
+				var kscore = Math.round(data[0].score.kscore);
+				var kscore_description = data[0].score.kscore_description;
+				var net = Math.round(data[0].score.network_score);
+				var reach = Math.round(data[0].score.true_reach);
+				var slope = Math.round(data[0].score.slope);
+				var kloutinfo = 'score: <strong>'+kscore+'</strong><br />';
+				kloutinfo += 'amp: <strong>'+amp+'</strong><br />';
+				kloutinfo += 'network: <strong>'+net+'</strong><br />';
+				kloutinfo += 'reach: <strong>'+reach+'</strong><br />';
+				if ($("klout-"+id))
+				{
+					$("klout-"+id).addTip(kloutinfo, kloutinfo_params);
+					$("klout-"+id).setAttribute('src', 'img/kltd.png');
+					$("klout-"+id).setAttribute('title', '');
+				}
+				if ($("klout-"+id+"-mentioned"))
+				{
+					$("klout-"+id+"-mentioned").addTip(kloutinfo, kloutinfo_params);
+					$("klout-"+id+"-mentioned").setAttribute('src', 'img/kltd.png');
+					$("klout-"+id+"-mentioned").setAttribute('title', '');
+				}
 			}
 		}
 	}
@@ -1478,8 +1493,8 @@ function z_engine_threaded(init, id)
 		{
 			var hide = "mentions-timeline";
 		}
-		if (!z_engine_css3())
-		{
+		/*if (!z_engine_css3())
+		{*/
 			new Effect.Parallel(
 			[
 				new Effect.Fade(hide,
@@ -1497,7 +1512,7 @@ function z_engine_threaded(init, id)
 			{
 				duration: 1
 			});
-		}
+		/*}
 		else
 		{
 			$(hide).addClassName("hider").removeClassName("shower");
@@ -1505,14 +1520,14 @@ function z_engine_threaded(init, id)
 			{
 				$("threaded-timeline").addClassName("shower").removeClassName("hider");
 			}, 500);
-		}
+		}*/
 		if (!content_threads_stored[init])
 		{
 			socket.emit("message", {show: {id_str: init}});
 		}
 		else
 		{
-			content_threads_queued.push(content_threads_stored[init].evalJSON(true));
+			z_engine_tweet(content_threads_stored[init].evalJSON(true), "threaded");
 		}
 	}
 	else
@@ -1523,7 +1538,7 @@ function z_engine_threaded(init, id)
 		}
 		else
 		{
-			content_threads_queued.push(content_threads_stored[id].evalJSON(true));
+			z_engine_tweet(content_threads_stored[id].evalJSON(true), "threaded");
 		}
 	}
 }
@@ -1925,14 +1940,17 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			{
 				$("av-"+id).addTip(z_engine_parse_tweet(userinfo), userinfo_params);
 			}
-			if ($("left-"+id) && !$('klout-'+id))
+			if (store.get('klout') == "on")
 			{
-				var klout_element = new Element('span', {'class': 'klout'});
-				klout_element.update(" ");
-				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': '/img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score'});
-				klout_element.insert({'top': klout_img_element});
-				new Element.extend(klout_img_element);
-				$("left-"+id).insert({'top': klout_element});
+				if ($("left-"+id) && !$('klout-'+id))
+				{
+					var klout_element = new Element('span', {'class': 'klout'});
+					klout_element.update(" ");
+					var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': '/img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score'});
+					klout_element.insert({'top': klout_img_element});
+					new Element.extend(klout_img_element);
+					$("left-"+id).insert({'top': klout_element});
+				}
 			}
 			if (author != screen_name)
 			{
@@ -1965,24 +1983,6 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			{
 				$("av-"+id+"-mentioned").addTip(z_engine_parse_tweet(userinfo), userinfo_params);
 			}
-			if (($("left-"+id) && !$('klout-'+id)) && ($("left-"+id+"-mentioned") && !$('klout-'+id+'-mentioned')))
-			{
-				var klout_element = new Element('span', {'class': 'klout'});
-				klout_element.update(" ");
-				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': '/img/klt.png', 'id': 'klout-'+id+'-mentioned', 'alt': '', 'title': 'click to get this users klout score'});
-				klout_element.insert({'top': klout_img_element});
-				new Element.extend(klout_img_element);
-				$("left-"+id).insert({'top': klout_element});
-			}
-			/*if ($("left-"+id+"-mentioned") && !$('klout-'+id+'-mentioned'))
-			{
-				var klout_element = new Element('span', {'class': 'klout'});
-				klout_element.update(" ");
-				var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': '/img/klt.png', 'id': 'klout-'+id+'-mentioned', 'alt': '', 'title': 'click to get this users klout score'});
-				klout_element.insert({'top': klout_img_element});
-				new Element.extend(klout_img_element);
-				$("left-"+id+"-mentioned").insert({'top': klout_element});
-			}*/
 			if (author != screen_name)
 			{
 				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'-mentioned", "'+usermentions+'");', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
@@ -2173,7 +2173,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 			{
 				context_menu.addItem(
 				{
-					label: '<img src="/img/rep.png" alt="" />',
+					label: '<img src="/img/rep.png" title="reply" alt="" />',
 					callback: function()
 					{
 						z_engine_reply(author, id, usermentions);
@@ -2185,7 +2185,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 					{
 						label: function()
 						{
-							return '<img src="/img/rt.png" alt="" />';
+							return '<img src="/img/rt.png" title="retweet" alt="" />';
 						},
 						condition: function()
 						{
@@ -2202,7 +2202,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 					{
 						label: function()
 						{
-							return 'RT';
+							return '<span title="retweet (with comment, old method)">RT</span>';
 						},
 						condition: function()
 						{
@@ -2216,11 +2216,19 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 						}
 					});
 				}
+				else
+				{
+					context_menu.addItem(
+					{
+						label: '<img src="/img/lock.png" title="this account is private" alt="" />',
+						enabled: false
+					});
+				}
 				if (!faved)
 				{
 					context_menu.addItem(
 					{
-						label: '<img src="/img/fav.png" alt="" />',
+						label: '<img src="/img/fav.png" title="fave" alt="" />',
 						callback: function()
 						{
 							z_engine_favorite(id);
@@ -2233,7 +2241,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 				{
 					context_menu.addItem(
 					{
-						label: '<img src="/img/favd.png" alt="" />',
+						label: '<img src="/img/favd.png" title="unfave" alt="" />',
 						callback: function()
 						{
 							z_engine_unfavorite(id);
@@ -2247,7 +2255,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 			{
 				context_menu.addItem(
 				{
-					label: '<img src="/img/del.png" alt="" />',
+					label: '<img src="/img/del.png" title="delete" alt="" />',
 					callback: function()
 					{
 						z_engine_destroy(id, "tweet");
@@ -2260,7 +2268,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 			{
 				label: function()
 				{
-					return '<img src="/img/rep.png" alt="" />';
+					return '<img src="/img/rep.png" title="reply" alt="" />';
 				},
 				condition: function()
 				{
@@ -2273,7 +2281,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 			});
 			context_menu.addItem(
 			{
-				label: '<img src="/img/del.png" alt="" />',
+				label: '<img src="/img/del.png" title="delete" alt="" />',
 				callback: function()
 				{
 					z_engine_destroy(id, "dm");
