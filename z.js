@@ -166,6 +166,33 @@ server.get('/oauth/logout', function(req, res)
 	});
 });
 
+/* settings page */
+server.get('/account/settings',function(req, res)
+{
+	gzip.gzip();
+	if (!req.session.oauth)
+	{
+		res.redirect("/");
+	}
+	else
+	{
+		if (typeof(req.session.oauth._results) == "object")
+		{
+			res.render('settings.jade',
+			{
+				title: 'settings for @'+req.session.oauth._results.screen_name
+			});
+		}
+		else
+		{
+			req.session.destroy(function()
+			{
+				res.redirect("/");
+			});
+		}
+	}
+});
+
 if (!module.parent)
 {
 	server.listen(port);
