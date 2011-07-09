@@ -64,7 +64,7 @@ if (!store.get('notifications'))
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var prune_tweets_interval = 60; //start the pruning loop over again every minute
 var pttid = 0; //this serves as the (#) amount displayed when paused
-var rates = "";
+var rates = 350;
 var remember_cutoff = 199; //the maximum amount of names to store for autocompletion
 var reply_id = false; //catch reply
 var screen_name = ""; //our own screen name
@@ -344,6 +344,7 @@ function z_engine_attrition()
 						$("loading-outbox").fade();
 					break;
 				}
+				rates--;
 			}
 			else if (json.event)
 			{
@@ -515,7 +516,7 @@ function z_engine_attrition()
 			}
 			else if (json.rates)
 			{
-				rates = JSON.stringify(json.rates);
+				rates = json.rates.remaining_hits;
 				if (json.rates.remaining_hits <= 10)
 				{
 					z_engine_notification("","notice!","you have "+json.rates.remaining_hits+" (of "+json.rates.hourly_limit+") request tokens left!");
@@ -591,6 +592,7 @@ function z_engine_attrition()
 				}
 				content_threads_stored[id] = JSON.stringify(data);
 				z_engine_tweet(data, "threaded");
+				rates--;
 			}
 			else if (json.text && json.user && json.created_at) //ensure we are about to do this to a valid tweet
 			{
