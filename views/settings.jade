@@ -1,0 +1,29 @@
+fieldset
+  legend notifications
+  input#use-audio(type='checkbox', title='enable audio notifications')
+  span - enable audio notifications
+  br
+  input#use-notify(type='checkbox', title='enable notifications')
+  span - enable notifications
+
+fieldset
+  legend language
+  select#language
+    option(value='english') english
+    option(value='russian') русский
+
+fieldset
+  legend tweet output interval
+  span 0.25
+  input#stream-interval(type='range', min='0.25', max='5', step='0.25')
+  span 5.0
+
+fieldset
+  legend other
+  input#use-geo(type='checkbox', title='enable geo')
+  span - enable geo
+  br
+  input#use-klout(type='checkbox', title='enable klout')
+  span - enable klout
+
+script z_engine_settings_setup();

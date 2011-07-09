@@ -3,13 +3,15 @@
     ul.tabbed
       li(style='float: right;', class='navigation')
         a#logout(href='#')
+      li(style='float: right;', class='navigation')
+        a#settings(href='/account/settings')
       li#image(style='display: none; float: right;', title='drop images here!', class='navigation')
       li(style='float: right;', class='navigation')
         a#pause(href='#')
       li(style='float: right;', class='navigation')
         span#paused-count(style='display: none;') (0)
-      li(class='current-tab navigation')
-        a#home-timeline-click(href='#', onclick='return false;')
+      li(class='navigation')
+        a#home-timeline-click(href='#', onclick='return false;', class='current-tab')
       li(class='navigation')
         a#mentions-timeline-click(href='#', onclick='return false;')
       li(class='navigation')
@@ -36,6 +38,5 @@
   #threaded-timeline(style='display: none;')
 
 script(type='text/javascript', src='/socket.io/socket.io-sessions.js?'+(new Date()).getTime())
-script(type='text/javascript', src='/js/z.min.js?'+(new Date()).getTime())
-script var growler = new Growler(); //we need this here for the growler to work properly
+script var growler = new Growler(); z_engine_attrition();
 script= imgur_script

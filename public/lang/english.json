@@ -6,6 +6,7 @@
 	"stop": "stop",
 	"start": "start",
 	"image": "photo",
+	"settings": "settings",
 	"exit": "exit",
 	"tweet_placeholder": "whats happening?",
 	"dm_to_placeholder": "screenname",
