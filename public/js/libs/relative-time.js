@@ -15,13 +15,9 @@ function relative_time(a)
 	var week = day * 7;
 	var month = day * 30;
 	var year = month * 12;
-	if (isNaN(d))
+	if (isNaN(d) || d < 0 || d < e * 2)
 	{
-		return translation.just_now;
-	}
-	if (d < 0 || d < e * 3)
-	{
-		return translation.just_now;
+		return translation.just_now; //display just now rather than nothing i guess =\
 	}
 	if (d < minute)
 	{
@@ -29,7 +25,7 @@ function relative_time(a)
 	}
 	if (d < minute * 2)
 	{
-		return +translation.minute+" "+translation.ago;
+		return translation.minute+" "+translation.ago;
 	}
 	if (d < hour)
 	{
