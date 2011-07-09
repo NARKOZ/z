@@ -290,7 +290,7 @@ function z_engine_message_handler(tw, session, client, message)
 					{
 						if(!error)
 						{
-							client.json.send({mentions: data.reverse()});
+							client.json.send({mentions: data});
 						}
 					});
 				break;

@@ -473,6 +473,7 @@ function z_engine_attrition()
 				});
 				$("loading-home").fade();
 				$("loading-mentions").appear();
+				rates--;
 				socket.emit("message", {fetch: "userstream"});
 			}
 			else if (json.info)
@@ -513,6 +514,7 @@ function z_engine_attrition()
 				});
 				$("loading-mentions").fade();
 				$("loading-inbox").appear();
+				rates--;
 			}
 			else if (json.rates)
 			{
@@ -1876,7 +1878,7 @@ function z_engine_tweet(data, output)
 				$("home-timeline").insert({'top': container_element});
 			break;
 			case 'mentions':
-				$("mentions-timeline").insert({'top': container_element});
+				$("mentions-timeline").insert({'bottom': container_element});
 			break;
 		}
 		if (mentioned && output != "mentions" && output != "threaded" && author != screen_name && !data.retweeted_status)
@@ -1928,11 +1930,11 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'onclick': 'z_engine_reply_dm("'+userid+'", "'+author+'");', 'src': '/img/rep.png', 'id': 'reply-'+id, 'alt': ''});
+				var reply_img_element = new Element('img', {'onclick': 'z_engine_reply_dm("'+userid+'", "'+author+'");', 'src': '/img/rep.png', 'title': 'reply', 'id': 'reply-'+id, 'alt': ''});
 				new Element.extend(reply_img_element);
 				$("right-"+id).insert(reply_img_element);
 			}
-			var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "dm");', 'src': '/img/del.png', 'id': 'del-'+id, 'alt': ''});
+			var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "dm");', 'src': '/img/del.png', 'title': 'delete', 'id': 'del-'+id, 'alt': ''});
 			new Element.extend(del_img_element);
 			$("right-"+id).insert({'bottom': del_img_element});
 			z_engine_tweet_right_click(id, "comment-"+id, author, author2, userid, usermentions, text, faved, rtd, locked, type);
@@ -1956,11 +1958,11 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'id': 'reply-'+id, 'alt': ''});
+				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'title': 'reply', 'id': 'reply-'+id, 'alt': ''});
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
-					var rt_img_element = new Element('img', {'src': '/img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id, 'alt': ''});
+					var rt_img_element = new Element('img', {'src': '/img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'title': 'retweet', 'id': 'rt-'+id, 'alt': ''});
 					new Element.extend(rt_img_element);
 				}
 				else
@@ -1973,7 +1975,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			else
 			{
-				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': '/img/del.png', 'id': 'del-'+id, 'alt': ''});
+				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'title': 'delete', 'src': '/img/del.png', 'id': 'del-'+id, 'alt': ''});
 				new Element.extend(del_img_element);
 				$("right-"+id).update();
 				$("right-"+id).insert({'bottom': del_img_element});
@@ -1991,11 +1993,11 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'-mentioned", "'+usermentions+'");', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
+				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'-mentioned", "'+usermentions+'");', 'title': 'reply', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
-					var rt_img_element = new Element('img', {'src': '/img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id+'-mentioned', 'alt': ''});
+					var rt_img_element = new Element('img', {'src': '/img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'title': 'retweet', 'id': 'rt-'+id+'-mentioned', 'alt': ''});
 					new Element.extend(rt_img_element);
 				}
 				else
@@ -2017,7 +2019,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			else
 			{
-				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': '/img/del.png', 'id': 'del-'+id+'-mentioned', 'alt': ''});
+				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'title': 'delete', 'src': '/img/del.png', 'id': 'del-'+id+'-mentioned', 'alt': ''});
 				new Element.extend(del_img_element);
 				if ($("right-"+id))
 				{
@@ -2046,11 +2048,11 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'id': 'reply-'+id+'-threaded', 'alt': ''});
+				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'title': 'reply', 'id': 'reply-'+id+'-threaded', 'alt': ''});
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
-					var rt_img_element = new Element('img', {'src': '/img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id+'-threaded', 'alt': ''});
+					var rt_img_element = new Element('img', {'src': '/img/rt.png', 'onclick': 'z_engine_retweet("'+id+'");', 'id': 'rt-'+id+'-threaded', 'title': 'retweet', 'alt': ''});
 					new Element.extend(rt_img_element);
 				}
 				else
@@ -2066,7 +2068,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			else
 			{
-				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': '/img/del.png', 'id': 'del-'+id+'-threaded', 'alt': ''});
+				var del_img_element = new Element('img', {'onclick': 'z_engine_destroy("'+id+'", "tweet");', 'src': '/img/del.png', 'title': 'delete', 'id': 'del-'+id+'-threaded', 'alt': ''});
 				new Element.extend(del_img_element);
 				if ($("right-"+id+"-threaded"))
 				{
@@ -2152,6 +2154,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 	var is_me = false;
 	var dm_reply_show = true;
 	var show_rt = false;
+	var undo_rt = false;
 	if (author == screen_name)
 	{
 		is_me = true;
@@ -2165,6 +2168,10 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 	{
 		show_rt = true;
 		rtd = false;
+	}
+	else if (rtd && author2 == screen_name)
+	{
+		undo_rt = true;
 	}
 	var context_menu = new Control.ContextMenu(divid,
 	{
@@ -2221,6 +2228,23 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 							z_engine_tweet_right_click(id, divid, author, screen_name, userid, usermentions, text, faved, true, locked, type);
 						}
 					});
+					/*context_menu.addItem(
+					{
+						label: function()
+						{
+							return '<img src="/img/rtd.png" title="undo retweet" alt="" />';
+						},
+						condition: function()
+						{
+							return undo_rt;
+						},
+						callback: function()
+						{
+							z_engine_destroy(id, 'rt');
+							context_menu.destroy();
+							z_engine_tweet_right_click(id, divid, author, screen_name, userid, usermentions, text, faved, false, locked, type);
+						}
+					});*/
 				}
 				else
 				{
