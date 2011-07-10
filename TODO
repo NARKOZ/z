@@ -1,4 +1,2 @@
 1) fix some general but minor cloning issues that seem to arise with the increasing complexity of displaying tweets
-2) update the menu with retweeted info (so you can undo it)
-3) fix the time updater in opera, seems broken
-4) improve the window itself since it closes after every click, if not completely replace the engine used (livepipe)
+2) fix the time updater in opera, seems broken
