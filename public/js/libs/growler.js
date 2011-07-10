@@ -66,12 +66,17 @@ function insertGrowl(growls, image, title, message, options)
 	}
 	options = combine(options, DEFAULT_GROWL_OPTIONS);
 	var growl = new Element("div", {"class": "growl"+' '+options.color+' '+options.size});
-	/*growl.insert(new Element("div", {"style": "float: left; clear: left: width: 60px"})).update(new Element("img", {"src": image, "style": "height: 50px; width: 50px;", "alt": ""}));
-	var content = growl.insert(new Element("div", {"style": "float: right; clear: right; width: 190px;"}));
-	content.insert(new Element("div", {"class": "title"}).update(title));
-	content.insert(new Element("div", {"class": "message"}).update(message));*/
-	growl.insert(new Element("div", {"class": "title"}).update(title));
-	growl.insert(new Element("div", {"class": "message"}).update(message));
+	var table = new Element("table");
+	var tr = new Element('tr');
+	var td1 = new Element('td', {'style': 'width: 55px; margin-right: 15px;'});
+	var td2 = new Element('td', {'style': 'width: 180px;'});
+	td1.insert(new Element("img", {"src": image, "style": "height: 50px; width: 50px;", "alt": ""}));
+	td2.insert({'top': new Element("div", {"class": "title"}).update(title)});
+	td2.insert({'bottom': new Element("div", {"class": "message"}).update(message)});
+	tr.insert({'top': td1});
+	tr.insert({'bottom': td2});
+	table.insert(tr);
+	growl.insert(table);
 	growl.observe('click', function()
 	{
 		removeGrowl(growl, options);

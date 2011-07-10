@@ -67,6 +67,7 @@ var reply_id = false; //catch reply
 var screen_name = ""; //our own screen name
 var shortened = false;
 var socket = "";
+var stream_queue_interval = "";
 if (!store.get('sound'))
 {
 	store.set('sound', "on");
@@ -158,10 +159,18 @@ function z_engine_attrition()
 					$("new-tweet").setValue("");
 					$("new-tweet").enable();
 					/* menu buttons stuff */
-					z_engine_clicker("home-timeline-click", "home-timeline");
-					z_engine_clicker("mentions-timeline-click", "mentions-timeline");
-					z_engine_clicker("dms-inbox-timeline-click", "dms-inbox-timeline");
-					z_engine_clicker("dms-outbox-timeline-click", "dms-outbox-timeline");
+					new Control.Tabs('tabbed',
+					{
+						afterChange: function()
+						{
+							var visible = z_engine_current_timeline();
+							if (visible != "threaded-timeline")
+							{
+								$("threaded-timeline").update();
+								latest_threaded_id = 0;
+							}
+						}
+					}).first();
 					/* intervals and timers */
 					z_engine_check_ratelimit();
 					socket.emit("message", {fetch: "home"});
@@ -177,51 +186,51 @@ function z_engine_attrition()
 					{
 						socket.emit("message", {fetch: "dms-outbox"});
 					}, 30000);
-					window.setInterval(function()
+					new PeriodicalExecuter(function()
 					{
-						this.z_engine_check_ratelimit();
-					}, check_ratelimit_interval * 1000);
-					window.setInterval(function()
+						z_engine_update_relative_time("time.home");
+					}, update_relative_home_interval);
+					new PeriodicalExecuter(function()
 					{
-						this.z_engine_update_relative_time("time.home");
-					}, update_relative_home_interval * 1000);
-					window.setInterval(function()
+						z_engine_update_relative_time("time.mentions");
+					}, update_relative_mentions_interval);
+					new PeriodicalExecuter(function()
 					{
-						this.z_engine_update_relative_time("time.mentions");
-					}, update_relative_mentions_interval * 1000);
-					window.setInterval(function()
+						z_engine_update_relative_time("time.dms");
+					}, update_relative_dms_interval);
+					new PeriodicalExecuter(function()
 					{
-						this.z_engine_update_relative_time("time.dms");
-					}, update_relative_dms_interval * 1000);
-					window.setInterval(function()
+						z_engine_update_relative_time("time.threaded");
+					}, update_relative_home_interval);
+					new PeriodicalExecuter(function()
 					{
-						this.z_engine_update_relative_time("time.threaded");
-					}, update_relative_home_interval * 1000);
-					window.setInterval(function()
-					{
-						if (!paused)
-						{
-							this.z_engine_prune_tweets();
-						}
-					}, prune_tweets_interval * 1000);
-					var stream_queue_interval = window.setInterval(function()
+						z_engine_check_ratelimit();
+					}, check_ratelimit_interval);
+					new PeriodicalExecuter(function()
 					{
 						if (!paused)
 						{
-							this.z_engine_stream_queue();
+							z_engine_prune_tweets();
 						}
-					}, store.get('stream_interval') * 1000);
+					}, prune_tweets_interval);
+					stream_queue_interval = new PeriodicalExecuter(function()
+					{
+						if (!paused)
+						{
+							z_engine_stream_queue();
+						}
+					}, store.get('stream_interval'));
 					if (store.get('geo') == "on")
 					{
-						window.setInterval(function()
+						new PeriodicalExecuter(function()
 						{
-							this.z_engine_geo();
-						}, geo_refresh_interval * 1000);
+							z_engine_geo();
+						}, geo_refresh_interval);
 					}
-					window.setInterval(function()
+					new PeriodicalExecuter(function()
 					{
-						this.z_engine_input();
-					},1000);
+						z_engine_input();
+					}, 1);
 					/* autocompleter stuff */
 					var autocomplete_users = $w(store.get('users').strip()).uniq();
 					var autocomplete_users_dm = "";
@@ -962,6 +971,7 @@ function z_engine_geo_set(position)
 	longitude = position.coords.longitude;
 }
 
+/* get an accurate measurement of the _documents_ height (NOT the viewport) */
 function z_engine_get_height()
 {
 	var D = document;
@@ -1135,7 +1145,6 @@ function z_engine_notification(av, title, text)
 		}
 		else if (!window.webkitNotifications || window.webkitNotifications && window.webkitNotifications.checkPermission() == 2) //we cant access notifications
 		{
-			//todo: support avatars in here as well
 			growler.growl(av, title, text);
 		}
 	}
@@ -1443,14 +1452,14 @@ function z_engine_settings_checked_clicker(id, storage)
 			break;
 			case 'stream_interval':
 				store.set(storage, value);
-				stream_queue_interval = clearInterval(stream_queue_interval);
-				stream_queue_interval = window.setInterval(function()
+				stream_queue_interval.stop();
+				stream_queue_interval = new PeriodicalExecuter(function()
 				{
 					if (!paused)
 					{
-						this.z_engine_stream_queue();
+						z_engine_stream_queue();
 					}
-				}, store.get(storage) * 1000);
+				}, store.get(storage));
 			break;
 			default:
 				if (store.get(storage) == "on")
@@ -2256,16 +2265,17 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 								id = data.retweeted_status.id_str;
 							}
 							z_engine_retweet(id);
-							window.setTimeout(function()
+							new PeriodicalExecuter(function(event)
 							{
 								if (content_rts_stored[id])
 								{
+									event.stop();
 									var data = content_rts_stored[id].evalJSON(true);
 									var new_id = data.id_str;
 									context_menu.destroy();
 									z_engine_tweet_right_click(new_id, divid, author, screen_name, userid, usermentions, text, faved, true, locked, type);
 								}
-							}, 3500);
+							}, 1);
 						}
 					});
 					context_menu.addItem(

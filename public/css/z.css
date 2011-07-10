@@ -521,7 +521,7 @@ input[type="text"]:disabled, textarea:disabled
 	margin: 0 1em;
 	text-decoration: none;
 }
-#sub-nav li.navigation a.current-tab
+#sub-nav li.navigation a.active
 {
 	text-decoration: underline;
 }
