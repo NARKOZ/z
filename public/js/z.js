@@ -162,62 +162,62 @@ function z_engine_attrition()
 					z_engine_clicker("dms-outbox-timeline-click", "dms-outbox-timeline");
 					z_engine_check_ratelimit();
 					socket.emit("message", {fetch: "home"});
-					setTimeout(function()
+					window.setTimeout(function()
 					{
 						socket.emit("message", {fetch: "mentions"});
 					}, 10000);
-					setTimeout(function()
+					window.setTimeout(function()
 					{
 						socket.emit("message", {fetch: "dms-inbox"});
 					}, 20000);
-					setTimeout(function()
+					window.setTimeout(function()
 					{
 						socket.emit("message", {fetch: "dms-outbox"});
 					}, 30000);
-					setInterval(function()
+					window.setInterval(function()
 					{
-						z_engine_check_ratelimit();
+						this.z_engine_check_ratelimit();
 					}, check_ratelimit_interval * 1000);
-					setInterval(function()
+					window.setInterval(function()
 					{
-						z_engine_update_relative_time("time.home");
+						this.z_engine_update_relative_time("time.home");
 					}, update_relative_home_interval * 1000);
-					setInterval(function()
+					window.setInterval(function()
 					{
-						z_engine_update_relative_time("time.mentions");
+						this.z_engine_update_relative_time("time.mentions");
 					}, update_relative_mentions_interval * 1000);
-					setInterval(function()
+					window.setInterval(function()
 					{
-						z_engine_update_relative_time("time.dms");
+						this.z_engine_update_relative_time("time.dms");
 					}, update_relative_dms_interval * 1000);
-					setInterval(function()
+					window.setInterval(function()
 					{
-						z_engine_update_relative_time("time.threaded");
+						this.z_engine_update_relative_time("time.threaded");
 					}, update_relative_home_interval * 1000);
-					setInterval(function()
+					window.setInterval(function()
 					{
 						if (!paused)
 						{
-							z_engine_prune_tweets();
+							this.z_engine_prune_tweets();
 						}
 					}, prune_tweets_interval * 1000);
-					var stream_queue_interval = setInterval(function()
+					var stream_queue_interval = window.setInterval(function()
 					{
 						if (!paused)
 						{
-							z_engine_stream_queue();
+							this.z_engine_stream_queue();
 						}
 					}, store.get('stream_interval') * 1000);
 					if (store.get('geo') == "on")
 					{
-						setInterval(function()
+						window.setInterval(function()
 						{
-							z_engine_geo();
+							this.z_engine_geo();
 						}, geo_refresh_interval * 1000);
 					}
-					setInterval(function()
+					window.setInterval(function()
 					{
-						z_engine_input();
+						this.z_engine_input();
 					},1000);
 					var autocomplete_users = $w(store.get('users').strip()).uniq();
 					var autocomplete_users_dm = "";
@@ -271,13 +271,16 @@ function z_engine_attrition()
 					{
 						shiftKey: true
 					});
-					var settings_window = new Control.Window($(document.body).down('[href=/account/settings]'),
+					var settings_close = new Element('button', {'style': 'float: right; clear: right;'}).update("X");
+					var settings_window = new Control.Modal($(document.body).down('[href=/account/settings]'),
 					{
 						className: 'window',
-						closeOnClick: true,
+						closeOnClick: settings_close,
 						fade: true,
-						method: "GET"
+						method: "GET",
+						overlayOpacity: 0.75
 					});
+					settings_window.container.insert({'top': settings_close});
 					new Event.observe("new-tweet","keyup",function(event)
 					{
 						z_engine_input();
@@ -675,7 +678,7 @@ function z_engine_clear_timeline()
 	else
 	{
 		$(visible).addClassName("comment-parent-drop").removeClassName("comment-parent");
-		setTimeout(function()
+		window.setTimeout(function()
 		{
 			$(visible).update().appear();
 		});
@@ -833,7 +836,7 @@ function z_engine_drop_tweet(id)
 		{
 			$("rt-"+id).fade();
 		}
-		setTimeout(function()
+		window.setTimeout(function()
 		{
 			z_engine_fade_up("comment-"+id);
 		},3000);
@@ -856,7 +859,7 @@ function z_engine_drop_tweet(id)
 		{
 			$("rt-"+id+"-mentioned").fade();
 		}
-		setTimeout(function()
+		window.setTimeout(function()
 		{
 			z_engine_fade_up("comment-"+id+"-mentioned");
 		},3000);
@@ -879,7 +882,7 @@ function z_engine_drop_tweet(id)
 		{
 			$("rt-"+id+"-threaded").fade();
 		}
-		setTimeout(function()
+		window.setTimeout(function()
 		{
 			z_engine_fade_up("comment-"+id+"-threaded");
 		},3000);
@@ -1026,7 +1029,7 @@ function z_engine_image_dropper()
 								}
 								$("new-tweet").setValue(new_tweet);
 								$("image").setStyle("border-color: green;");
-								setTimeout(function()
+								window.setTimeout(function()
 								{
 									$("image").setStyle("border-color: #ddd;");
 								},1500);
@@ -1034,7 +1037,7 @@ function z_engine_image_dropper()
 							if(this.readyState == 4 && this.status != 200)
 							{
 								$("image").setStyle("border-color: red;");
-								setTimeout(function()
+								window.setTimeout(function()
 								{
 									$("image").setStyle("border-color: #ddd;");
 								},1500);
@@ -1118,7 +1121,7 @@ function z_engine_notification(av, title, text)
 		{
 			var notification = window.webkitNotifications.createNotification(av, title, text);
 			notification.show();
-			setTimeout(function()
+			window.setTimeout(function()
 			{
 				notification.cancel();
 			},5000);
@@ -1174,7 +1177,7 @@ function z_engine_prune_tweets()
 			}
 		});
 	}
-	setTimeout(function()
+	window.setTimeout(function()
 	{
 		var mention_elements = $("mentions-timeline").childElements();
 		if (mention_elements.length >= mentions_cutoff)
@@ -1188,7 +1191,7 @@ function z_engine_prune_tweets()
 			});
 		}
 	},12000);
-	setTimeout(function()
+	window.setTimeout(function()
 	{
 		var dm_elements = $("dms-inbox-timeline").childElements();
 		if (dm_elements.length >= dms_cutoff)
@@ -1202,7 +1205,7 @@ function z_engine_prune_tweets()
 			});
 		}
 	},24000);
-	setTimeout(function()
+	window.setTimeout(function()
 	{
 		var dm_sent_elements = $("dms-outbox-timeline").childElements();
 		if (dm_sent_elements.length >= dms_cutoff)
@@ -1216,7 +1219,7 @@ function z_engine_prune_tweets()
 			});
 		}
 	},36000);
-	setTimeout(function()
+	window.setTimeout(function()
 	{
 		var threaded_elements = $("threaded-timeline").childElements();
 		if (threaded_elements.length >= threaded_cutoff)
@@ -1438,13 +1441,14 @@ function z_engine_settings_checked_clicker(id, storage)
 			break;
 			case 'stream_interval':
 				store.set(storage, value);
-				var stream_queue_interval = setInterval(function()
+				clearInterval(stream_queue_interval);
+				var stream_queue_interval = window.setInterval(function()
 				{
 					if (!paused)
 					{
-						z_engine_stream_queue();
+						this.z_engine_stream_queue();
 					}
-				}, value * 1000);
+				}, store.get(storage) * 1000);
 			break;
 			default:
 				if (store.get(storage) == "on")

@@ -46,7 +46,7 @@ fieldset
 	-o-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	background: #fff;
-	border: 1px solid #ddd;
+	border: 1px solid #c4c4c4;
 	margin: 10px;
 	padding: 10px;
 	behavior: url(border-radius.htc);
@@ -59,8 +59,7 @@ legend
 	-o-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	background: #fff;
-	border: 1px solid #ddd;
-	margin-left: 15px;
+	border: 1px dashed #c4c4c4;
 	padding: 5px;
 	font-weight: bold;
 	behavior: url(border-radius.htc);
@@ -414,24 +413,35 @@ input[type="text"]:disabled, textarea:disabled
 /*
  * dialog window
  */
+#control_overlay
+{
+	background-color:#000;
+}
+.modal
+{
+	background-color:#fff;
+	padding:10px;
+	border:1px solid #333;
+}
 .window
 {  
 	background-color: white;
 	border-radius: 4px;
-	box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	border: 1px solid #ddd;
 	height: 500px;
 	padding: 10px;
 	width: 500px;
 	-khtml-border-radius: 4px;
-	-khtml-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	-moz-border-radius: 5px;
-	-moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	-o-border-radius: 5px;
-	-o-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	-webkit-border-radius: 5px;
-	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	behavior: url(border-radius.htc);
+}
+.window .window_contents
+{
+	margin-top: 10px;
+	width: 100%;
+	height: 100%;
 }
 
 /*
