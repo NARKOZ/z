@@ -7,6 +7,7 @@ var check_ratelimit_interval = 300; //check every 5 minutes
 var content_dms_queued = Array(); //outputs our dms tweets nicely
 var content_mentions_queued = Array(); //outputs our mentions tweets nicely
 var content_queued = Array(); //outputs our tweets nicely
+var content_rts_stored = Array();
 var content_threads_stored = Array();
 var content_stored = Array(); //stores all tweets
 var dms_cutoff = 50; //max amount of tweets to display before pruning occurs on all dms
@@ -156,10 +157,12 @@ function z_engine_attrition()
 					loaded = true;
 					$("new-tweet").setValue("");
 					$("new-tweet").enable();
+					/* menu buttons stuff */
 					z_engine_clicker("home-timeline-click", "home-timeline");
 					z_engine_clicker("mentions-timeline-click", "mentions-timeline");
 					z_engine_clicker("dms-inbox-timeline-click", "dms-inbox-timeline");
 					z_engine_clicker("dms-outbox-timeline-click", "dms-outbox-timeline");
+					/* intervals and timers */
 					z_engine_check_ratelimit();
 					socket.emit("message", {fetch: "home"});
 					window.setTimeout(function()
@@ -219,6 +222,7 @@ function z_engine_attrition()
 					{
 						this.z_engine_input();
 					},1000);
+					/* autocompleter stuff */
 					var autocomplete_users = $w(store.get('users').strip()).uniq();
 					var autocomplete_users_dm = "";
 					autocomplete_users.each(function(item)
@@ -240,6 +244,7 @@ function z_engine_attrition()
 						choices: 20,
 						minChars: 2
 					});
+					/* hotkeys / keyboard bindings stuff */
 					if (store.get('geo') == "on")
 					{
 						new HotKey('l',function(event)
@@ -271,6 +276,7 @@ function z_engine_attrition()
 					{
 						shiftKey: true
 					});
+					/* modal windows stuff */
 					var settings_close = new Element('button', {'style': 'float: right; clear: right;'}).update("X");
 					var settings_window = new Control.Modal($(document.body).down('[href=/account/settings]'),
 					{
@@ -281,6 +287,7 @@ function z_engine_attrition()
 						overlayOpacity: 0.75
 					});
 					settings_window.container.insert({'top': settings_close});
+					/* more observing stuff */
 					new Event.observe("new-tweet","keyup",function(event)
 					{
 						z_engine_input();
@@ -529,24 +536,9 @@ function z_engine_attrition()
 				else if (json.retweet_info)  //catch what we just retweeted, change the clicking event and icon
 				{
 					var data = json.retweet_info;
-					var author = data.retweeted_status.user.screen_name;
-					var author2 = data.user.screen_name;
-					var entities = data.retweeted_status.entities;
-					var faved = data.retweeted_status.favorited;
 					var id = data.retweeted_status.id_str;
-					var locked = data.retweeted_status.user["protected"];
-					var rtd = true;
-					var text = data.retweeted_status.text;
 					var this_id = data.id_str;
-					var userid = data.retweeted_status.user.id;
-					if (!entities)
-					{
-						var usermentions = false;
-					}
-					else
-					{
-						var usermentions = z_engine_tweet_mentioned_string(entities);
-					}
+					content_rts_stored[id] = JSON.stringify(data);
 					if ($("rt-"+id))
 					{
 						$("rt-"+id).writeAttribute("src","img/rtd.png");
@@ -1441,8 +1433,8 @@ function z_engine_settings_checked_clicker(id, storage)
 			break;
 			case 'stream_interval':
 				store.set(storage, value);
-				clearInterval(stream_queue_interval);
-				var stream_queue_interval = window.setInterval(function()
+				stream_queue_interval = clearInterval(stream_queue_interval);
+				stream_queue_interval = window.setInterval(function()
 				{
 					if (!paused)
 					{
@@ -1473,6 +1465,10 @@ function z_engine_settings_get(id, storage)
 		case 'stream_interval':
 			$(id).setValue(store.get(storage));
 		break;
+		case 'lang':
+			var language = store.get("lang");
+			$(language).setAttribute("selected", "selected");
+		break;
 		default:
 			if (store.get(storage) == "on")
 			{
@@ -1489,6 +1485,7 @@ function z_engine_settings_setup()
 	z_engine_settings_checked_clicker("use-audio", "sound");
 	z_engine_settings_get("use-notify", "notifications");
 	z_engine_settings_checked_clicker("use-notify", "notifications");
+	z_engine_settings_get("language", "lang");
 	z_engine_settings_checked_clicker("language", "lang");
 	z_engine_settings_get("stream-interval", "stream_interval");
 	z_engine_settings_checked_clicker("stream-interval", "stream_interval");
@@ -2243,9 +2240,23 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 						},
 						callback: function()
 						{
+							if (content_rts_stored[id])
+							{
+								var data = content_rts_stored[id].evalJSON(true);
+								id = data.retweeted_status.id_str;
+							}
 							z_engine_retweet(id);
-							context_menu.destroy();
-							z_engine_tweet_right_click(id, divid, author, screen_name, userid, usermentions, text, faved, true, locked, type);
+							var retry_rt_update = window.setInterval(function()
+							{
+								retry_rt_update = clearInterval(retry_rt_update);
+								if (content_rts_stored[id])
+								{
+									var data = content_rts_stored[id].evalJSON(true);
+									var new_id = data.id_str;
+									context_menu.destroy();
+									z_engine_tweet_right_click(new_id, divid, author, screen_name, userid, usermentions, text, faved, true, locked, type);
+								}
+							}, 1000);
 						}
 					});
 					context_menu.addItem(
@@ -2261,11 +2272,9 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 						callback: function()
 						{
 							z_engine_retweet_comment(id, author, text);
-							context_menu.destroy();
-							z_engine_tweet_right_click(id, divid, author, screen_name, userid, usermentions, text, faved, true, locked, type);
 						}
 					});
-					/*context_menu.addItem(
+					context_menu.addItem(
 					{
 						label: function()
 						{
@@ -2281,7 +2290,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 							context_menu.destroy();
 							z_engine_tweet_right_click(id, divid, author, screen_name, userid, usermentions, text, faved, false, locked, type);
 						}
-					});*/
+					});
 				}
 				else
 				{

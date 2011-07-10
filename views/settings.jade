@@ -2,17 +2,17 @@ br
 
 fieldset
   legend notifications
-  input#use-audio(type='checkbox', title='enable audio notifications')
-  span - enable audio notifications
+  input#use-audio(type='checkbox', title='audio notifications')
+  span - audio notifications
   br
-  input#use-notify(type='checkbox', title='enable notifications')
-  span - enable notifications
+  input#use-notify(type='checkbox', title='notifications')
+  span - notifications
 
 fieldset
   legend language
   select#language
-    option(value='english') english
-    option(value='russian') русский
+    option(value='english', id='english') english
+    option(value='russian', id='russian') русский
 
 fieldset
   legend tweet output interval
@@ -22,10 +22,10 @@ fieldset
 
 fieldset
   legend other
-  input#use-geo(type='checkbox', title='enable geo')
-  span - enable geo
+  input#use-geo(type='checkbox', title='geolocation')
+  span - geolocation
   br
-  input#use-klout(type='checkbox', title='enable klout')
-  span - enable klout
+  input#use-klout(type='checkbox', title='klout')
+  span - klout
 
 script z_engine_settings_setup();
