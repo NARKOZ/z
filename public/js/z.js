@@ -277,7 +277,7 @@ function z_engine_attrition()
 						shiftKey: true
 					});
 					/* modal windows stuff */
-					var settings_close = new Element('button', {'style': 'float: right; clear: right;'}).update("X");
+					var settings_close = new Element('button',{className: 'window-close'}).update("X");
 					var settings_window = new Control.Modal($(document.body).down('[href=/account/settings]'),
 					{
 						className: 'window',
@@ -800,7 +800,7 @@ function z_engine_destroy(id, method)
 				$("rt-"+id+"-threaded").setAttribute("src","img/rt.png");
 				$("rt-"+id+"-threaded").setAttribute("onclick","z_engine_retweet('"+id+"');");
 			}
-			//todo: get menus to be reset from here as well
+			content_rts_stored[id] = ""; //destroy the data in this var, its no longer needed!
 		}
 		socket.emit("message", params);
 	}
@@ -962,6 +962,30 @@ function z_engine_geo_set(position)
 	longitude = position.coords.longitude;
 }
 
+function z_engine_get_height()
+{
+	var D = document;
+	return Math.max(
+		Math.max(D.body.scrollHeight, D.documentElement.scrollHeight),
+		Math.max(D.body.offsetHeight, D.documentElement.offsetHeight),
+		Math.max(D.body.clientHeight, D.documentElement.clientHeight)
+	);
+}
+
+/* get a users klout score */
+function z_engine_get_klout(author, userid, id)
+{
+	if (!klout[userid])
+	{
+		socket.emit("message", {klout: author, id_str: id});
+	}
+	else
+	{
+		var data = klout[userid].evalJSON(true);
+		z_engine_set_klout(data, id);
+	}
+}
+
 /* automatically determine if the browser supports file dropping */
 function z_engine_image_dropper()
 {
@@ -1068,20 +1092,6 @@ function z_engine_input()
 	{
 		z_engine_shorten_urls();
 		$("new-tweet").setStyle("color: red;");
-	}
-}
-
-/* get a users klout score */
-function z_engine_get_klout(author, userid, id)
-{
-	if (!klout[userid])
-	{
-		socket.emit("message", {klout: author, id_str: id});
-	}
-	else
-	{
-		var data = klout[userid].evalJSON(true);
-		z_engine_set_klout(data, id);
 	}
 }
 
@@ -1868,7 +1878,7 @@ function z_engine_tweet(data, output)
 							{
 								var place_element = new Element('span', {'class': 'place', 'id': 'place-'+id});
 								var place_link_element = new Element('a', {'target': '_blank', href: 'http://maps.google.com?q='+place.full_name});
-								var place_img_element = new Element('img', {'src': 'img/plc.png', 'alt': ''});
+								var place_img_element = new Element('img', {'src': 'img/plc.png', 'alt': '', 'title': place.full_name});
 								place_link_element.update(place_img_element);
 								place_element.update(place_link_element);
 								right_element.insert({'bottom':place_element});
@@ -2246,9 +2256,8 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 								id = data.retweeted_status.id_str;
 							}
 							z_engine_retweet(id);
-							var retry_rt_update = window.setInterval(function()
+							window.setTimeout(function()
 							{
-								retry_rt_update = clearInterval(retry_rt_update);
 								if (content_rts_stored[id])
 								{
 									var data = content_rts_stored[id].evalJSON(true);
@@ -2256,7 +2265,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 									context_menu.destroy();
 									z_engine_tweet_right_click(new_id, divid, author, screen_name, userid, usermentions, text, faved, true, locked, type);
 								}
-							}, 1000);
+							}, 3500);
 						}
 					});
 					context_menu.addItem(

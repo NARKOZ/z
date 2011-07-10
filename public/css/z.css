@@ -45,7 +45,7 @@ fieldset
 	-moz-border-radius: 4px;
 	-o-border-radius: 4px;
 	-webkit-border-radius: 4px;
-	background: #fff;
+	background: #f1f1f1;
 	border: 1px solid #c4c4c4;
 	margin: 10px;
 	padding: 10px;
@@ -58,7 +58,7 @@ legend
 	-moz-border-radius: 4px;
 	-o-border-radius: 4px;
 	-webkit-border-radius: 4px;
-	background: #fff;
+	background: #f1f1f1;
 	border: 1px dashed #c4c4c4;
 	padding: 5px;
 	font-weight: bold;
@@ -413,19 +413,26 @@ input[type="text"]:disabled, textarea:disabled
 /*
  * dialog window
  */
+.window-close
+{
+	float: right;
+	clear: right;
+	margin-right: 10px;
+}
 #control_overlay
 {
 	background-color:#000;
+	z-index: 1000;
 }
 .modal
 {
-	background-color:#fff;
-	padding:10px;
-	border:1px solid #333;
+	background-color: #f6f6f6;
+	padding: 10px;
+	border: 1px solid #333;
 }
 .window
 {  
-	background-color: white;
+	background-color: #f6f6f6;
 	border-radius: 4px;
 	border: 1px solid #ddd;
 	height: 425px;
@@ -436,6 +443,7 @@ input[type="text"]:disabled, textarea:disabled
 	-o-border-radius: 5px;
 	-webkit-border-radius: 5px;
 	behavior: url(border-radius.htc);
+	z-index: 1000;
 }
 .window .window_contents
 {
@@ -525,7 +533,7 @@ input[type="text"]:disabled, textarea:disabled
 	-khtml-transition: all .20s ease-in-out;
 	-moz-transition: all .20s ease-in-out;
 	-ms-transition: all .20s ease-in-out;
-	/*-o-transition: all .20s ease-in-out;*/
+	-o-transition: all .20s ease-in-out;
 	-webkit-transition: all .20s ease-in-out;
 }
 #sub-nav li.navigation a:hover
@@ -697,9 +705,8 @@ div.autocomplete ul li.selected
 	border: 1px solid #DDD;
 	left: 0;
 	font-size: 0.87em;
-	margin-top: -100px;
 	position: absolute;
-	top: 0;
+	top: 100px;
 	z-index: 100;
 	transition: all .20s ease-in-out;
 	-khtml-transition: all .20s ease-in-out;
@@ -978,23 +985,28 @@ div.autocomplete ul li.selected
  */
 #container
 {
-	margin-top: 100px;
+	position: relative;
+	display: block;
+	bottom: 0;
+	top: 100px;
+	left: 0;
+	right: 0;
 }
 #float
 {
 	box-shadow: 0 0 5px 5px #f6f6f6;
 	background-color: #f6f6f6;
 	display: block;
-	height: 100px;
+	height: 90px;
 	width: 99%;
 	left: 0px;
 	position: fixed;
 	top: 0px;
 	z-index: 500;
-	-khtml-box-shadow: 0 0 5px 5px #f6f6f6;
-	-moz-box-shadow: 0 0 5px 5px #f6f6f6;
-	-o-box-shadow: 0 0 5px 5px #f6f6f6;
-	-webkit-box-shadow: 0 0 5px 5px #f6f6f6;
+	-khtml-box-shadow: 0 0 2px 5px #f6f6f6;
+	-moz-box-shadow: 0 0 2px 5px #f6f6f6;
+	-o-box-shadow: 0 0 2px 5px #f6f6f6;
+	-webkit-box-shadow: 0 0 2px 5px #f6f6f6;
 }
 .login-inner
 {
