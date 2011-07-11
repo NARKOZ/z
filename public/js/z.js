@@ -58,6 +58,10 @@ if (!store.get('notifications'))
 {
 	store.set('notifications', "on");
 }
+if (!store.get('notifications_timeout'))
+{
+	store.set('notifications_timeout', 5);
+}
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var prune_tweets_interval = 60; //start the pruning loop over again every minute
 var pttid = 0; //this serves as the (#) amount displayed when paused
@@ -101,6 +105,7 @@ var user_id = 0; //our own user id
 var userinfo_params = {
 	className: 'user',
 	hideDelay: 3,
+	hideOn: 'mouseout',
 	showOn: 'click',
 	offset: [11, 0],
 	stem: true,
@@ -158,34 +163,12 @@ function z_engine_attrition()
 					loaded = true;
 					$("new-tweet").setValue("");
 					$("new-tweet").enable();
-					/* menu buttons stuff */
-					new Control.Tabs('tabbed',
-					{
-						afterChange: function()
-						{
-							var visible = z_engine_current_timeline();
-							if (visible != "threaded-timeline")
-							{
-								$("threaded-timeline").update();
-								latest_threaded_id = 0;
-							}
-						}
-					}).first();
 					/* intervals and timers */
 					z_engine_check_ratelimit();
-					socket.emit("message", {fetch: "home"});
-					window.setTimeout(function()
-					{
-						socket.emit("message", {fetch: "mentions"});
-					}, 10000);
-					window.setTimeout(function()
-					{
-						socket.emit("message", {fetch: "dms-inbox"});
-					}, 20000);
-					window.setTimeout(function()
-					{
-						socket.emit("message", {fetch: "dms-outbox"});
-					}, 30000);
+					z_engine_fetch_timeline("home");
+					z_engine_fetch_timeline.delay(10, "mentions");
+					z_engine_fetch_timeline.delay(20, "dms-inbox");
+					z_engine_fetch_timeline.delay(30, "dms-outbox");
 					new PeriodicalExecuter(function()
 					{
 						z_engine_update_relative_time("time.home");
@@ -231,6 +214,29 @@ function z_engine_attrition()
 					{
 						z_engine_input();
 					}, 1);
+					/* menu buttons stuff */
+					new Control.Tabs('tabbed',
+					{
+						afterChange: function()
+						{
+							var visible = z_engine_current_timeline();
+							switch (visible)
+							{
+								case "dms-inbox-timeline":
+								case "dms-outbox-timeline":
+									$("new-dm-user").appear();
+								break;
+								default:
+									$("new-dm-user").fade().setValue("");
+								break;
+							}
+							if (visible != "threaded-timeline")
+							{
+								$("threaded-timeline").update();
+								latest_threaded_id = 0;
+							}
+						}
+					}).first();
 					/* autocompleter stuff */
 					var autocomplete_users = $w(store.get('users').strip()).uniq();
 					var autocomplete_users_dm = "";
@@ -293,7 +299,7 @@ function z_engine_attrition()
 						closeOnClick: settings_close,
 						fade: true,
 						method: "GET",
-						overlayOpacity: 0.75
+						overlayOpacity: 0.5
 					});
 					settings_window.container.insert({'top': settings_close});
 					/* more observing stuff */
@@ -679,10 +685,7 @@ function z_engine_clear_timeline()
 	else
 	{
 		$(visible).addClassName("comment-parent-drop").removeClassName("comment-parent");
-		window.setTimeout(function()
-		{
-			$(visible).update().appear();
-		});
+		$(visible).update().appear().delay(0.5);
 	}
 }
 
@@ -709,59 +712,6 @@ function z_engine_current_timeline()
 	{
 		return "dms-outbox-timeline";
 	}
-}
-
-/* the "home", "mentions", "messages", etc switcher */
-function z_engine_clicker(id, this_id)
-{
-	new Event.observe(id, "click", function(event)
-	{
-		Event.stop(event);
-		var hide = z_engine_current_timeline();
-		if (!$(this_id).visible())
-		{
-			new Effect.Parallel(
-			[
-				new Effect.Fade(hide,
-				{
-					duration: 0.5,
-					mode: 'relative'
-				}),
-				new Effect.Appear(this_id,
-				{
-					delay: 0.51,
-					duration: 0.5,
-					mode: 'relative'
-				})
-			],
-			{
-				duration: 1,
-				beforeStart: function()
-				{
-					switch (this_id)
-					{
-						case "dms-inbox-timeline":
-						case "dms-outbox-timeline":
-							$("new-dm-user").appear();
-						break;
-						default:
-							$("new-dm-user").fade().setValue("");
-						break;
-					}
-				},
-				afterFinish: function()
-				{
-					$(hide).removeClassName("current-tab");
-					$(this_id).addClassName("current-tab");
-					if (hide == "threaded-timeline")
-					{
-						$("threaded-timeline").update();
-						latest_threaded_id = 0;
-					}
-				}
-			});
-		}
-	});
 }
 
 /* check to see if css3 is possible */
@@ -809,7 +759,6 @@ function z_engine_destroy(id, method)
 				$("rt-"+id+"-threaded").setAttribute("src","img/rt.png");
 				$("rt-"+id+"-threaded").setAttribute("onclick","z_engine_retweet('"+id+"');");
 			}
-			content_rts_stored[id] = ""; //destroy the data in this var, its no longer needed!
 		}
 		socket.emit("message", params);
 	}
@@ -837,10 +786,7 @@ function z_engine_drop_tweet(id)
 		{
 			$("rt-"+id).fade();
 		}
-		window.setTimeout(function()
-		{
-			z_engine_fade_up("comment-"+id);
-		},3000);
+		z_engine_fade_up.delay(3, "comment-"+id);
 	}
 	if ($("comment-"+id+"-mentioned"))
 	{
@@ -860,10 +806,7 @@ function z_engine_drop_tweet(id)
 		{
 			$("rt-"+id+"-mentioned").fade();
 		}
-		window.setTimeout(function()
-		{
-			z_engine_fade_up("comment-"+id+"-mentioned");
-		},3000);
+		z_engine_fade_up.delay(3, "comment-"+id+"-mentioned");
 	}
 	if ($("comment-"+id+"-threaded"))
 	{
@@ -883,10 +826,7 @@ function z_engine_drop_tweet(id)
 		{
 			$("rt-"+id+"-threaded").fade();
 		}
-		window.setTimeout(function()
-		{
-			z_engine_fade_up("comment-"+id+"-threaded");
-		},3000);
+		z_engine_fade_up.delay(3, "comment-"+id+"-threaded");
 	}
 }
 
@@ -932,6 +872,11 @@ function z_engine_fade_up(id)
 function z_engine_favorite(id)
 {
 	socket.emit("message", {favorite: {status: {id_str: id}}});
+}
+
+function z_engine_fetch_timeline(timeline)
+{
+	socket.emit("message", {fetch: timeline});
 }
 
 /* get geolocation information */
@@ -1055,22 +1000,20 @@ function z_engine_image_dropper()
 								}
 								$("new-tweet").setValue(new_tweet);
 								$("image").setStyle("border-color: green;");
-								window.setTimeout(function()
-								{
-									$("image").setStyle("border-color: #ddd;");
-								},1500);
+								Element.setStyle.delay(2, "image", "border-color: #ddd;");
 							}
 							if(this.readyState == 4 && this.status != 200)
 							{
 								$("image").setStyle("border-color: red;");
-								window.setTimeout(function()
-								{
-									$("image").setStyle("border-color: #ddd;");
-								},1500);
+								Element.setStyle.delay(2, "image", "border-color: #ddd;");
 							}
 						}
 						xhr.open("POST", "http://api.imgur.com/2/upload.json", true);
 						xhr.send(form);
+					break;
+					default:
+						$("image").setStyle("image", "border-color: red;");
+						Element.setStyle.delay(2, "image", "border-color: #ddd;");
 					break;
 				}
 			}
@@ -1136,7 +1079,7 @@ function z_engine_notification(av, title, text)
 			window.setTimeout(function()
 			{
 				notification.cancel();
-			},5000);
+			}, store.get('notifications_timeout') * 1000);
 		}
 		else if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1) //we might be able to access them if the user allows us to
 		{
@@ -1178,6 +1121,9 @@ function z_engine_parse_tweet(text)
 function z_engine_prune_tweets()
 {
 	var tweet_elements = $("home-timeline").childElements();
+	var mention_elements = $("mentions-timeline").childElements();
+	var dm_elements = $("dms-inbox-timeline").childElements();
+	var dm_sent_elements = $("dms-outbox-timeline").childElements();
 	if (tweet_elements.length >= home_cutoff)
 	{
 		tweet_elements.each(function(item, index)
@@ -1188,62 +1134,47 @@ function z_engine_prune_tweets()
 			}
 		});
 	}
-	window.setTimeout(function()
+	if (mention_elements.length >= mentions_cutoff)
 	{
-		var mention_elements = $("mentions-timeline").childElements();
-		if (mention_elements.length >= mentions_cutoff)
+		mention_elements.each.delay(12, function(item, index)
 		{
-			mention_elements.each(function(item, index)
+			if (index > mentions_cutoff)
 			{
-				if (index > mentions_cutoff)
-				{
-					$(item).remove();
-				}
-			});
-		}
-	},12000);
-	window.setTimeout(function()
+				$(item).remove();
+			}
+		});
+	}
+	if (dm_elements.length >= dms_cutoff)
 	{
-		var dm_elements = $("dms-inbox-timeline").childElements();
-		if (dm_elements.length >= dms_cutoff)
+		dm_elements.each.delay(24, function(item, index)
 		{
-			dm_elements.each(function(item, index)
+			if (index > dms_cutoff)
 			{
-				if (index > dms_cutoff)
-				{
-					$(item).remove();
-				}
-			});
-		}
-	},24000);
-	window.setTimeout(function()
+				$(item).remove();
+			}
+		});
+	}
+	if (dm_sent_elements.length >= dms_cutoff)
 	{
-		var dm_sent_elements = $("dms-outbox-timeline").childElements();
-		if (dm_sent_elements.length >= dms_cutoff)
+		dm_sent_elements.each.delay(36, function(item, index)
 		{
-			dm_sent_elements.each(function(item, index)
+			if (index > dms_cutoff)
 			{
-				if (index > dms_cutoff)
-				{
-					$(item).remove();
-				}
-			});
-		}
-	},36000);
-	window.setTimeout(function()
+				$(item).remove();
+			}
+		});
+	}
+	var threaded_elements = $("threaded-timeline").childElements();
+	if (threaded_elements.length >= threaded_cutoff)
 	{
-		var threaded_elements = $("threaded-timeline").childElements();
-		if (threaded_elements.length >= threaded_cutoff)
+		threaded_elements.each.delay(48, function(item, index)
 		{
-			threaded_elements.each(function(item, index)
+			if (index > threaded_cutoff)
 			{
-				if (index > threaded_cutoff)
-				{
-					$(item).remove();
-				}
-			});
-		}
-	},48000);
+				$(item).remove();
+			}
+		});
+	}
 }
 
 /* remember usernames (autocompleter related) */
@@ -1440,7 +1371,7 @@ function z_engine_set_language()
 /* this watches for any changes to the inputs on the settings page */
 function z_engine_settings_checked_clicker(id, storage)
 {
-	new Event.observe(id, "change", function(event)
+	new Event.observe(id, 'change', function(event)
 	{
 		Event.stop(event);
 		var value = $(id).getValue();
@@ -1459,7 +1390,7 @@ function z_engine_settings_checked_clicker(id, storage)
 					{
 						z_engine_stream_queue();
 					}
-				}, store.get(storage));
+				}, value);
 			break;
 			default:
 				if (store.get(storage) == "on")
@@ -2044,6 +1975,10 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			{
 				$("av-"+id+"-mentioned").addTip(z_engine_parse_tweet(userinfo), userinfo_params);
 			}
+			if ($("klout-"+id))
+			{
+				$("klout-"+id).remove();
+			}
 			if (author != screen_name)
 			{
 				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'-mentioned", "'+usermentions+'");', 'title': 'reply', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
@@ -2098,6 +2033,10 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			if ($("av-"+id+"-threaded"))
 			{
 				$("av-"+id+"-threaded").addTip(z_engine_parse_tweet(userinfo), userinfo_params);
+			}
+			if ($("klout-"+id))
+			{
+				$("klout-"+id).remove();
 			}
 			if (author != screen_name)
 			{
@@ -2272,6 +2211,8 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 									event.stop();
 									var data = content_rts_stored[id].evalJSON(true);
 									var new_id = data.id_str;
+									var index = content_rts_stored.indexOf(id);
+									content_rts_stored.splice(index, 1);
 									context_menu.destroy();
 									z_engine_tweet_right_click(new_id, divid, author, screen_name, userid, usermentions, text, faved, true, locked, type);
 								}

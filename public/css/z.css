@@ -41,11 +41,16 @@ li
 fieldset
 {
 	border-radius: 4px;
+	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-khtml-border-radius: 4px;
+	-khtml-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-moz-border-radius: 4px;
+	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-o-border-radius: 4px;
+	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-webkit-border-radius: 4px;
-	background: #f1f1f1;
+	-webkit-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
+	background: #f6f6f6;
 	border: 1px solid #c4c4c4;
 	margin: 10px;
 	padding: 10px;
@@ -58,7 +63,7 @@ legend
 	-moz-border-radius: 4px;
 	-o-border-radius: 4px;
 	-webkit-border-radius: 4px;
-	background: #f1f1f1;
+	background: #f6f6f6;
 	border: 1px dashed #c4c4c4;
 	padding: 5px;
 	font-weight: bold;
@@ -323,7 +328,6 @@ legend
 /*
  * form related stuff
  */
-
 #new-tweet-input-li
 {
 	padding-left: 3px;
@@ -424,15 +428,9 @@ input[type="text"]:disabled, textarea:disabled
 	background-color:#000;
 	z-index: 1000;
 }
-.modal
-{
-	background-color: #f6f6f6;
-	padding: 10px;
-	border: 1px solid #333;
-}
 .window
-{  
-	background-color: #f6f6f6;
+{
+	background-color: #f1f1f1;
 	border-radius: 4px;
 	border: 1px solid #ddd;
 	height: 425px;
@@ -496,10 +494,7 @@ input[type="text"]:disabled, textarea:disabled
 	box-shadow: 0 0 2px 2px #F6F6F6;
 	background-color: #F6F6F6;
 	text-decoration: none;
-	padding-top: 3px;
-	padding-bottom: 5px;
-	padding-left: 5px;
-	padding-right: 6px;
+	padding: 10px;
 	transition: all .20s ease-in-out;
 	-khtml-border-radius: 2px;
 	-khtml-box-shadow: 0 0 2px 2px #F6F6F6;
@@ -523,7 +518,14 @@ input[type="text"]:disabled, textarea:disabled
 }
 #sub-nav li.navigation a.active
 {
+	box-shadow: 0 0 2px 2px #FFF;
+	background-color: #FFF;
+	color: #039;
 	text-decoration: underline;
+	-khtml-box-shadow: 0 0 2px 2px #FFF;
+	-moz-box-shadow: 0 0 2px 2px #FFF;
+	-o-box-shadow: 0 0 2px 2px #FFF;
+	-webkit-box-shadow: 0 0 2px 2px #FFF;
 }
 #sub-av li.navigation a
 {
@@ -545,7 +547,6 @@ input[type="text"]:disabled, textarea:disabled
 	-moz-box-shadow: 0 0 2px 2px #FFF;
 	-o-box-shadow: 0 0 2px 2px #FFF;
 	-webkit-box-shadow: 0 0 2px 2px #FFF;
-	behavior: url(border-radius.htc);
 }
 ul.tabbed li.navigation
 {
@@ -832,7 +833,6 @@ div.autocomplete ul li.selected
 .ot-container .top    { top: 0; }
 .ot-container .middle { top: 50%; }
 .ot-container .bottom { bottom: 0; }
-
 /* Styles */
 .style-klout .opentip
 {
@@ -899,7 +899,6 @@ div.autocomplete ul li.selected
 {
 	background-color: #F7BA00;
 }
-
 /* IE 6 HACKS */
 .opentip
 {
@@ -919,7 +918,6 @@ div.autocomplete ul li.selected
  	z-index:-1;
  	filter:mask();
 }
-
 /* CSS3 */
 .ot-container.ot-css3
 {
