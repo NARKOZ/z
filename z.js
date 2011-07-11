@@ -203,6 +203,7 @@ gzip.gzip({matchType: /audio/});
 gzip.gzip({matchType: /css/});
 gzip.gzip({matchType: /img/});
 gzip.gzip({matchType: /js/});
+gzip.gzip({matchType: /lang/});
 gzip.gzip({matchType: /socket.io/});
 
 /*
@@ -291,15 +292,6 @@ function z_engine_message_handler(tw, session, client, message)
 						if(!error)
 						{
 							client.json.send({dms: data.reverse()});
-						}
-					});
-				break;
-				case 'geo':
-					tw.reverseGeo({lat: message.latitude, 'long': message.longitude}, function(error, data, response)
-					{
-						if(!error)
-						{
-							client.json.send({place: data});
 						}
 					});
 				break;
@@ -403,31 +395,34 @@ function z_engine_streaming_handler(tw, client, session)
 {
 	if(tw && client && session)
 	{
-		tw.stream('user', {include_entities: true}, function(stream)
+		if (typeof(session.oauth) == "object")
 		{
-			stream.on('data', function (data)
+			tw.stream('user', {include_entities: true}, function(stream)
 			{
-				try
+				stream.on('data', function (data)
 				{
-					client.json.send(data);
-				}
-				catch(error)
+					try
+					{
+						client.json.send(data);
+					}
+					catch(error)
+					{
+						console.error('userstream message error: '+sys.inspect(error));
+					}
+				});
+				client.on('disconnect', function()
 				{
-					console.error('userstream message error: '+sys.inspect(error));
-				}
+					stream.destroy();
+				});
+				stream.on('error', function(data)
+				{
+					client.json.send({server_event: 'error'});
+				});
+				stream.on('end', function()
+				{
+					client.json.send({server_event: 'end'});
+				});
 			});
-			client.on('disconnect', function()
-			{
-				stream.destroy();
-			});
-			stream.on('error', function(data)
-			{
-				client.json.send({server_event: 'error'});
-			});
-			stream.on('end', function()
-			{
-				client.json.send({server_event: 'end'});
-			});
-		});
+		}
 	}
 }

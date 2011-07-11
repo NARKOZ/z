@@ -30,7 +30,7 @@ if (!store.get('hashtag_blocks'))
 var home_cutoff = 200; //max amount of tweets to display before pruning occurs on the home timeline
 if (!store.get('klout'))
 {
-	store.set('klout', "on");
+	store.set('klout', "off");
 }
 var klout = Array(); //holds klout data
 var kloutinfo_params = {
@@ -872,6 +872,21 @@ function z_engine_fade_up(id)
 function z_engine_favorite(id)
 {
 	socket.emit("message", {favorite: {status: {id_str: id}}});
+	if ($("fave-"+id))
+	{
+		$("fave-"+id).writeAttribute("src","img/favd.png");
+		$("fave-"+id).writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
+	}
+	if ($("fave-"+id+"-mentioned"))
+	{
+		$("fave-"+id+"-mentioned").writeAttribute("src","img/favd.png");
+		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
+	}
+	if ($("fave-"+id+"-threaded"))
+	{
+		$("fave-"+id+"-threaded").writeAttribute("src","img/favd.png");
+		$("fave-"+id+"-threaded").writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
+	}
 }
 
 function z_engine_fetch_timeline(timeline)
@@ -891,6 +906,19 @@ function z_engine_geo()
 			timeout: geo_timeout * 1000
 		});
 	}
+	else
+	{
+		if (google.loader.ClientLocation != null)
+		{
+			latitude = google.loader.ClientLocation.latitude;
+			longitude = google.loader.ClientLocation.longitude;
+		}
+		else
+		{
+			latitude = false;
+			longitude = false;
+		}
+	}
 }
 
 
@@ -903,8 +931,16 @@ function z_engine_geo_error(error)
 		case 1: //denied
 		case 2: //unavailable
 		case 3: //timeout
-			latitude = false;
-			longitude = false;
+			if (google.loader.ClientLocation != null)
+			{
+				latitude = google.loader.ClientLocation.latitude;
+				longitude = google.loader.ClientLocation.longitude;
+			}
+			else
+			{
+				latitude = false;
+				longitude = false;
+			}
 		break;
 	}
 }
@@ -1960,9 +1996,18 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 				{
 					var rt_img_element = new Element('img', {'src': '/img/lock.png', 'style': 'cursor: default;', 'alt': ''});
 				}
+				if (!faved)
+				{
+					var fave_img_element = new Element('img', {'src': '/img/fav.png', 'onclick': 'z_engine_favorite("'+id+'");', 'title': 'favorite', 'id': 'fave-'+id, 'alt': ''});
+				}
+				else
+				{
+					var fave_img_element = new Element('img', {'src': '/img/favd.png', 'onclick': 'z_engine_unfavorite("'+id+'");', 'title': 'unfavorite', 'id': 'fave-'+id, 'alt': ''});
+				}
 				$("right-"+id).update();
 				$("right-"+id).insert(reply_img_element);
 				$("right-"+id).insert({'bottom': rt_img_element});
+				$("right-"+id).insert({'bottom': fave_img_element});
 			}
 			else
 			{
@@ -1999,17 +2044,27 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 				{
 					var rt_img_element = new Element('img', {'src': '/img/lock.png', 'style': 'cursor: default;', 'alt': ''});
 				}
+				if (!faved)
+				{
+					var fave_img_element = new Element('img', {'src': '/img/fav.png', 'onclick': 'z_engine_favorite("'+id+'");', 'title': 'favorite', 'id': 'fave-'+id+'-mentioned', 'alt': ''});
+				}
+				else
+				{
+					var fave_img_element = new Element('img', {'src': '/img/favd.png', 'onclick': 'z_engine_unfavorite("'+id+'");', 'title': 'unfavorite', 'id': 'fave-'+id+'-mentioned', 'alt': ''});
+				}
 				if ($("right-"+id))
 				{
 					$("right-"+id).update();
 					$("right-"+id).insert(reply_img_element);
 					$("right-"+id).insert({'bottom': rt_img_element});
+					$("right-"+id).insert({'bottom': fave_img_element});
 				}
 				if ($("right-"+id+"-mentioned"))
 				{
 					$("right-"+id+"-mentioned").update();
 					$("right-"+id+"-mentioned").insert(reply_img_element);
 					$("right-"+id+"-mentioned").insert({'bottom': rt_img_element});
+					$("right-"+id+"-mentioned").insert({'bottom': fave_img_element});
 				}
 			}
 			else
@@ -2058,11 +2113,20 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 				{
 					var rt_img_element = new Element('img', {'src': '/img/lock.png', 'style': 'cursor: default;', 'alt': ''});
 				}
+				if (!faved)
+				{
+					var fave_img_element = new Element('img', {'src': '/img/fav.png', 'onclick': 'z_engine_favorite("'+id+'");', 'title': 'favorite', 'id': 'fave-'+id+'-threaded', 'alt': ''});
+				}
+				else
+				{
+					var fave_img_element = new Element('img', {'src': '/img/favd.png', 'onclick': 'z_engine_unfavorite("'+id+'");', 'title': 'unfavorite', 'id': 'fave-'+id+'-threaded', 'alt': ''});
+				}
 				if ($("right-"+id+"-threaded"))
 				{
 					$("right-"+id+"-threaded").update();
 					$("right-"+id+"-threaded").insert(reply_img_element);
 					$("right-"+id+"-threaded").insert({'bottom': rt_img_element});
+					$("right-"+id+"-threaded").insert({'bottom': fave_img_element});
 				}
 			}
 			else
@@ -2338,6 +2402,21 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 function z_engine_unfavorite(id)
 {
 	socket.emit("message", {unfavorite: {status: {id_str: id}}});
+	if ($("fave-"+id))
+	{
+		$("fave-"+id).writeAttribute("src","img/fav.png");
+		$("fave-"+id).writeAttribute("onclick","z_engine_favorite('"+id+"');");
+	}
+	if ($("fave-"+id+"-mentioned"))
+	{
+		$("fave-"+id+"-mentioned").writeAttribute("src","img/fav.png");
+		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_favorite('"+id+"');");
+	}
+	if ($("fave-"+id+"-threaded"))
+	{
+		$("fave-"+id+"-threaded").writeAttribute("src","img/fav.png");
+		$("fave-"+id+"-threaded").writeAttribute("onclick","z_engine_favorite('"+id+"');");
+	}
 }
 
 /* update all time elements */
