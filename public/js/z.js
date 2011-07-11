@@ -96,6 +96,7 @@ if (!store.get('stream_interval'))
 {
 	store.set('stream_interval', 1.5); //every one and a half seconds
 }
+var tabs = "";
 var threaded_cutoff = 50; //max amount of tweets to display before pruning occurs on the threaded timeline
 var translation = ""; //will hold our translation info
 var update_relative_dms_interval = 60; //once a minute
@@ -215,7 +216,7 @@ function z_engine_attrition()
 						z_engine_input();
 					}, 1);
 					/* menu buttons stuff */
-					new Control.Tabs('tabbed',
+					tabs = new Control.Tabs('tabbed',
 					{
 						afterChange: function()
 						{
@@ -236,7 +237,8 @@ function z_engine_attrition()
 								latest_threaded_id = 0;
 							}
 						}
-					}).first();
+					});
+					tabs.first();
 					/* autocompleter stuff */
 					var autocomplete_users = $w(store.get('users').strip()).uniq();
 					var autocomplete_users_dm = "";
@@ -1512,31 +1514,8 @@ function z_engine_threaded(init, id)
 {
 	if (init)
 	{
-		if ($("home-timeline").visible())
-		{
-			var hide = "home-timeline";
-		}
-		if ($("mentions-timeline").visible())
-		{
-			var hide = "mentions-timeline";
-		}
-		new Effect.Parallel(
-		[
-			new Effect.Fade(hide,
-			{
-				duration: 0.5,
-				mode: 'relative'
-			}),
-			new Effect.Appear("threaded-timeline",
-			{
-				delay: 0.51,
-				duration: 0.5,
-				mode: 'relative'
-			})
-		],
-		{
-			duration: 1
-		});
+		//tabs.setActiveTab("threaded-timeline-click");
+		tabs.last();
 		if (!content_threads_stored[init])
 		{
 			socket.emit("message", {show: {id_str: init}});
