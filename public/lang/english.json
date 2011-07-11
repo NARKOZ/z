@@ -28,5 +28,14 @@
 	"months": "months",
 	"month": "last month",
 	"years": "years",
-	"year": "last year"
+	"year": "last year",
+	"language_settings": "language settings",
+	"notify_settings": "notify settings",
+	"notify_length_settings": "notify length",
+	"wait_length_settings": "wait length",
+	"other_settings": "other settings",
+	"notify_enable_settings": "enable",
+	"notify_audio_settings": "audio",
+	"geo_settings": "geo",
+	"klout_settings": "klout"
 }

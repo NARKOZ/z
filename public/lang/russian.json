@@ -28,5 +28,14 @@
 	"months": "месяц",
 	"month": "1 месяц",
 	"years": "год",
-	"year": "1 год"
+	"year": "1 год",
+	"language_settings": "язык настройки",
+	"notify_settings": "уведомлять настройки",
+	"notify_length_settings": "уведомлять длина",
+	"wait_length_settings": "ждать длина",
+	"other_settings": "другой настройки",
+	"notify_enable_settings": "позволяют",
+	"notify_audio_settings": "аудио",
+	"geo_settings": "гео",
+	"klout_settings": "klout"
 }

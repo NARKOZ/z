@@ -1,31 +1,31 @@
-br
-
 fieldset
-  legend notifications
-  input#use-audio(type='checkbox', title='audio notifications')
-  span - audio notifications
-  br
-  input#use-notify(type='checkbox', title='notifications')
-  span - notifications
-
-fieldset
-  legend language
+  legend#language-settings
   select#language
     option(value='english', id='english') english
     option(value='russian', id='russian') русский
 
 fieldset
-  legend tweet output interval
-  span 0.25
-  input#stream-interval(type='range', min='0.25', max='5', step='0.25')
-  span 5.0
+  legend#notify-settings
+  input#use-notify(type='checkbox')
+  span#notify-enable-settings
+  br
+  input#use-audio(type='checkbox')
+  span#notify-audio-settings
 
 fieldset
-  legend other
-  input#use-geo(type='checkbox', title='geolocation')
-  span - geolocation
+  legend#notify-length-settings
+  input#notify-length(type='range', min='1', max='10', step='0.5')
+
+fieldset
+  legend#wait-length-settings
+  input#stream-interval(type='range', min='0.25', max='5', step='0.25')
+
+fieldset
+  legend#other-settings
+  input#use-geo(type='checkbox')
+  span#geo-settings
   br
-  input#use-klout(type='checkbox', title='klout')
-  span - klout
+  input#use-klout(type='checkbox')
+  span#klout-settings
 
 script z_engine_settings_setup();

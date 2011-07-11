@@ -366,6 +366,10 @@ input, textarea
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=#eee, Direction=135, Strength=5)";
 	behavior: url(border-radius.htc);
 }
+input[type="range"]
+{
+	width: 94%;
+}
 input[type="text"], input[type="text"]:hover, input[type="text"]:focus, input[type="text"]:disabled,
 textarea, textarea:hover, textarea:focus, textarea:disabled
 {
@@ -417,12 +421,6 @@ input[type="text"]:disabled, textarea:disabled
 /*
  * dialog window
  */
-.window-close
-{
-	float: right;
-	clear: right;
-	margin-right: 10px;
-}
 #control_overlay
 {
 	background-color:#000;
@@ -433,15 +431,20 @@ input[type="text"]:disabled, textarea:disabled
 	background-color: #f1f1f1;
 	border-radius: 4px;
 	border: 1px solid #ddd;
-	height: 425px;
 	padding: 10px;
-	width: 500px;
+	width: 600px;
 	-khtml-border-radius: 4px;
 	-moz-border-radius: 5px;
 	-o-border-radius: 5px;
 	-webkit-border-radius: 5px;
 	behavior: url(border-radius.htc);
 	z-index: 1000;
+}
+.window .window-close
+{
+	float: right;
+	clear: right;
+	margin-right: 10px;
 }
 .window .window_contents
 {

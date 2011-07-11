@@ -130,7 +130,7 @@ function z_engine_attrition()
 		socket = io.connectWithSession();
 		if (!loaded)
 		{
-			z_engine_set_language();
+			z_engine_get_language();
 			if (store.get('geo') == "on")
 			{
 				z_engine_geo();
@@ -292,16 +292,14 @@ function z_engine_attrition()
 						shiftKey: true
 					});
 					/* modal windows stuff */
-					var settings_close = new Element('button',{className: 'window-close'}).update("X");
 					var settings_window = new Control.Modal($(document.body).down('[href=/account/settings]'),
 					{
 						className: 'window',
-						closeOnClick: settings_close,
+						closeOnClick: 'overlay',
 						fade: true,
 						method: "GET",
 						overlayOpacity: 0.5
 					});
-					settings_window.container.insert({'top': settings_close});
 					/* more observing stuff */
 					new Event.observe("new-tweet","keyup",function(event)
 					{
@@ -941,6 +939,30 @@ function z_engine_get_klout(author, userid, id)
 	}
 }
 
+/* get the language */
+function z_engine_get_language()
+{
+	var language = store.get('lang');
+	switch (language)
+	{
+		case 'english':
+		case 'russian':
+			new Ajax.Request('/lang/'+language+'.json',
+			{
+				method: 'GET',
+				onSuccess: function(transport)
+				{
+					translation = transport.responseText.evalJSON(true);
+					z_engine_set_language();
+				}
+			});
+		break;
+		default:
+			//do something else here?
+		break;
+	}
+}
+
 /* automatically determine if the browser supports file dropping */
 function z_engine_image_dropper()
 {
@@ -1338,34 +1360,16 @@ function z_engine_set_klout(data, id)
 /* set up the language for the client */
 function z_engine_set_language()
 {
-	var language = store.get('lang');
-	switch (language)
-	{
-		case 'english':
-		case 'russian':
-			new Ajax.Request('/lang/'+language+'.json',
-			{
-				method: 'GET',
-				onSuccess: function(transport)
-				{
-					translation = transport.responseText.evalJSON(true);
-					$("home-timeline-click").update(translation.home);
-					$("mentions-timeline-click").update(translation.mentions);
-					$("dms-inbox-timeline-click").update(translation.inbox);
-					$("dms-outbox-timeline-click").update(translation.outbox);
-					$("pause").update(translation.stop);
-					$("image").update(translation.image);
-					$("settings").update(translation.settings);
-					$("logout").update(translation.exit);
-					$("new-dm-user").placeholder = translation.dm_to_placeholder;
-					$("new-tweet").placeholder = translation.tweet_placeholder;
-				}
-			});
-		break;
-		default:
-			//do something else here?
-		break;
-	}
+	$("home-timeline-click").update(translation.home);
+	$("mentions-timeline-click").update(translation.mentions);
+	$("dms-inbox-timeline-click").update(translation.inbox);
+	$("dms-outbox-timeline-click").update(translation.outbox);
+	$("pause").update(translation.stop);
+	$("image").update(translation.image);
+	$("settings").update(translation.settings);
+	$("logout").update(translation.exit);
+	$("new-dm-user").placeholder = translation.dm_to_placeholder;
+	$("new-tweet").placeholder = translation.tweet_placeholder;
 }
 
 /* this watches for any changes to the inputs on the settings page */
@@ -1379,7 +1383,11 @@ function z_engine_settings_checked_clicker(id, storage)
 		{
 			case 'lang':
 				store.set(storage, value);
-				z_engine_set_language();
+				z_engine_get_language();
+				z_engine_settings_set_language.delay(1);
+			break;
+			case 'notifications_timeout':
+				store.set(storage, value);
 			break;
 			case 'stream_interval':
 				store.set(storage, value);
@@ -1412,6 +1420,9 @@ function z_engine_settings_get(id, storage)
 {
 	switch (storage)
 	{
+		case 'notifications_timeout':
+			$(id).setValue(store.get(storage));
+		break;
 		case 'stream_interval':
 			$(id).setValue(store.get(storage));
 		break;
@@ -1428,21 +1439,38 @@ function z_engine_settings_get(id, storage)
 	}
 }
 
+/* init language on the settings page */
+function z_engine_settings_set_language()
+{
+	$("language-settings").update(translation.language_settings);
+	$("notify-settings").update(translation.notify_settings);
+	$("notify-enable-settings").update(translation.notify_enable_settings);
+	$("notify-audio-settings").update(translation.notify_audio_settings);
+	$("notify-length-settings").update(translation.notify_length_settings);
+	$("wait-length-settings").update(translation.wait_length_settings);
+	$("other-settings").update(translation.other_settings);
+	$("geo-settings").update(translation.geo_settings);
+	$("klout-settings").update(translation.klout_settings);
+}
+
 /* initialize all of your values on the settings page automatically */
 function z_engine_settings_setup()
 {
+	z_engine_settings_get("language", "lang");
+	z_engine_settings_checked_clicker("language", "lang");
 	z_engine_settings_get("use-audio", "sound");
 	z_engine_settings_checked_clicker("use-audio", "sound");
 	z_engine_settings_get("use-notify", "notifications");
 	z_engine_settings_checked_clicker("use-notify", "notifications");
-	z_engine_settings_get("language", "lang");
-	z_engine_settings_checked_clicker("language", "lang");
+	z_engine_settings_get("notify-length", "notifications_timeout");
+	z_engine_settings_checked_clicker("notify-length", "notifications_timeout");
 	z_engine_settings_get("stream-interval", "stream_interval");
 	z_engine_settings_checked_clicker("stream-interval", "stream_interval");
 	z_engine_settings_get("use-geo", "geo");
 	z_engine_settings_checked_clicker("use-geo", "geo");
 	z_engine_settings_get("use-klout", "klout");
 	z_engine_settings_checked_clicker("use-klout", "klout");
+	z_engine_settings_set_language();
 }
 
 /* shorten urls */
