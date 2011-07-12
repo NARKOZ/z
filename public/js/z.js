@@ -63,6 +63,7 @@ if (!store.get('notifications_timeout'))
 	store.set('notifications_timeout', 5);
 }
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
+var progress_bar = "";
 var prune_tweets_interval = 60; //start the pruning loop over again every minute
 var pttid = 0; //this serves as the (#) amount displayed when paused
 var rates = 350;
@@ -293,6 +294,8 @@ function z_engine_attrition()
 					{
 						shiftKey: true
 					});
+					/* progress bar */
+					progress_bar = new Control.ProgressBar('progress-bar');
 					/* modal windows stuff */
 					var settings_window = new Control.Modal($(document.body).down('[href=/account/settings]'),
 					{
@@ -1039,33 +1042,49 @@ function z_engine_image_dropper()
 						form.append("image", image);
 						form.append("key", imgur_key);
 						var xhr = new XMLHttpRequest(); //this would be written in prototypes ajax method but only this works
+						xhr.upload.onprogress = function(event)
+						{
+							if (event.lengthComputable)
+							{
+								var percent = (event.loaded / event.total) * 100;
+								progress_bar.step(percent);
+							}
+						}
 						xhr.onreadystatechange = function()
 						{
-							if(this.readyState == 3 || this.readyState == 2)
+							if (this.readyState == 1)
+							{
+								$("progress-bar").appear();
+							}
+							else if (this.readyState == 3 || this.readyState == 2)
 							{
 								$("image").setStyle("border-color: yellow;");
 							}
-							if(this.readyState == 4 && this.status == 200)
+							else if (this.readyState == 4)
 							{
-								var response = this.responseText.evalJSON(true);
-								var image_url = response.upload.links.original;
-								var current_tweet = $("new-tweet").getValue();
-								if (current_tweet.length > 0)
+								if (this.status == 200)
 								{
-									var new_tweet = current_tweet+" "+image_url;
+									var response = this.responseText.evalJSON(true);
+									var image_url = response.upload.links.original;
+									var current_tweet = $("new-tweet").getValue();
+									if (current_tweet.length > 0)
+									{
+										var new_tweet = current_tweet+" "+image_url;
+									}
+									else if (current_tweet.length == 0)
+									{
+										var new_tweet = image_url;
+									}
+									$("new-tweet").setValue(new_tweet);
+									$("image").setStyle("border-color: green;");
+									Element.setStyle.delay(2, "image", "border-color: #ddd;");
 								}
-								else if (current_tweet.length == 0)
+								else
 								{
-									var new_tweet = image_url;
+									$("image").setStyle("border-color: red;");
+									Element.setStyle.delay(2, "image", "border-color: #ddd;");
 								}
-								$("new-tweet").setValue(new_tweet);
-								$("image").setStyle("border-color: green;");
-								Element.setStyle.delay(2, "image", "border-color: #ddd;");
-							}
-							if(this.readyState == 4 && this.status != 200)
-							{
-								$("image").setStyle("border-color: red;");
-								Element.setStyle.delay(2, "image", "border-color: #ddd;");
+								$("progress-bar").fade();
 							}
 						}
 						xhr.open("POST", "http://api.imgur.com/2/upload.json", true);
@@ -2280,14 +2299,14 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 								if (content_rts_stored[id])
 								{
 									event.stop();
+									context_menu.destroy();
 									var data = content_rts_stored[id].evalJSON(true);
 									var new_id = data.id_str;
 									var index = content_rts_stored.indexOf(id);
 									content_rts_stored.splice(index, 1);
-									context_menu.destroy();
 									z_engine_tweet_right_click(new_id, divid, author, screen_name, userid, usermentions, text, faved, true, locked, type);
 								}
-							}, 1);
+							}, 0.25);
 						}
 					});
 					context_menu.addItem(

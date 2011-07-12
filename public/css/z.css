@@ -699,6 +699,25 @@ div.autocomplete ul li.selected
 }
 
 /*
+ * progress bar
+ */
+#progress-bar
+{
+	width: 102px;
+	height: 7px;
+	border: 1px solid #ccc;
+	padding: 0;
+	margin-top: 7px;
+	position: relative;
+	background-image: url("/img/progress-bar.png");
+	background-repeat: repeat-x;
+} 
+#progress-bar div
+{
+	background-color: #fff;
+}
+
+/*
  * click menu stuff
  */
 #control_contextmenu, #control_contextmenu_fadeout
