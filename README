@@ -1,11 +1,19 @@
 about:
 
-mostly just a client im writing in my spare time, nothing really that special here.
-it is meant to be ran with only a single user (eg localhost, NOT the internet) at a time at the moment.
+this is a "two part" twitter client i am writing in my spare time. by "two part" i mean:
 
-it is licensed under the new bsd / freebsd styled / simplified bsd license, and is partially based on 
-kazuyukitanimura/designo, the streaming code from jdub/node-twitter, and a small section of a free template
-from arcsin.se.
+  2) clientside - "stable" but still in progress and under testing
+   - interprets and displays all raw (json) api data
+   - updates (eg, relative time) and prunes this data accordingly
+
+  1) serverside - stable
+   - handle and proxy all oauth requests, particularly the userstream
+
+license:
+
+the code as a whole is is licensed under the freebsd license, and is partially based on 
+kazuyukitanimura/designo, the streaming code from jdub/node-twitter, and a small section
+of a free template from arcsin.se.
 
 trunk requirements (required by multiple modules below, install these first and in order!):
 
@@ -35,12 +43,3 @@ optional:
 
 		leaf requirements:
 			npm install connect-redis
-
-serverside notes:
-
-the serverside part of the z engine is very stable at this point
-
-clientside notes:
-
-the clientside part of the z engine is mostly stable across the four major browsers, with no testing
-done on IE x.x at this point.
