@@ -21,11 +21,13 @@ trunk requirements (required by multiple modules below, install these first and 
 	sudo npm install mime
 	sudo npm install policyfile
 	sudo npm install qs
+	npm install redis
 	sudo npm install socket.io-client
 
 leaf requirements (install in order!):
 
 	sudo npm install connect
+	npm install connect-redis
 	sudo npm install connect-gzip
 	sudo npm install express
 	sudo npm install jade
@@ -33,13 +35,3 @@ leaf requirements (install in order!):
 	sudo npm install oauth
 	sudo npm install socket.io
 	sudo npm install socket.io-sessions
-
-optional:
-
-	use redis to handle sessions, remember to set storage_type to "redis":
-
-		trunk requirements:
-			npm install redis
-
-		leaf requirements:
-			npm install connect-redis

@@ -5,7 +5,9 @@ var config = config = require('./vendor/config').config;
 var express = require('express');
 var gzip = require('connect-gzip');
 var io = require('socket.io');
+var RedisStore = require('connect-redis')(express);
 var sio = require('socket.io-sessions');
+var storage = new RedisStore;
 var sys = require('sys');
 var twitter = require('./vendor/twitter');
 
@@ -20,7 +22,6 @@ var port = config.port;
 var startup_count = config.startup_count;
 var storage_fingerprint = config.storage_fingerprint;
 var storage_secret = config.storage_secret;
-var storage_type = config.storage_type;
 
 /*
  * server
@@ -28,16 +29,6 @@ var storage_type = config.storage_type;
 var klout = require('./vendor/klout')(klout_key);
 var shorten = require('./vendor/shorten')();
 var server = module.exports = express.createServer();
-switch (storage_type)
-{
-	case 'memory':
-		var storage = new express.session.MemoryStore();
-	break;
-	case 'redis':
-		var RedisStore = require('connect-redis')(express);
-		var storage = new RedisStore;
-	break;
-}
 var socket = sio.enable(
 {
 	parser: express.cookieParser(),
