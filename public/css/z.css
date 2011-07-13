@@ -229,6 +229,15 @@ legend
 {
 	margin-bottom: 0.5em;
 }
+.comment-text-select
+{
+	user-select: text;
+	-khtml-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	-o-user-select: text;
+	-webkit-user-select: text;
+}
 .comment-text img
 {
 	cursor: pointer;
@@ -328,6 +337,15 @@ legend
 /*
  * form related stuff
  */
+#new-dm-user
+{
+	font-size: 0.65em;
+	max-height: 5px;
+	max-width: 80px;
+	padding: 7px;
+	margin-left: 15px;
+	margin-top: -2px;
+}
 #new-tweet-input-li
 {
 	padding-left: 3px;
@@ -395,7 +413,7 @@ input[type="text"]:hover, textarea:hover
 }
 input[type="text"]:focus, textarea:focus
 {
-	box-shadow: 0 0 4px #456, inset 0 0 4px rgba(81, 203, 238, 0.75);
+	box-shadow: 0 0 4px inset 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
 	background-color: #fefefe;
 	border: 1px solid #c4c4c4;
 	-khtml-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
@@ -404,6 +422,18 @@ input[type="text"]:focus, textarea:focus
 	-webkit-box-shadow: 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
 	filter:progid:DXImageTransform.Microsoft.Shadow (color=rgba(81, 203, 238, 0.75), Direction=135, Strength=5);
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=rgba(81, 203, 238, 0.75), Direction=135, Strength=5)";
+}
+input[type="text"]:focus.dm, textarea:focus.dm
+{
+	box-shadow: 0 0 4px #BDC3FF, inset 0 0 4px #BDC3FF;
+	background-color: #fefefe;
+	border: 1px solid #c4c4c4;
+	-khtml-box-shadow: 0 0 4px #BDC3FF, inset 0 0 4px #BDC3FF;
+	-moz-box-shadow: 0 0 4px #BDC3FF, inset 0 0 4px #BDC3FF;
+	-o-box-shadow: 0 0 4px #BDC3FF, inset 0 0 4px #BDC3FF;
+	-webkit-box-shadow: 0 0 4px #BDC3FF, inset 0 0 4px #BDC3FF;
+	filter:progid:DXImageTransform.Microsoft.Shadow (color=#BDC3FF, Direction=135, Strength=5);
+	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=#BDC3FF, Direction=135, Strength=5)";
 }
 input[type="text"]:disabled, textarea:disabled
 {
@@ -739,7 +769,7 @@ div.autocomplete ul li.selected
 	-moz-border-radius: 4px;
 	-moz-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-ms-transition: all .20s ease-in-out;
-	/*-o-transition: all .20s ease-in-out;*/
+	-o-transition: all .20s ease-in-out;
 	-o-border-radius: 4px;
 	-o-box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	-webkit-transition: all .20s ease-in-out;
