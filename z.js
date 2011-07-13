@@ -5,6 +5,7 @@ var config = config = require('./vendor/config').config;
 var express = require('express');
 var gzip = require('connect-gzip');
 var io = require('socket.io');
+var redis = require('redis');
 var RedisStore = require('connect-redis')(express);
 var sio = require('socket.io-sessions');
 var shorten = require('./vendor/shorten')();
@@ -213,21 +214,195 @@ socket.on('sconnection', function(client, session)
 			var tw = new twitter(key, secret, session.oauth);
 			if(tw)
 			{
-				z_engine_send(client, {loaded: true});
-				z_engine_send(client, {info: 
+				z_engine_send_to_client(client, "loaded", {loaded: true});
+				z_engine_send_to_client(client, "info", {screen_name: session.oauth._results.screen_name, user_id: session.oauth._results.user_id});
+				client.on("delete", function(json)
 				{
-					screen_name: session.oauth._results.screen_name,
-					user_id: session.oauth._results.user_id
-				}});
-				client.on('message', function(message)
+					switch (json.action)
+					{
+						case "dm":
+							tw.destroy_dm(json.id_str);
+						break;
+						case "tweet":
+							tw.destroy(json.id_str);
+						break;
+					}
+				});
+				client.on("favorite", function(json)
 				{
-					z_engine_message_handler(tw, session, client, message);
+					switch (json.action)
+					{
+						case "do":
+							tw.favorite(json.id_str);
+						break;
+						case "undo":
+							tw.unfavorite(json.id_str);
+						break;
+					}
+				});
+				client.on("fetch", function(message)
+				{
+					switch (message)
+					{
+						case "dms-inbox":
+							tw.getInbox({count: startup_count, include_entities: true}, function(error, data, response)
+							{
+								if(!error)
+								{
+									z_engine_send_to_client(client, "dms", data.reverse());
+								}
+							});
+						break;
+						case "dms-outbox":
+							tw.getOutbox({count: startup_count, include_entities: true}, function(error, data, response)
+							{
+								if(!error)
+								{
+									z_engine_send_to_client(client, "dms", data.reverse());
+								}
+							});
+						break;
+						case "home":
+							tw.getTimeline({type: "home_timeline", count: startup_count, include_entities: true}, function(error, data, response)
+							{
+								if(!error)
+								{
+									z_engine_send_to_client(client, "home", data.reverse());
+								}
+							});
+						break;
+						case "mentions":
+							tw.getTimeline({type: "mentions", count: startup_count, include_entities: true}, function(error, data, response)
+							{
+								if(!error)
+								{
+									z_engine_send_to_client(client, "mentions", data);
+								}
+							});
+						break;
+						case "rates":
+							tw.rateLimit(function(error, data, response)
+							{
+								if(!error)
+								{
+									z_engine_send_to_client(client, "rates", data);
+								}
+							});
+						break;
+						case "userstream":
+							tw.stream("user", {include_entities: true}, function(stream)
+							{
+								stream.on("data", function (data)
+								{
+									try
+									{
+										if (data.text && data.created_at && data.user)
+										{
+											z_engine_send_to_client(client, "tweet", data);
+										}
+										else if (data["delete"])
+										{
+											z_engine_send_to_client(client, "delete", data["delete"]);
+										}
+										else if (data.direct_message)
+										{
+											z_engine_send_to_client(client, "direct_message", data.direct_message);
+										}
+										else if (data.event)
+										{
+											z_engine_send_to_client(client, "event", data);
+										}
+										else if (data.friends)
+										{
+											z_engine_send_to_client(client, "friends", data.friends);
+										}
+									}
+									catch(error)
+									{
+										console.error("userstream message error: "+sys.inspect(error));
+									}
+								});
+								client.on("disconnect", function()
+								{
+									stream.destroy();
+								});
+								stream.on("error", function(data)
+								{
+									z_engine_send_to_client(client, "server_error", {event: "error"});
+								});
+								stream.on("end", function()
+								{
+									z_engine_send_to_client(client, "server_error", {event: "end"});
+								});
+							});
+						break;
+					}
+				});
+				client.on("klout", function(json)
+				{
+					klout.show(json.klout, function(error, data)
+					{
+						if(error)
+						{
+							z_engine_send_to_client(client, "klout", {klout: "error", id_str: json.id_str});
+						}
+						else
+						{
+							z_engine_send_to_client(client, "klout", {klout: data, id_str: json.id_str});
+						}
+					});
+				});
+				client.on("retweet", function(json)
+				{
+					tw.retweet(json.id_str, function(error, data, response)
+					{
+						if(!error)
+						{
+							z_engine_send_to_client(client, "retweet_info", data);
+						}
+					});
+				});
+				client.on("shorten", function(json)
+				{
+					shorten.fetch(json.shorten, function(error, data)
+					{
+						if (!error)
+						{
+							z_engine_send_to_client(client, "shorten", {shorten: data, original: json.shorten});
+						}
+					});
+				});
+				client.on("show", function(json)
+				{
+					tw.show(json.id_str, {include_entities: true}, function(error, data, response)
+					{
+						if(error)
+						{
+							console.log(error);
+						}
+						else
+						{
+							z_engine_send_to_client(client, "show", data);
+						}
+					});
+				});
+				client.on("status", function(json)
+				{
+					switch (json.action)
+					{
+						case "dm":
+							tw.direct_message(json.data);
+						break;
+						case "tweet":
+							tw.update(json.data);
+						break;
+					}
 				});
 			}
 		}
 		catch(error)
 		{
-			console.error('oauth session issue: '+sys.inspect(error));
+			console.error("oauth session issue: "+sys.inspect(error));
 		}
 	}
 });
@@ -245,182 +420,18 @@ socket.on('error', function(error)
 	{/* prevent an error from being spit out, this is expected behavior! */}
 });
 
-/* callback function to handle message based events coming from our client via websocket */
-function z_engine_message_handler(tw, session, client, message)
+/*
+ * some functions used by the server
+ */
+
+/* send data to everyone */
+function z_engine_send_to_all(type, message)
 {
-	try
-	{
-		if (message.status)
-		{
-			tw.update(message.status);
-		}
-		else if (message.destroy)
-		{
-			tw.destroy(message.destroy.status.id_str);
-		}
-		else if (message.destroy_dm)
-		{
-			tw.destroy_dm(message.destroy_dm.status.id_str);
-		}
-		else if (message.direct_message)
-		{
-			tw.direct_message(message.direct_message);
-		}
-		else if (message.fetch)
-		{
-			switch (message.fetch)
-			{
-				case 'dms-inbox':
-					tw.getInbox({count: startup_count, include_entities: true}, function(error, data, response)
-					{
-						if(!error)
-						{
-							z_engine_send(client, {dms: data.reverse()});
-						}
-					});
-				break;
-				case 'dms-outbox':
-					tw.getOutbox({count: startup_count, include_entities: true}, function(error, data, response)
-					{
-						if(!error)
-						{
-							z_engine_send(client, {dms: data.reverse()});
-						}
-					});
-				break;
-				case 'home':
-					tw.getTimeline({type: 'home_timeline', count: startup_count, include_entities: true}, function(error, data, response)
-					{
-						if(!error)
-						{
-							z_engine_send(client, {home: data.reverse()});
-						}
-					});
-				break;
-				case 'mentions':
-					tw.getTimeline({type: 'mentions', count: startup_count, include_entities: true}, function(error, data, response)
-					{
-						if(!error)
-						{
-							z_engine_send(client, {mentions: data});
-						}
-					});
-				break;
-				case 'rates':
-					tw.rateLimit(function(error, data, response)
-					{
-						if(!error)
-						{
-							z_engine_send(client, {rates: data});
-						}
-					});
-				break;
-				case 'userstream':
-					z_engine_streaming_handler(tw, client, session);
-				break;
-			}
-		}
-		else if (message.favorite)
-		{
-			tw.favorite(message.favorite.status.id_str);
-		}
-		else if (message.klout)
-		{
-			klout.show(message.klout, function(error, data)
-			{
-				if(error)
-				{
-					z_engine_send(client, {klout: "error", id_str: message.id_str});
-				}
-				else
-				{
-					z_engine_send(client, {klout: data, id_str: message.id_str});
-				}
-			});
-		}
-		else if (message.retweet)
-		{
-			tw.retweet(message.retweet.status.id_str, function(error, data, response)
-			{
-				if(!error)
-				{
-					z_engine_send(client, {retweet_info: data});
-				}
-			});
-		}
-		else if (message.shorten)
-		{
-			shorten.fetch(message.shorten, function(error, data)
-			{
-				if (!error)
-				{
-					z_engine_send(client, {shorten: data, original: message.shorten});
-				}
-			});
-		}
-		else if (message.show)
-		{
-			tw.show(message.show.id_str, {include_entities: true}, function(error, data, response)
-			{
-				if(error)
-				{
-					console.log(error);
-				}
-				else
-				{
-					z_engine_send(client, {show: data});
-				}
-			});
-		}
-		else if (message.unfavorite)
-		{
-			tw.unfavorite(message.unfavorite.status.id_str);
-		}
-	}
-	catch(error)
-	{
-		console.error('message error: '+sys.inspect(error));
-	}
+	io.sockets.emit(type, message);
 }
 
-/* start and handle the userstream */
-function z_engine_streaming_handler(tw, client, session)
+/* send data to a specific client */
+function z_engine_send_to_client(client, type, message)
 {
-	if(tw && client && session)
-	{
-		if (typeof(session.oauth) == "object")
-		{
-			tw.stream('user', {include_entities: true}, function(stream)
-			{
-				stream.on('data', function (data)
-				{
-					try
-					{
-						z_engine_send(client, data);
-					}
-					catch(error)
-					{
-						console.error('userstream message error: '+sys.inspect(error));
-					}
-				});
-				client.on('disconnect', function()
-				{
-					stream.destroy();
-				});
-				stream.on('error', function(data)
-				{
-					z_engine_send(client, {server_event: 'error'});
-				});
-				stream.on('end', function()
-				{
-					z_engine_send(client, {server_event: 'end'});
-				});
-			});
-		}
-	}
-}
-
-function z_engine_send(client, message)
-{
-	client.json.send(message);
+	client.json.emit(type, message);
 }
