@@ -7,6 +7,7 @@ var gzip = require('connect-gzip');
 var io = require('socket.io');
 var RedisStore = require('connect-redis')(express);
 var sio = require('socket.io-sessions');
+var shorten = require('./vendor/shorten')();
 var storage = new RedisStore;
 var sys = require('sys');
 var twitter = require('./vendor/twitter');
@@ -18,6 +19,7 @@ var key = config.oauth_key;
 var secret = config.oauth_secret;
 var imgur_key = config.imgur_key;
 var klout_key = config.klout_key;
+var klout = require('./vendor/klout')(klout_key);
 var port = config.port;
 var startup_count = config.startup_count;
 var storage_fingerprint = config.storage_fingerprint;
@@ -26,15 +28,7 @@ var storage_secret = config.storage_secret;
 /*
  * server
  */
-var klout = require('./vendor/klout')(klout_key);
-var shorten = require('./vendor/shorten')();
 var server = module.exports = express.createServer();
-var socket = sio.enable(
-{
-	parser: express.cookieParser(),
-	socket: io.listen(server),
-	store: storage
-});
 
 server.configure(function()
 {
@@ -201,6 +195,14 @@ gzip.gzip({matchType: /socket.io/});
  * socket.io
  */
 
+/* the socket itself */
+var socket = sio.enable(
+{
+	parser: express.cookieParser(),
+	socket: io.listen(server),
+	store: storage
+});
+
 /* the socket connection event which gets the gears started */
 socket.on('sconnection', function(client, session)
 {
@@ -211,8 +213,8 @@ socket.on('sconnection', function(client, session)
 			var tw = new twitter(key, secret, session.oauth);
 			if(tw)
 			{
-				client.json.send({loaded: true});
-				client.json.send({info: 
+				z_engine_send(client, {loaded: true});
+				z_engine_send(client, {info: 
 				{
 					screen_name: session.oauth._results.screen_name,
 					user_id: session.oauth._results.user_id
@@ -273,7 +275,7 @@ function z_engine_message_handler(tw, session, client, message)
 					{
 						if(!error)
 						{
-							client.json.send({dms: data.reverse()});
+							z_engine_send(client, {dms: data.reverse()});
 						}
 					});
 				break;
@@ -282,7 +284,7 @@ function z_engine_message_handler(tw, session, client, message)
 					{
 						if(!error)
 						{
-							client.json.send({dms: data.reverse()});
+							z_engine_send(client, {dms: data.reverse()});
 						}
 					});
 				break;
@@ -291,7 +293,7 @@ function z_engine_message_handler(tw, session, client, message)
 					{
 						if(!error)
 						{
-							client.json.send({home: data.reverse()});
+							z_engine_send(client, {home: data.reverse()});
 						}
 					});
 				break;
@@ -300,7 +302,7 @@ function z_engine_message_handler(tw, session, client, message)
 					{
 						if(!error)
 						{
-							client.json.send({mentions: data});
+							z_engine_send(client, {mentions: data});
 						}
 					});
 				break;
@@ -309,7 +311,7 @@ function z_engine_message_handler(tw, session, client, message)
 					{
 						if(!error)
 						{
-							client.json.send({rates: data});
+							z_engine_send(client, {rates: data});
 						}
 					});
 				break;
@@ -328,11 +330,11 @@ function z_engine_message_handler(tw, session, client, message)
 			{
 				if(error)
 				{
-					client.json.send({klout: "error", id_str: message.id_str});
+					z_engine_send(client, {klout: "error", id_str: message.id_str});
 				}
 				else
 				{
-					client.json.send({klout: data, id_str: message.id_str});
+					z_engine_send(client, {klout: data, id_str: message.id_str});
 				}
 			});
 		}
@@ -342,7 +344,7 @@ function z_engine_message_handler(tw, session, client, message)
 			{
 				if(!error)
 				{
-					client.json.send({retweet_info: data});
+					z_engine_send(client, {retweet_info: data});
 				}
 			});
 		}
@@ -352,7 +354,7 @@ function z_engine_message_handler(tw, session, client, message)
 			{
 				if (!error)
 				{
-					client.json.send({shorten: data, original: message.shorten});
+					z_engine_send(client, {shorten: data, original: message.shorten});
 				}
 			});
 		}
@@ -366,7 +368,7 @@ function z_engine_message_handler(tw, session, client, message)
 				}
 				else
 				{
-					client.json.send({show: data});
+					z_engine_send(client, {show: data});
 				}
 			});
 		}
@@ -394,7 +396,7 @@ function z_engine_streaming_handler(tw, client, session)
 				{
 					try
 					{
-						client.json.send(data);
+						z_engine_send(client, data);
 					}
 					catch(error)
 					{
@@ -407,13 +409,18 @@ function z_engine_streaming_handler(tw, client, session)
 				});
 				stream.on('error', function(data)
 				{
-					client.json.send({server_event: 'error'});
+					z_engine_send(client, {server_event: 'error'});
 				});
 				stream.on('end', function()
 				{
-					client.json.send({server_event: 'end'});
+					z_engine_send(client, {server_event: 'end'});
 				});
 			});
 		}
 	}
+}
+
+function z_engine_send(client, message)
+{
+	client.json.send(message);
 }
