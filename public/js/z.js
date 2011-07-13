@@ -229,6 +229,7 @@ function z_engine_attrition()
 									$("new-dm-user").appear();
 								break;
 								default:
+									$("new-tweet").removeClassName("dm");
 									$("new-dm-user").fade().setValue("");
 								break;
 							}
@@ -559,18 +560,21 @@ function z_engine_attrition()
 					content_rts_stored[id] = JSON.stringify(data);
 					if ($("rt-"+id))
 					{
-						$("rt-"+id).writeAttribute("src","img/rtd.png");
-						$("rt-"+id).writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
+						$("rt-"+id).setAttribute("title","undo retweet");
+						$("rt-"+id).setAttribute("src","img/rtd.png");
+						$("rt-"+id).setAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
 					}
 					if ($("rt-"+id+"-mentioned"))
 					{
-						$("rt-"+id+"-mentioned").writeAttribute("src","img/rtd.png");
-						$("rt-"+id+"-mentioned").writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
+						$("rt-"+id+"-mentioned").setAttribute("title","undo retweet");
+						$("rt-"+id+"-mentioned").setAttribute("src","img/rtd.png");
+						$("rt-"+id+"-mentioned").setAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
 					}
 					if ($("rt-"+id+"-threaded"))
 					{
-						$("rt-"+id+"-threaded").writeAttribute("src","img/rtd.png");
-						$("rt-"+id+"-threaded").writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
+						$("rt-"+id+"-threaded").setAttribute("title","undo retweet");
+						$("rt-"+id+"-threaded").setAttribute("src","img/rtd.png");
+						$("rt-"+id+"-threaded").setAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
 					}
 				}
 				else if (json.server_event)
@@ -747,21 +751,53 @@ function z_engine_destroy(id, method)
 		}
 		if (method == "rt")
 		{
-			if ($("rt-"+id))
+			content_rts_stored.each(function(item, index)
 			{
-				$("rt-"+id).setAttribute("src","img/rt.png");
-				$("rt-"+id).setAttribute("onclick","z_engine_retweet('"+id+"');");
-			}
-			if ($("rt-"+id+"-mentioned"))
-			{
-				$("rt-"+id+"-mentioned").setAttribute("src","img/rt.png");
-				$("rt-"+id+"-mentioned").setAttribute("onclick","z_engine_retweet('"+id+"');");
-			}
-			if ($("rt-"+id+"-threaded"))
-			{
-				$("rt-"+id+"-threaded").setAttribute("src","img/rt.png");
-				$("rt-"+id+"-threaded").setAttribute("onclick","z_engine_retweet('"+id+"');");
-			}
+				var data = item.evalJSON(true);
+				var new_id = data.id_str;
+				if (id == new_id)
+				{
+					var author = data.retweeted_status.screen_name;
+					var author2 = data.screen_name;
+					var entities = data.retweeted_status.entities;
+					var faved = data.retweeted_status.favorited;
+					id = data.retweeted_status.id_str; //reset the idea to the original status
+					var locked = data.retweeted_status.user["protected"];
+					var text = data.retweeted_status.text;
+					var userid = data.retweeted_status.user.id;
+					if (!entities)
+					{
+						var usermentions = false;
+					}
+					else
+					{
+						var usermentions = z_engine_tweet_mentioned_string(entities);
+					}
+					content_rts_stored.splice(index, 1); //see ya!
+					if ($("rt-"+id))
+					{
+						$("rt-"+id).setAttribute("title","retweet");
+						$("rt-"+id).setAttribute("src","img/rt.png");
+						$("rt-"+id).setAttribute("onclick","z_engine_retweet('"+id+"');");
+						z_engine_tweet_right_click(id, "rt-"+id, author, author2, userid, usermentions, text, faved, false, locked, "home");
+					}
+					if ($("rt-"+id+"-mentioned"))
+					{
+						$("rt-"+id+"-mentioned").setAttribute("title","retweet");
+						$("rt-"+id+"-mentioned").setAttribute("src","img/rt.png");
+						$("rt-"+id+"-mentioned").setAttribute("onclick","z_engine_retweet('"+id+"');");
+						z_engine_tweet_right_click(id, "rt-"+id+"-mentioned", author, author2, userid, usermentions, text, faved, false, locked, "mentions");
+					}
+					if ($("rt-"+id+"-threaded"))
+					{
+						$("rt-"+id+"-threaded").setAttribute("title","retweet");
+						$("rt-"+id+"-threaded").setAttribute("src","img/rt.png");
+						$("rt-"+id+"-threaded").setAttribute("onclick","z_engine_retweet('"+id+"');");
+						z_engine_tweet_right_click(id, "rt-"+id+"-threaded", author, author2, userid, usermentions, text, faved, false, locked, "threads");
+					}
+					$break;
+				}
+			});
 		}
 		socket.emit("message", params);
 	}
@@ -836,8 +872,8 @@ function z_engine_drop_tweet(id)
 /* convert entities, etc */
 function z_engine_escape(text)
 {
-	var escaped = new Element('textarea').update(text.replace(/</g,"&lt;").replace(/>/g,"&gt;").strip());
-	return escaped.getValue();
+	var escaped = new Element('textarea').update(text.replace(/</g,"&lt;").replace(/>/g,"&gt;").strip()).getValue();
+	return escaped;
 }
 
 /* the fading + blind down animation */
@@ -877,18 +913,21 @@ function z_engine_favorite(id)
 	socket.emit("message", {favorite: {status: {id_str: id}}});
 	if ($("fave-"+id))
 	{
-		$("fave-"+id).writeAttribute("src","img/favd.png");
-		$("fave-"+id).writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
+		$("fave-"+id).setAttribute("title","unfavorite");
+		$("fave-"+id).setAttribute("src","img/favd.png");
+		$("fave-"+id).setAttribute("onclick","z_engine_unfavorite('"+id+"');");
 	}
 	if ($("fave-"+id+"-mentioned"))
 	{
-		$("fave-"+id+"-mentioned").writeAttribute("src","img/favd.png");
-		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
+		$("fave-"+id+"-mentioned").setAttribute("title","unfavorite");
+		$("fave-"+id+"-mentioned").setAttribute("src","img/favd.png");
+		$("fave-"+id+"-mentioned").setAttribute("onclick","z_engine_unfavorite('"+id+"');");
 	}
 	if ($("fave-"+id+"-threaded"))
 	{
-		$("fave-"+id+"-threaded").writeAttribute("src","img/favd.png");
-		$("fave-"+id+"-threaded").writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
+		$("fave-"+id+"-threaded").setAttribute("title","unfavorite");
+		$("fave-"+id+"-threaded").setAttribute("src","img/favd.png");
+		$("fave-"+id+"-threaded").setAttribute("onclick","z_engine_unfavorite('"+id+"');");
 	}
 }
 
@@ -1055,13 +1094,11 @@ function z_engine_image_dropper()
 							if (this.readyState == 1)
 							{
 								$("progress-bar").appear();
-							}
-							else if (this.readyState == 3 || this.readyState == 2)
-							{
-								$("image").setStyle("border-color: yellow;");
+								$("image").setStyle("border-color: #ddd;"); //force it back
 							}
 							else if (this.readyState == 4)
 							{
+								$("progress-bar").fade();
 								if (this.status == 200)
 								{
 									var response = this.responseText.evalJSON(true);
@@ -1076,22 +1113,21 @@ function z_engine_image_dropper()
 										var new_tweet = image_url;
 									}
 									$("new-tweet").setValue(new_tweet);
-									$("image").setStyle("border-color: green;");
-									Element.setStyle.delay(2, "image", "border-color: #ddd;");
 								}
 								else
 								{
+									z_engine_notification("", "error!", "there seems to have been an error on imgur's end!");
 									$("image").setStyle("border-color: red;");
 									Element.setStyle.delay(2, "image", "border-color: #ddd;");
 								}
-								$("progress-bar").fade();
 							}
 						}
 						xhr.open("POST", "http://api.imgur.com/2/upload.json", true);
 						xhr.send(form);
 					break;
 					default:
-						$("image").setStyle("image", "border-color: red;");
+						z_engine_notification("", "error!", "this file is not supported, sorry!");
+						$("image").setStyle("border-color: red;");
 						Element.setStyle.delay(2, "image", "border-color: #ddd;");
 					break;
 				}
@@ -1110,20 +1146,25 @@ function z_engine_image_dropper()
 /*  */
 function z_engine_input()
 {
-	var input = $("new-tweet").getValue();
-	if(input.length == 0)
+	var tweet = $("new-tweet").getValue();
+	var dm = $("new-dm-user").getValue();
+	if (tweet.length == 0)
 	{
 		reply_id = false;
 		shortened = false;
 	}
-	else if(input.length <= 140)
+	else if (tweet.length <= 140)
 	{
 		$("new-tweet").setStyle("color: #4d4d4d;");
 	}
-	else if(input.length >= 141)
+	else if (tweet.length >= 141)
 	{
 		z_engine_shorten_urls();
 		$("new-tweet").setStyle("color: red;");
+	}
+	if (dm.length == 0)
+	{
+		$("new-tweet").removeClassName("dm");
 	}
 }
 
@@ -1203,6 +1244,7 @@ function z_engine_prune_tweets()
 	var mention_elements = $("mentions-timeline").childElements();
 	var dm_elements = $("dms-inbox-timeline").childElements();
 	var dm_sent_elements = $("dms-outbox-timeline").childElements();
+	var threaded_elements = $("threaded-timeline").childElements();
 	if (tweet_elements.length >= home_cutoff)
 	{
 		tweet_elements.each(function(item, index)
@@ -1243,7 +1285,6 @@ function z_engine_prune_tweets()
 			}
 		});
 	}
-	var threaded_elements = $("threaded-timeline").childElements();
 	if (threaded_elements.length >= threaded_cutoff)
 	{
 		threaded_elements.each.delay(48, function(item, index)
@@ -1300,6 +1341,7 @@ function z_engine_reply(author, id, mentions)
 function z_engine_reply_dm(id, user)
 {
 	$("new-dm-user").setValue(user);
+	$("new-tweet").addClassName("dm");
 	$("new-tweet").focus();
 }
 
@@ -1369,6 +1411,7 @@ function z_engine_send_tweet()
 		reply_id = false;
 		shortened = false;
 		$("new-dm-user").enable();
+		$("new-dm-user").removeClassName("dm");
 		$("new-dm-user").setValue("");
 		$("new-tweet").setValue("");
 		$("new-tweet").enable();
@@ -1895,7 +1938,7 @@ function z_engine_tweet(data, output)
 							var right2_element = new Element('div', {'id': 'right-'+id, 'class': 'right'});
 							comment_text_body_element.insert(linebreak);
 							comment_text_body_element.insert({'bottom': right2_element});
-							var tweet_text = new Element('div', {'id': "text-"+id});
+							var tweet_text = new Element('div', {'id': "text-"+id, 'class': 'comment-text-select'});
 							tweet_text.update(z_engine_parse_tweet(text));
 							comment_text_body_element.insert({'bottom': tweet_text});
 						comment_text_element.insert(comment_text_body_element);
@@ -2004,7 +2047,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'title': 'reply', 'id': 'reply-'+id, 'alt': ''});
+				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", false);', 'title': 'reply', 'id': 'reply-'+id, 'alt': ''});
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
@@ -2013,7 +2056,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 				}
 				else
 				{
-					var rt_img_element = new Element('img', {'src': '/img/lock.png', 'style': 'cursor: default;', 'alt': ''});
+					var rt_img_element = new Element('img', {'src': '/img/lock.png', 'style': 'cursor: default;', 'title': 'this account is private', 'alt': ''});
 				}
 				if (!faved)
 				{
@@ -2052,7 +2095,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'-mentioned", "'+usermentions+'");', 'title': 'reply', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
+				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'-mentioned", false);', 'title': 'reply', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
@@ -2061,7 +2104,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 				}
 				else
 				{
-					var rt_img_element = new Element('img', {'src': '/img/lock.png', 'style': 'cursor: default;', 'alt': ''});
+					var rt_img_element = new Element('img', {'src': '/img/lock.png', 'style': 'cursor: default;', 'title': 'this account is private', 'alt': ''});
 				}
 				if (!faved)
 				{
@@ -2121,7 +2164,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'title': 'reply', 'id': 'reply-'+id+'-threaded', 'alt': ''});
+				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", false);', 'title': 'reply', 'id': 'reply-'+id+'-threaded', 'alt': ''});
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
@@ -2130,7 +2173,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 				}
 				else
 				{
-					var rt_img_element = new Element('img', {'src': '/img/lock.png', 'style': 'cursor: default;', 'alt': ''});
+					var rt_img_element = new Element('img', {'src': '/img/lock.png', 'style': 'cursor: default;', 'title': 'this account is private', 'alt': ''});
 				}
 				if (!faved)
 				{
@@ -2268,7 +2311,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 			{
 				context_menu.addItem(
 				{
-					label: '<img src="/img/rep.png" title="reply" alt="" />',
+					label: '<img src="/img/rep.png" title="reply to all" alt="" />',
 					callback: function()
 					{
 						z_engine_reply(author, id, usermentions);
@@ -2299,11 +2342,9 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 								if (content_rts_stored[id])
 								{
 									event.stop();
-									context_menu.destroy();
 									var data = content_rts_stored[id].evalJSON(true);
 									var new_id = data.id_str;
-									var index = content_rts_stored.indexOf(id);
-									content_rts_stored.splice(index, 1);
+									context_menu.destroy();
 									z_engine_tweet_right_click(new_id, divid, author, screen_name, userid, usermentions, text, faved, true, locked, type);
 								}
 							}, 0.25);
@@ -2354,7 +2395,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 				{
 					context_menu.addItem(
 					{
-						label: '<img src="/img/fav.png" title="fave" alt="" />',
+						label: '<img src="/img/fav.png" title="favorite" alt="" />',
 						callback: function()
 						{
 							z_engine_favorite(id);
@@ -2367,7 +2408,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 				{
 					context_menu.addItem(
 					{
-						label: '<img src="/img/favd.png" title="unfave" alt="" />',
+						label: '<img src="/img/favd.png" title="unfavorite" alt="" />',
 						callback: function()
 						{
 							z_engine_unfavorite(id);
@@ -2423,18 +2464,21 @@ function z_engine_unfavorite(id)
 	socket.emit("message", {unfavorite: {status: {id_str: id}}});
 	if ($("fave-"+id))
 	{
-		$("fave-"+id).writeAttribute("src","img/fav.png");
-		$("fave-"+id).writeAttribute("onclick","z_engine_favorite('"+id+"');");
+		$("fave-"+id).setAttribute("title","favorite");
+		$("fave-"+id).setAttribute("src","img/fav.png");
+		$("fave-"+id).setAttribute("onclick","z_engine_favorite('"+id+"');");
 	}
 	if ($("fave-"+id+"-mentioned"))
 	{
-		$("fave-"+id+"-mentioned").writeAttribute("src","img/fav.png");
-		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_favorite('"+id+"');");
+		$("fave-"+id+"-mentioned").setAttribute("title","favorite");
+		$("fave-"+id+"-mentioned").setAttribute("src","img/fav.png");
+		$("fave-"+id+"-mentioned").setAttribute("onclick","z_engine_favorite('"+id+"');");
 	}
 	if ($("fave-"+id+"-threaded"))
 	{
-		$("fave-"+id+"-threaded").writeAttribute("src","img/fav.png");
-		$("fave-"+id+"-threaded").writeAttribute("onclick","z_engine_favorite('"+id+"');");
+		$("fave-"+id+"-threaded").setAttribute("title","favorite");
+		$("fave-"+id+"-threaded").setAttribute("src","img/fav.png");
+		$("fave-"+id+"-threaded").setAttribute("onclick","z_engine_favorite('"+id+"');");
 	}
 }
 
