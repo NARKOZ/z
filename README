@@ -15,19 +15,21 @@ the code as a whole is is licensed under the freebsd license, and is partially b
 kazuyukitanimura/designo, the streaming code from jdub/node-twitter, and a small section
 of a free template from arcsin.se.
 
+libs:
+
 trunk requirements (required by multiple modules below, install these first and in order!):
 
 	sudo npm install formidable
 	sudo npm install mime
 	sudo npm install policyfile
 	sudo npm install qs
-	npm install redis
+	sudo npm install redis
 	sudo npm install socket.io-client
 
 leaf requirements (install in order!):
 
 	sudo npm install connect
-	npm install connect-redis
+	sudo npm install connect-redis
 	sudo npm install connect-gzip
 	sudo npm install express
 	sudo npm install jade
