@@ -707,10 +707,6 @@ function z_engine_current_timeline()
 	{
 		return "mentions-timeline";
 	}
-	else if ($("threaded-timeline").visible())
-	{
-		return "threaded-timeline";
-	}
 	else if ($("dms-inbox-timeline").visible())
 	{
 		return "dms-inbox-timeline";
@@ -718,6 +714,10 @@ function z_engine_current_timeline()
 	if ($("dms-outbox-timeline").visible())
 	{
 		return "dms-outbox-timeline";
+	}
+	else if ($("threaded-timeline").visible())
+	{
+		return "threaded-timeline";
 	}
 }
 
@@ -2047,7 +2047,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", false);', 'title': 'reply', 'id': 'reply-'+id, 'alt': ''});
+				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'title': 'reply', 'id': 'reply-'+id, 'alt': ''});
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
@@ -2095,7 +2095,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'-mentioned", false);', 'title': 'reply', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
+				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'-mentioned", "'+usermentions+'");', 'title': 'reply', 'id': 'reply-'+id+'-mentioned', 'alt': ''});
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
@@ -2164,7 +2164,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 			if (author != screen_name)
 			{
-				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", false);', 'title': 'reply', 'id': 'reply-'+id+'-threaded', 'alt': ''});
+				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'title': 'reply', 'id': 'reply-'+id+'-threaded', 'alt': ''});
 				new Element.extend(reply_img_element);
 				if (!locked)
 				{
@@ -2224,7 +2224,7 @@ function z_engine_tweet_mentioned(entities)
 /* returns a premade string from all mentions in entities.user_mentions */
 function z_engine_tweet_mentioned_string(entities)
 {
-	if (entities.user_mentions.length > 0)
+	if (entities && entities.user_mentions.length > 0)
 	{
 		var mentioned = "";
 		entities.user_mentions.uniq().each(function(item)
