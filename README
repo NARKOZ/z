@@ -2,38 +2,16 @@ about:
 
 this is a "two part" twitter client i am writing in my spare time. by "two part" i mean:
 
-  2) clientside - "stable" but still in progress and under testing
+  1) clientside - stable but still in progress and under testing
    - interprets and displays all raw (json) api data
    - updates (eg, relative time) and prunes this data accordingly
 
-  1) serverside - stable
+  2) serverside - stable on userstreams and very stable on proxied requests
    - handle and proxy all oauth requests, particularly the userstream
 
 license:
 
-the code as a whole is is licensed under the freebsd license, and is partially based on 
-kazuyukitanimura/designo, the streaming code from jdub/node-twitter, and a small section
-of a free template from arcsin.se.
+the code as a whole is is licensed under the freebsd license.
 
-libs:
-
-trunk requirements (required by multiple modules below, install these first and in order!):
-
-	sudo npm install formidable
-	sudo npm install mime
-	sudo npm install policyfile
-	sudo npm install qs
-	sudo npm install redis
-	sudo npm install socket.io-client
-
-leaf requirements (install in order!):
-
-	sudo npm install connect
-	sudo npm install connect-redis
-	sudo npm install connect-gzip
-	sudo npm install express
-	sudo npm install jade
-	sudo npm install jsonreq
-	sudo npm install oauth
-	sudo npm install socket.io
-	sudo npm install socket.io-sessions
+some contained code is based on http://github.com/kazuyukitanimura/designo, the streaming
+code from http://github.com/jdub/node-twitter, and a free template from arcsin.se.

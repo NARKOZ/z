@@ -1,11 +1,29 @@
-1) register your application here: https://dev.twitter.com/apps
+1) install libs:
+
+   trunk requirements (required by multiple modules below, install these first and in order!):
+     sudo npm install formidable
+     sudo npm install mime
+     sudo npm install policyfile
+     sudo npm install qs
+     sudo npm install redis
+     sudo npm install socket.io-client
+
+   leaf requirements (install in order!):
+     sudo npm install connect
+     sudo npm install connect-redis
+     sudo npm install connect-gzip
+     sudo npm install express
+     sudo npm install jade
+     sudo npm install jsonreq
+     sudo npm install oauth
+     sudo npm install socket.io
+     sudo npm install socket.io-sessions
+
+2) configure config.json
+
+3) register your application here: https://dev.twitter.com/apps
    be sure to set the application type to "browser", use "http://127.0.0.1:8080/oauth/callback" as the callback url.
    copy the oauth key and secret into config.json (and change anything you would like in there)...
    be sure to change the storage_secret to something other than blank - it is a salt for sessions!
-2) register for a klout api key here: http://developer.klout.com/apps/mykeys
-3) register for an imgur api key here: http://imgur.com/register/api_anon
-4) muting users is now possible with one "funny" exception: you can not do it directly from within the client itself.
-   instead, i decided to use the events system available in userstreams, specifically the "block" and "unblock" events.
-   so with that said, you will need to go to the official site and block said user you want to mute, and vice versa
-   to unmute. pretty simple in the end, just not so obvious at first. also, if you can access the "localstorage" within
-   your browser, you can mess with this and client + hashtag muting (seperate each entry with a space).
+4) register for a klout api key here: http://developer.klout.com/apps/mykeys
+5) register for an imgur api key here: http://imgur.com/register/api_anon
