@@ -266,9 +266,10 @@ legend
 	-moz-border-radius: 5px;
 	-o-border-radius: 5px;
 	-webkit-border-radius: 5px;
-	background: #FFF;
+	background-color: white;
 	border: 1px solid #DDD;
 	padding: 1px 12px 0 9px;
+
 	behavior: url(border-radius.htc);
 }
 .comment-body
@@ -396,7 +397,7 @@ input, textarea
 }
 input[type="range"]
 {
-	width: 94%;
+	width: 95%;
 }
 input[type="text"], input[type="text"]:hover, input[type="text"]:focus, input[type="text"]:disabled,
 textarea, textarea:hover, textarea:focus, textarea:disabled
@@ -538,7 +539,7 @@ input[type="text"]:disabled, textarea:disabled
 	background-color: #F6F6F6;
 	text-decoration: none;
 	padding: 10px;
-	transition: all .20s ease-in-out;
+	/*transition: all .20s ease-in-out;*/
 	-khtml-border-radius: 2px;
 	-khtml-box-shadow: 0 0 2px 2px #F6F6F6;
 	-khtml-transition: all .20s ease-in-out;
@@ -548,7 +549,7 @@ input[type="text"]:disabled, textarea:disabled
 	-ms-transition: all .20s ease-in-out;
 	-o-border-radius: 2px;
 	-o-box-shadow: 0 0 2px 2px #F6F6F6;
-	-o-transition: all .20s ease-in-out;
+	/*-o-transition: all .20s ease-in-out;*/
 	-webkit-border-radius: 2px;
 	-webkit-box-shadow: 0 0 2px 2px #F6F6F6;
 	-webkit-transition: all .20s ease-in-out;
@@ -574,11 +575,11 @@ input[type="text"]:disabled, textarea:disabled
 {
 	background-color: #F6F6F6;
 	color: #456;
-	transition: all .20s ease-in-out;
+	/*transition: all .20s ease-in-out;*/
 	-khtml-transition: all .20s ease-in-out;
 	-moz-transition: all .20s ease-in-out;
 	-ms-transition: all .20s ease-in-out;
-	-o-transition: all .20s ease-in-out;
+	/*-o-transition: all .20s ease-in-out;*/
 	-webkit-transition: all .20s ease-in-out;
 }
 #sub-nav li.navigation a:hover

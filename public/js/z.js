@@ -351,7 +351,6 @@ function z_engine_attrition()
 			loaded = true;
 			$("new-tweet").setValue("");
 			$("new-tweet").enable();
-			z_engine_fetch_timeline("home");
 			z_engine_check_ratelimit();
 			z_engine_fetch_timeline("home");
 			z_engine_fetch_timeline.delay(10, "mentions");
@@ -657,8 +656,7 @@ function z_engine_attrition()
 		});
 		socket.on("shorten", function(json)
 		{
-			var current_tweet = $("new-tweet").getValue().replace(json.original, json.shorten);
-			$("new-tweet").setValue(current_tweet);
+			$("new-tweet").setValue($("new-tweet").getValue().replace(json.original, json.shorten));
 		});
 		socket.on("show", function(json)
 		{
@@ -1601,8 +1599,7 @@ function z_engine_settings_get(id, storage)
 			$(id).setValue(store.get(storage));
 		break;
 		case 'lang':
-			var language = store.get("lang");
-			$(language).writeAttribute("selected", "selected");
+			new Form.Element.select(store.get(storage));
 		break;
 		default:
 			if (store.get(storage) == "on")
@@ -1654,7 +1651,7 @@ function z_engine_shorten_urls()
 	{
 		current_tweet.replace(/((https?\:\/\/)|(www\.))([^ \(\)\{\}\[\]]+)/g,function(url)
 		{
-			if (url.length >= 20)
+			if (url.length >= 20) //the url needs to have some length to it, dont shorten anything that is already short
 			{
 				socket.emit("shorten", {shorten: url});
 			}
@@ -1736,7 +1733,15 @@ function z_engine_tweet(data, divinfo)
 			var author2 = false;
 			var avatar = data.user.profile_image_url;
 			var avatar2 = false;
-			var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,'');
+			if (BrowserDetect.browser == "Opera")
+			{
+				var date = data.created_at;
+			}
+			else
+			{
+				var date = new Date(data.created_at).toLocaleString().replace(/GMT.+/,'');
+			}
+			var date = data.created_at;
 			var description = data.user.description;
 			var entities = data.entities;
 			var faved = data.favorited;
@@ -1764,7 +1769,14 @@ function z_engine_tweet(data, divinfo)
 			var author2 = data.user.screen_name;
 			var avatar = data.retweeted_status.user.profile_image_url;
 			var avatar2 = data.user.profile_image_url;
-			var date = new Date(data.retweeted_status.created_at).toLocaleString().replace(/GMT.+/,'');
+			if (BrowserDetect.browser == "Opera")
+			{
+				var date = data.retweeted_status.created_at;
+			}
+			else
+			{
+				var date = new Date(data.retweeted_status.created_at).toLocaleString().replace(/GMT.+/,'');
+			}
 			var description = data.retweeted_status.user.description;
 			var entities = data.retweeted_status.entities;
 			var faved = data.retweeted_status.favorited;
