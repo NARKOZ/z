@@ -5,10 +5,8 @@ html
     link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Open+Sans:400&subset=cyrillic,greek,latin&v1')
     link(rel='stylesheet', href='/css/z.min.css?'+(new Date()).getTime())
     meta(http-equiv='X-UA-Compatible', content='IE=9')
-    script(type='text/javascript', src='http://www.google.com/jsapi')
-    script
-      google.load("prototype", "1.7.0.0");
-      google.load("scriptaculous", "1.9.0");
-    script(type='text/javascript', src='/js/libs.min.js?'+(new Date()).getTime())
-    script(type='text/javascript', src='/js/z.min.js?'+(new Date()).getTime())
+    script(src='http://www.google.com/jsapi')
+    script google.load("prototype", "1.7.0.0"); google.load("scriptaculous", "1.9.0");
+    script(src='/js/libs.min.js?'+(new Date()).getTime())
+    script(src='/js/z.min.js?'+(new Date()).getTime())
   body!= body

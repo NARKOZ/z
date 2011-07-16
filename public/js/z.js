@@ -4,11 +4,8 @@ if (!store.get('client_blocks'))
 	store.set('client_blocks', "");
 }
 var check_ratelimit_interval = 300; //check every 5 minutes
-var content_dms_queued = Array(); //outputs our dms tweets nicely
-var content_mentions_queued = Array(); //outputs our mentions tweets nicely
 var content_queued = Array(); //outputs our tweets nicely
 var content_rts_stored = Array();
-var content_threads_stored = Array();
 var content_stored = Array(); //stores all tweets
 var dms_cutoff = 50; //max amount of tweets to display before pruning occurs on all dms
 var dms_loaded = 0; //quick method to hide each dm timelines loading image without needing to write a ton of code to do it
@@ -63,6 +60,7 @@ if (!store.get('notifications_timeout'))
 	store.set('notifications_timeout', 5);
 }
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
+var previous_tab = "";
 var progress_bar = "";
 var prune_tweets_interval = 60; //start the pruning loop over again every minute
 var pttid = 0; //this serves as the (#) amount displayed when paused
@@ -158,12 +156,13 @@ function z_engine_attrition()
 		{
 			if (typeof(json.status) == "object")
 			{
-				z_engine_drop_tweet(json.status.id_str);
+				var id = json.status.id_str;
+				z_engine_drop_tweet(id);
 			}
 		});
 		socket.on("direct_message", function(json)
 		{
-			z_engine_tweet(json, "dms");
+			z_engine_tweet(json, "dms top");
 			if (json.sender.screen_name != screen_name)
 			{
 				var av = json.sender.profile_image_url;
@@ -177,7 +176,7 @@ function z_engine_attrition()
 			dms_loaded++;
 			json.each(function(item)
 			{
-				z_engine_tweet(item, "dms");
+				z_engine_tweet(item, "dms bottom");
 			});
 			switch (dms_loaded)
 			{
@@ -314,7 +313,7 @@ function z_engine_attrition()
 		{
 			json.each(function(item)
 			{
-				z_engine_tweet(item, "home");
+				z_engine_tweet(item, "home bottom");
 			});
 			$("loading-home").fade();
 			$("loading-mentions").appear();
@@ -345,7 +344,7 @@ function z_engine_attrition()
 					if ($("klout-"+id))
 					{
 						$("klout-"+id).setStyle('cursor: default;');
-						$("klout-"+id).setAttribute('onclick', '');
+						$("klout-"+id).writeAttribute('onclick', '');
 						$("klout-"+id).addTip('<big><strong>?</strong></big>', kloutinfo_params);
 					}
 				}
@@ -356,7 +355,7 @@ function z_engine_attrition()
 			loaded = true;
 			$("new-tweet").setValue("");
 			$("new-tweet").enable();
-			/* intervals and timers */
+			z_engine_fetch_timeline("home");
 			z_engine_check_ratelimit();
 			z_engine_fetch_timeline("home");
 			z_engine_fetch_timeline.delay(10, "mentions");
@@ -407,30 +406,6 @@ function z_engine_attrition()
 			{
 				z_engine_input();
 			}, 1);
-			tabs = new Control.Tabs('tabbed',
-			{
-				afterChange: function()
-				{
-					var visible = z_engine_current_timeline();
-					switch (visible)
-					{
-						case "dms-inbox-timeline":
-						case "dms-outbox-timeline":
-							$("new-dm-user").appear();
-						break;
-						default:
-							$("new-tweet").removeClassName("dm");
-							$("new-dm-user").fade().setValue("");
-						break;
-					}
-					if (visible != "threaded-timeline")
-					{
-						$("threaded-timeline").update();
-						latest_threaded_id = 0;
-					}
-				}
-			});
-			tabs.first();
 			var autocomplete_users = $w(store.get('users').strip()).uniq();
 			var autocomplete_users_dm = "";
 			autocomplete_users.each(function(item)
@@ -484,14 +459,41 @@ function z_engine_attrition()
 				shiftKey: true
 			});
 			progress_bar = new Control.ProgressBar('progress-bar');
-			var settings_window = new Control.Modal($(document.body).down('[href=/account/settings]'),
+			var settings_window = new Control.Modal($(document.body).down('[href=#settings-div]'),
 			{
 				className: 'window',
 				closeOnClick: 'overlay',
 				fade: true,
-				method: "GET",
 				overlayOpacity: 0.5
 			});
+			tabs = new Control.Tabs('tabbed',
+			{
+				beforechange: function()
+				{
+					previous_tab = z_engine_current_timeline();
+				},
+				afterChange: function()
+				{
+					var visible = z_engine_current_timeline();
+					switch (visible)
+					{
+						case "dms-inbox-timeline":
+						case "dms-outbox-timeline":
+							$("new-dm-user").appear();
+						break;
+						default:
+							$("new-tweet").removeClassName("dm");
+							$("new-dm-user").fade().setValue("");
+						break;
+					}
+					if (visible != "threaded-timeline")
+					{
+						$("threaded-timeline").update();
+						latest_threaded_id = 0;
+					}
+				}
+			});
+			tabs.first();
 			new Event.observe("new-tweet","keyup",function(event)
 			{
 				z_engine_input();
@@ -512,12 +514,13 @@ function z_engine_attrition()
 			});
 			z_engine_image_dropper();
 			z_engine_notification_setup();
+			z_engine_settings_setup();
 		});
 		socket.on("mentions", function(json)
 		{
 			json.each(function(item)
 			{
-				z_engine_tweet(item, "mentions");
+				z_engine_tweet(item, "mentions bottom");
 			});
 			$("loading-mentions").fade();
 			$("loading-inbox").appear();
@@ -531,6 +534,89 @@ function z_engine_attrition()
 				z_engine_notification("","notice!","you have "+json.remaining_hits+" (of "+json.hourly_limit+") request tokens left!");
 			}
 		});
+		socket.on("related", function(json) //very alpha material right here, it clones the sidebar in new twitter somewhat.
+		{                                   //this was built mostly from looking at standard calls to api, as there are no
+			try                             //official or unofficial docs on this method. hopefully it works for you too :)
+			{                               //it is possible that you may need new twitter enabled for this to work right!
+				var origin = false;
+				json.data.each(function(item1)
+				{
+					if (item1.kind == "Tweet")
+					{
+						if (item1.value.retweeted_status)
+						{
+							var id = item1.value.retweeted_status.id_str;
+						}
+						else
+						{
+							var id = item1.value.id_str;
+						}
+						if (id == json.origin)
+						{
+							origin = true;
+						}
+						var role = item1.annotations.ConversationRole;
+						switch (role)
+						{
+							case 'Ancestor':
+								var position = "bottom";
+							break;
+							case 'Descendant':
+								var position = "top";
+							break;
+							case 'Fork':
+								var position = "top";
+							break;
+						}
+						z_engine_tweet(item1.value, "threaded "+position);
+					}
+					else
+					{
+						item1.results.each(function(item2)
+						{
+							if (item2.kind == "Tweet")
+							{
+								if (item2.value.retweeted_status)
+								{
+									var id = item2.value.retweeted_status.id_str;
+								}
+								else
+								{
+									var id = item2.value.id_str;
+								}
+								if (id == json.origin)
+								{
+									origin = true;
+								}
+								var role = item2.annotations.ConversationRole;
+								switch (role)
+								{
+									case 'Ancestor':
+										var position = "bottom";
+									break;
+									case 'Descendant':
+										var position = "top";
+									break;
+									case 'Fork':
+										var position = "top";
+									break;
+								}
+								z_engine_tweet(item2.value, "threaded "+position);
+							}
+						});
+					}
+				});
+				if (content_stored[json.origin])
+				{
+					z_engine_tweet(content_stored[json.origin].evalJSON(true), "threaded top");
+				}
+			}
+			catch(error)
+			{
+				console.log(error);
+			}
+			rates--;
+		});
 		socket.on("retweet_info", function(json)
 		{
 			var id = json.retweeted_status.id_str;
@@ -538,21 +624,21 @@ function z_engine_attrition()
 			content_rts_stored[id] = JSON.stringify(json);
 			if ($("rt-"+id))
 			{
-				$("rt-"+id).setAttribute("title","undo retweet");
-				$("rt-"+id).setAttribute("src","img/rtd.png");
-				$("rt-"+id).setAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
+				$("rt-"+id).writeAttribute("title","undo retweet");
+				$("rt-"+id).writeAttribute("src","img/rtd.png");
+				$("rt-"+id).writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
 			}
 			if ($("rt-"+id+"-mentioned"))
 			{
-				$("rt-"+id+"-mentioned").setAttribute("title","undo retweet");
-				$("rt-"+id+"-mentioned").setAttribute("src","img/rtd.png");
-				$("rt-"+id+"-mentioned").setAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
+				$("rt-"+id+"-mentioned").writeAttribute("title","undo retweet");
+				$("rt-"+id+"-mentioned").writeAttribute("src","img/rtd.png");
+				$("rt-"+id+"-mentioned").writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
 			}
 			if ($("rt-"+id+"-threaded"))
 			{
-				$("rt-"+id+"-threaded").setAttribute("title","undo retweet");
-				$("rt-"+id+"-threaded").setAttribute("src","img/rtd.png");
-				$("rt-"+id+"-threaded").setAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
+				$("rt-"+id+"-threaded").writeAttribute("title","undo retweet");
+				$("rt-"+id+"-threaded").writeAttribute("src","img/rtd.png");
+				$("rt-"+id+"-threaded").writeAttribute("onclick","z_engine_destroy('"+this_id+"','rt');");
 			}
 		});
 		socket.on("server_error", function(json)
@@ -584,8 +670,8 @@ function z_engine_attrition()
 			{
 				var id = json.retweeted_status.id_str;
 			}
-			content_threads_stored[id] = JSON.stringify(json);
-			z_engine_tweet(json, "threaded");
+			content_stored[id] = JSON.stringify(json);
+			z_engine_tweet(json, "threaded bottom");
 			rates--;
 		});
 		socket.on("tweet", function(json)
@@ -736,23 +822,23 @@ function z_engine_destroy(id, method)
 					content_rts_stored.splice(index, 1); //see ya!
 					if ($("rt-"+id))
 					{
-						$("rt-"+id).setAttribute("title","retweet");
-						$("rt-"+id).setAttribute("src","img/rt.png");
-						$("rt-"+id).setAttribute("onclick","z_engine_retweet('"+id+"');");
+						$("rt-"+id).writeAttribute("title","retweet");
+						$("rt-"+id).writeAttribute("src","img/rt.png");
+						$("rt-"+id).writeAttribute("onclick","z_engine_retweet('"+id+"');");
 						z_engine_tweet_right_click(id, "rt-"+id, author, author2, userid, usermentions, text, faved, false, locked, "home");
 					}
 					if ($("rt-"+id+"-mentioned"))
 					{
-						$("rt-"+id+"-mentioned").setAttribute("title","retweet");
-						$("rt-"+id+"-mentioned").setAttribute("src","img/rt.png");
-						$("rt-"+id+"-mentioned").setAttribute("onclick","z_engine_retweet('"+id+"');");
+						$("rt-"+id+"-mentioned").writeAttribute("title","retweet");
+						$("rt-"+id+"-mentioned").writeAttribute("src","img/rt.png");
+						$("rt-"+id+"-mentioned").writeAttribute("onclick","z_engine_retweet('"+id+"');");
 						z_engine_tweet_right_click(id, "rt-"+id+"-mentioned", author, author2, userid, usermentions, text, faved, false, locked, "mentions");
 					}
 					if ($("rt-"+id+"-threaded"))
 					{
-						$("rt-"+id+"-threaded").setAttribute("title","retweet");
-						$("rt-"+id+"-threaded").setAttribute("src","img/rt.png");
-						$("rt-"+id+"-threaded").setAttribute("onclick","z_engine_retweet('"+id+"');");
+						$("rt-"+id+"-threaded").writeAttribute("title","retweet");
+						$("rt-"+id+"-threaded").writeAttribute("src","img/rt.png");
+						$("rt-"+id+"-threaded").writeAttribute("onclick","z_engine_retweet('"+id+"');");
 						z_engine_tweet_right_click(id, "rt-"+id+"-threaded", author, author2, userid, usermentions, text, faved, false, locked, "threads");
 					}
 					$break;
@@ -766,6 +852,11 @@ function z_engine_destroy(id, method)
 /* drop tweet */
 function z_engine_drop_tweet(id)
 {
+	if (content_stored[id])
+	{
+		var id_index = content_stored.indexOf(id);
+		content_stored.splice(id_index, 1);
+	}
 	if ($("comment-"+id))
 	{
 		$("comment-"+id).setStyle("text-decoration: line-through;");
@@ -829,13 +920,6 @@ function z_engine_drop_tweet(id)
 	}
 }
 
-/* convert entities, etc */
-function z_engine_escape(text)
-{
-	var escaped = new Element('textarea').update(text.replace(/</g,"&lt;").replace(/>/g,"&gt;").strip()).getValue();
-	return escaped;
-}
-
 /* the fading + blind down animation */
 function z_engine_fade_down(id)
 {
@@ -873,21 +957,21 @@ function z_engine_favorite(id)
 	socket.emit("favorite", {action: "do", id_str: id});
 	if ($("fave-"+id))
 	{
-		$("fave-"+id).setAttribute("title","unfavorite");
-		$("fave-"+id).setAttribute("src","img/favd.png");
-		$("fave-"+id).setAttribute("onclick","z_engine_unfavorite('"+id+"');");
+		$("fave-"+id).writeAttribute("title","unfavorite");
+		$("fave-"+id).writeAttribute("src","img/favd.png");
+		$("fave-"+id).writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
 	}
 	if ($("fave-"+id+"-mentioned"))
 	{
-		$("fave-"+id+"-mentioned").setAttribute("title","unfavorite");
-		$("fave-"+id+"-mentioned").setAttribute("src","img/favd.png");
-		$("fave-"+id+"-mentioned").setAttribute("onclick","z_engine_unfavorite('"+id+"');");
+		$("fave-"+id+"-mentioned").writeAttribute("title","unfavorite");
+		$("fave-"+id+"-mentioned").writeAttribute("src","img/favd.png");
+		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
 	}
 	if ($("fave-"+id+"-threaded"))
 	{
-		$("fave-"+id+"-threaded").setAttribute("title","unfavorite");
-		$("fave-"+id+"-threaded").setAttribute("src","img/favd.png");
-		$("fave-"+id+"-threaded").setAttribute("onclick","z_engine_unfavorite('"+id+"');");
+		$("fave-"+id+"-threaded").writeAttribute("title","unfavorite");
+		$("fave-"+id+"-threaded").writeAttribute("src","img/favd.png");
+		$("fave-"+id+"-threaded").writeAttribute("onclick","z_engine_unfavorite('"+id+"');");
 	}
 }
 
@@ -992,8 +1076,10 @@ function z_engine_get_language()
 				method: 'GET',
 				onSuccess: function(transport)
 				{
+					translation = "";
 					translation = transport.responseText.evalJSON(true);
 					z_engine_set_language();
+					z_engine_settings_set_language();
 				}
 			});
 		break;
@@ -1154,7 +1240,7 @@ function z_engine_notification(av, title, text)
 		}
 		if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) //we can access webkit notifications
 		{
-			var notification = window.webkitNotifications.createNotification(av, title, text);
+			var notification = window.webkitNotifications.createNotification(av, title, text.unescapeHTML());
 			notification.show();
 			window.setTimeout(function()
 			{
@@ -1164,11 +1250,11 @@ function z_engine_notification(av, title, text)
 		else if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1) //we might be able to access them if the user allows us to
 		{
 			window.webkitNotifications.requestPermission();
-			growler.growl(av, title, text); //send a growler notification anyway
+			growler.growl(av, title, text.unescapeHTML()); //send a growler notification anyway
 		}
 		else if (!window.webkitNotifications || window.webkitNotifications && window.webkitNotifications.checkPermission() == 2) //we cant access notifications
 		{
-			growler.growl(av, title, text);
+			growler.growl(av, title, text.unescapeHTML());
 		}
 	}
 }
@@ -1211,6 +1297,9 @@ function z_engine_prune_tweets()
 		{
 			if (index > home_cutoff)
 			{
+				var id = $(item).readAttribute("id").replace(/comment-/i,"");
+				var id_index = content_stored.indexOf(id);
+				content_stored.splice(id_index, 1);
 				$(item).remove();
 			}
 		});
@@ -1221,6 +1310,10 @@ function z_engine_prune_tweets()
 		{
 			if (index > mentions_cutoff)
 			{
+				var id = $(item).readAttribute("id").replace(/comment-/i,"");
+				id = id.replace(/-mentioned/i,"");
+				var id_index = content_stored.indexOf(id);
+				content_stored.splice(id_index, 1);
 				$(item).remove();
 			}
 		});
@@ -1231,6 +1324,9 @@ function z_engine_prune_tweets()
 		{
 			if (index > dms_cutoff)
 			{
+				var id = $(item).readAttribute("id").replace(/comment-/i,"");
+				var id_index = content_stored.indexOf(id);
+				content_stored.splice(id_index, 1);
 				$(item).remove();
 			}
 		});
@@ -1241,6 +1337,9 @@ function z_engine_prune_tweets()
 		{
 			if (index > dms_cutoff)
 			{
+				var id = $(item).readAttribute("id").replace(/comment-/i,"");
+				var id_index = content_stored.indexOf(id);
+				content_stored.splice(id_index, 1);
 				$(item).remove();
 			}
 		});
@@ -1251,10 +1350,21 @@ function z_engine_prune_tweets()
 		{
 			if (index > threaded_cutoff)
 			{
+				var id = $(item).readAttribute("id").replace(/comment-/i,"");
+				id = id.replace(/-mentioned/i,"");
+				var id_index = content_stored.indexOf(id);
+				content_stored.splice(id_index, 1);
 				$(item).remove();
 			}
 		});
 	}
+}
+
+/* related tweets */
+function z_engine_related(id, replyid)
+{
+	tabs.last();
+	socket.emit("related", {id_str: id, origin: replyid});
 }
 
 /* remember usernames (autocompleter related) */
@@ -1315,7 +1425,7 @@ function z_engine_retweet(id)
 function z_engine_retweet_comment(id, author, text)
 {
 	reply_id = id; //set this as a reply, it looks nicer
-	$("new-tweet").setValue("RT @"+author+" "+z_engine_escape(text));
+	$("new-tweet").setValue("RT @"+author+" "+text.unescapeHTML());
 	$("new-tweet").focus();
 }
 
@@ -1406,14 +1516,14 @@ function z_engine_set_klout(data, id)
 			if ($("klout-"+id))
 			{
 				$("klout-"+id).addTip(kloutinfo, kloutinfo_params);
-				$("klout-"+id).setAttribute('src', 'img/kltd.png');
-				$("klout-"+id).setAttribute('title', '');
+				$("klout-"+id).writeAttribute('src', 'img/kltd.png');
+				$("klout-"+id).writeAttribute('title', '');
 			}
 			if ($("klout-"+id+"-mentioned"))
 			{
 				$("klout-"+id+"-mentioned").addTip(kloutinfo, kloutinfo_params);
-				$("klout-"+id+"-mentioned").setAttribute('src', 'img/kltd.png');
-				$("klout-"+id+"-mentioned").setAttribute('title', '');
+				$("klout-"+id+"-mentioned").writeAttribute('src', 'img/kltd.png');
+				$("klout-"+id+"-mentioned").writeAttribute('title', '');
 			}
 		}
 	}
@@ -1446,7 +1556,6 @@ function z_engine_settings_checked_clicker(id, storage)
 			case 'lang':
 				store.set(storage, value);
 				z_engine_get_language();
-				z_engine_settings_set_language.delay(1);
 			break;
 			case 'notifications_timeout':
 				store.set(storage, value);
@@ -1490,7 +1599,7 @@ function z_engine_settings_get(id, storage)
 		break;
 		case 'lang':
 			var language = store.get("lang");
-			$(language).setAttribute("selected", "selected");
+			$(language).writeAttribute("selected", "selected");
 		break;
 		default:
 			if (store.get(storage) == "on")
@@ -1532,7 +1641,6 @@ function z_engine_settings_setup()
 	z_engine_settings_checked_clicker("use-geo", "geo");
 	z_engine_settings_get("use-klout", "klout");
 	z_engine_settings_checked_clicker("use-klout", "klout");
-	z_engine_settings_set_language();
 }
 
 /* shorten urls */
@@ -1563,7 +1671,7 @@ function z_engine_stream_queue()
 			if (queue.isJSON())
 			{
 				var data = queue.evalJSON(true);
-				z_engine_tweet(data, "home");
+				z_engine_tweet(data, "home top");
 			}
 		}
 	}
@@ -1574,33 +1682,49 @@ function z_engine_threaded(init, id)
 {
 	if (init)
 	{
-		//tabs.setActiveTab("threaded-timeline-click");
 		tabs.last();
-		if (!content_threads_stored[init])
+		if (!content_stored[init])
 		{
-			socket.emit("show", {id_str: init});
+			if (!content_stored[init])
+			{
+				socket.emit("show", {id_str: init});
+			}
+			else
+			{
+				z_engine_tweet(content_stored[init].evalJSON(true), "threaded top");
+			}
 		}
 		else
 		{
-			z_engine_tweet(content_threads_stored[init].evalJSON(true), "threaded");
+			z_engine_tweet(content_stored[init].evalJSON(true), "threaded top");
 		}
 	}
 	else
 	{
-		if (!content_threads_stored[id])
+		if (!content_stored[id])
 		{
-			socket.emit("show", {id_str: id}); //continue the loop until nothing is left
+			if (!content_stored[id])
+			{
+				socket.emit("show", {id_str: id}); //continue the loop until nothing is left
+			}
+			else
+			{
+				z_engine_tweet(content_stored[id].evalJSON(true), "threaded bottom");
+			}
 		}
 		else
 		{
-			z_engine_tweet(content_threads_stored[id].evalJSON(true), "threaded");
+			z_engine_tweet(content_stored[id].evalJSON(true), "threaded bottom");
 		}
 	}
 }
 
 /* the engine that handles, sorts, and displays our data */
-function z_engine_tweet(data, output)
+function z_engine_tweet(data, divinfo)
 {
+	var split_div = $w(divinfo);
+	var output = split_div[0];
+	var position = split_div[1];
 	if (output != "dms")
 	{
 		if (!data.retweeted_status)
@@ -1616,6 +1740,7 @@ function z_engine_tweet(data, output)
 			var followers = data.user.followers_count;
 			var following = data.user.friends_count;
 			var id = data.id_str;
+			var listed = data.user.listed_count;
 			var location = data.user.location;
 			var locked = data.user["protected"];
 			var name = data.user.name;
@@ -1643,6 +1768,7 @@ function z_engine_tweet(data, output)
 			var followers = data.retweeted_status.user.followers_count;
 			var following = data.retweeted_status.user.friends_count;
 			var id = data.retweeted_status.id_str;
+			var listed = data.retweeted_status.user.listed_count;
 			var location = data.retweeted_status.user.location;
 			var locked = data.retweeted_status.user["protected"];
 			var name = data.retweeted_status.user.name;
@@ -1670,6 +1796,7 @@ function z_engine_tweet(data, output)
 		var following = data.sender.friends_count;
 		var id = data.id_str;
 		var name = data.sender.name;
+		var listed = data.sender.listed_count;
 		var location = data.sender.location;
 		var locked = false;
 		var reply = data.recipient.screen_name;
@@ -1742,20 +1869,21 @@ function z_engine_tweet(data, output)
 	if (!shown && !client_blocked && !hashtag_blocked && !mention_blocked && !user_blocked)
 	{
 		(new Image()).src = avatar; //load av in the background
-		content_stored[id] = true;
+		content_stored[id] = JSON.stringify(data);
 		z_engine_remember_author(author);
 		var userinfo = "";
-		if (description != null)
+		if (description != null && description != "")
 		{
 				userinfo += description+'<br /><br />';
 		}
-		if (location != null)
+		if (location != null && location != "")
 		{
-			userinfo += 'location: '+location+'<br />';
+			userinfo += 'location: <strong>'+location+'</strong><br />';
 		}
 		userinfo += 'tweets: <strong>'+tweets+'</strong><br />';
 		userinfo += 'following: <strong>'+following+'</strong><br />';
-		userinfo += 'followers: <strong>'+followers+'</strong>';
+		userinfo += 'followers: <strong>'+followers+'</strong><br />';
+		userinfo += 'listed: <strong>'+listed+'</strong>';
 		if (!entities)
 		{
 			var mentioned = false;
@@ -1829,6 +1957,7 @@ function z_engine_tweet(data, output)
 									}
 									else
 									{
+										//var in_reply_to_link_element = new Element('span', {'onclick': 'z_engine_related("'+id+'","'+replyid+'");', 'style': 'cursor: pointer;'});
 										var in_reply_to_link_element = new Element('span', {'onclick': 'z_engine_threaded("'+id+'","'+replyid+'");', 'style': 'cursor: pointer;'});
 									}
 									in_reply_to_link_element.update('@'+reply+' ');
@@ -1913,47 +2042,74 @@ function z_engine_tweet(data, output)
 		new Element.extend(left_element);
 		new Element.extend(right2_element);
 		new Element.extend(container_element);
+		switch (position)
+		{
+			case 'bottom':
+				var container_output = {'bottom': container_element}
+			break;
+			case 'top':
+				var container_output = {'top': container_element}
+			break;
+		}
 		switch (output)
 		{
 			case 'dms':
 				if (author != screen_name)
 				{
-					$("dms-inbox-timeline").insert({'top': container_element});
+					$("dms-inbox-timeline").insert(container_output);
 				}
 				else if (author == screen_name)
 				{
-					$("dms-outbox-timeline").insert({'top': container_element});
+					$("dms-outbox-timeline").insert(container_output);
 				}
 			break;
 			case 'home':
-				$("home-timeline").insert({'top': container_element});
+				$("home-timeline").insert(container_output);
 			break;
 			case 'mentions':
-				$("mentions-timeline").insert({'bottom': container_element});
+				$("mentions-timeline").insert(container_output);
 			break;
 		}
 		if (mentioned && output != "mentions" && output != "threaded" && author != screen_name && !data.retweeted_status)
 		{
 			var mentioned_clone = cloneNodeWithEvents(container_element);
-			mentioned_clone.setAttribute("id", "comment-"+id+"-mentioned");
-			left_element.setAttribute("id", "left-"+id+"-mentioned");
-			right2_element.setAttribute("id", "right-"+id+"-mentioned");
-			gravatar_author_img_element.setAttribute("id", "av-"+id+"-mentioned");
+			mentioned_clone.writeAttribute("id", "comment-"+id+"-mentioned");
+			left_element.writeAttribute("id", "left-"+id+"-mentioned");
+			right2_element.writeAttribute("id", "right-"+id+"-mentioned");
+			gravatar_author_img_element.writeAttribute("id", "av-"+id+"-mentioned");
 			new Element.extend(mentioned_clone);
-			$("mentions-timeline").insert({'top': mentioned_clone});
+			switch (position)
+			{
+				case 'bottom':
+					var mentioned_output = {'bottom': mentioned_clone}
+				break;
+				case 'top':
+					var mentioned_output = {'top': mentioned_clone}
+				break;
+			}
+			$("mentions-timeline").insert(mentioned_output);
 			z_engine_tweet_buttons("mentions", id, author, author2, userid, text, locked, faved, rtd, mentions_string, userinfo);
 			z_engine_fade_down("comment-"+id+"-mentioned");
 			z_engine_notification(avatar, "@"+author+" mentioned you!", text);
 		}
 		if (output == "threaded")
 		{
-			left_element.setAttribute("id", "left-"+id+"-threaded");
-			right2_element.setAttribute("id", "right-"+id+"-threaded");
-			gravatar_author_img_element.setAttribute("id", "av-"+id+"-threaded");
+			left_element.writeAttribute("id", "left-"+id+"-threaded");
+			right2_element.writeAttribute("id", "right-"+id+"-threaded");
+			gravatar_author_img_element.writeAttribute("id", "av-"+id+"-threaded");
 			var threaded_clone = cloneNodeWithEvents(container_element);
-			threaded_clone.setAttribute("id", "comment-"+id+"-threaded");
+			threaded_clone.writeAttribute("id", "comment-"+id+"-threaded");
 			new Element.extend(threaded_clone);
-			$("threaded-timeline").insert({'bottom': threaded_clone});
+			switch (position)
+			{
+				case 'bottom':
+					var threaded_output = {'bottom': threaded_clone}
+				break;
+				case 'top':
+					var threaded_output = {'top': threaded_clone}
+				break;
+			}
+			$("threaded-timeline").insert(threaded_output);
 			z_engine_tweet_buttons("threaded", id, author, author2, userid, text, locked, faved, rtd, mentions_string, userinfo);
 			z_engine_fade_down("comment-"+id+"-threaded");
 		}
@@ -2426,21 +2582,21 @@ function z_engine_unfavorite(id)
 	socket.emit("favorite", {action: "undo", id_str: id});
 	if ($("fave-"+id))
 	{
-		$("fave-"+id).setAttribute("title","favorite");
-		$("fave-"+id).setAttribute("src","img/fav.png");
-		$("fave-"+id).setAttribute("onclick","z_engine_favorite('"+id+"');");
+		$("fave-"+id).writeAttribute("title","favorite");
+		$("fave-"+id).writeAttribute("src","img/fav.png");
+		$("fave-"+id).writeAttribute("onclick","z_engine_favorite('"+id+"');");
 	}
 	if ($("fave-"+id+"-mentioned"))
 	{
-		$("fave-"+id+"-mentioned").setAttribute("title","favorite");
-		$("fave-"+id+"-mentioned").setAttribute("src","img/fav.png");
-		$("fave-"+id+"-mentioned").setAttribute("onclick","z_engine_favorite('"+id+"');");
+		$("fave-"+id+"-mentioned").writeAttribute("title","favorite");
+		$("fave-"+id+"-mentioned").writeAttribute("src","img/fav.png");
+		$("fave-"+id+"-mentioned").writeAttribute("onclick","z_engine_favorite('"+id+"');");
 	}
 	if ($("fave-"+id+"-threaded"))
 	{
-		$("fave-"+id+"-threaded").setAttribute("title","favorite");
-		$("fave-"+id+"-threaded").setAttribute("src","img/fav.png");
-		$("fave-"+id+"-threaded").setAttribute("onclick","z_engine_favorite('"+id+"');");
+		$("fave-"+id+"-threaded").writeAttribute("title","favorite");
+		$("fave-"+id+"-threaded").writeAttribute("src","img/fav.png");
+		$("fave-"+id+"-threaded").writeAttribute("onclick","z_engine_favorite('"+id+"');");
 	}
 }
 
@@ -2452,7 +2608,7 @@ function z_engine_update_relative_time(elements)
 	{
 		time_elements.each(function(item)
 		{
-			var this_stamp = item.getAttribute("datetime");
+			var this_stamp = item.readAttribute("datetime");
 			item.update(relative_time(this_stamp));
 		});
 	}

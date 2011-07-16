@@ -4,6 +4,7 @@
 var util = require('util'),
 	url = require('url'),
 	querystring = require('querystring'),
+	config = require('./config').config,
 	crypto = require('crypto'),
 	http = require('http'),
 	EventEmitter = require('events').EventEmitter,
@@ -38,7 +39,8 @@ var OAUTH_CONFIG = {
  * Twitter API endpoint URL
  */
 var API_URL = 'https://api.twitter.com/1',
-	STREAM_URL = 'https://userstream.twitter.com/2',
+	SITESTREAM_URL = 'http://sitestream.twitter.com/2b',
+	USERSTREAM_URL = 'https://userstream.twitter.com/2',
 	AUTHORIZE_URL = 'https://twitter.com/oauth/authorize?oauth_token=';
 
 /*
@@ -74,7 +76,7 @@ function Twitter(consumerKey, consumerSecret, options)
 	this._token_secret = options._token_secret;
 	this._results = options._results;
 	this._apiUrl = options._apiUrl || API_URL;
-	this._streamUrl = options._streamUrl || STREAM_URL;
+	this._streamUrl = options._streamUrl || USERSTREAM_URL; //force usage of userstreams if we dont have a sitestream key
 }
 /*
  * Normalize the error as an Error object.
@@ -189,6 +191,17 @@ Twitter.prototype.show = function(id, params, callback)
 		params = {};
 	}
 	var path = '/statuses/show/' + id + '.json';
+	return this._doGet(path, params, callback);
+};
+
+Twitter.prototype.related_results = function(id, params, callback)
+{
+	if(typeof(params) == 'function')
+	{
+		callback = params;
+		params = {};
+	}
+	var path = '/related_results/show/' + id + '.json';
 	return this._doGet(path, params, callback);
 };
 
@@ -413,17 +426,32 @@ Twitter.prototype.reverseGeo = function(params, callback)
 // -----------------------------------------------------------------------------
 Twitter.prototype.stream = function(method, params, callback)
 {
-	if (typeof(params) === 'function')
+	if (typeof(params) == 'function')
 	{
 		callback = params;
 		params = null;
 	}
-	var url = buildUrl([this._streamUrl, '/user.json'].join(''), params);
+	switch (method)
+	{
+		case 'site':
+			if (params && params.follow && Array.isArray(params.follow))
+			{
+				params.follow = params.follow.join(',');
+			}
+		break;
+		case 'user':
+			if (params && params.track && Array.isArray(params.track))
+			{
+				params.track = params.track.join(',');
+			}
+		break;
+	}
+	var url = buildUrl([this._streamUrl,'/'+method+'.json'].join(''), params);
 	var request = this._oa.post(url, this.accessKey, this.accessSecret);
 	var stream = new streamparser();
 	stream.destroy = function()
 	{
-		if (typeof(request.abort) === 'function')
+		if (typeof(request.abort) == 'function')
 		{
 			request.abort(); // node v0.4.0
 		}
@@ -452,7 +480,6 @@ Twitter.prototype.stream = function(method, params, callback)
 		stream.emit('error', error);
 	});
 	request.end();
-
 	if (typeof(callback) === 'function')
 	{
 		callback(stream);

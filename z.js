@@ -18,6 +18,7 @@ var twitter = require('./vendor/twitter');
  */
 var key = config.oauth_key;
 var secret = config.oauth_secret;
+var sitestream_key = config.oauth_key_sitestream;
 var imgur_key = config.imgur_key;
 var klout_key = config.klout_key;
 var klout = require('./vendor/klout')(klout_key);
@@ -152,33 +153,6 @@ server.get('/oauth/logout', function(req, res)
 	});
 });
 
-/* settings page */
-server.get('/account/settings',function(req, res)
-{
-	gzip.gzip();
-	if (!req.session.oauth)
-	{
-		res.redirect("/");
-	}
-	else
-	{
-		if (typeof(req.session.oauth._results) == "object")
-		{
-			res.render('settings.jade',
-			{
-				title: 'settings for @'+req.session.oauth._results.screen_name
-			});
-		}
-		else
-		{
-			req.session.destroy(function()
-			{
-				res.redirect("/");
-			});
-		}
-	}
-});
-
 if (!module.parent)
 {
 	server.listen(port);
@@ -214,8 +188,15 @@ socket.on('sconnection', function(client, session)
 			var tw = new twitter(key, secret, session.oauth);
 			if(tw)
 			{
-				z_engine_send_to_client(client, "loaded", {loaded: true});
-				z_engine_send_to_client(client, "info", {screen_name: session.oauth._results.screen_name, user_id: session.oauth._results.user_id});
+				var loaded = {
+					loaded: true
+				}
+				var info = {
+					screen_name: session.oauth._results.screen_name,
+					user_id: session.oauth._results.user_id
+				}
+				z_engine_send_to_client(client, "loaded", loaded);
+				z_engine_send_to_client(client, "info", info);
 				client.on("delete", function(json)
 				{
 					switch (json.action)
@@ -247,34 +228,34 @@ socket.on('sconnection', function(client, session)
 						case "dms-inbox":
 							tw.getInbox({count: startup_count, include_entities: true}, function(error, data, response)
 							{
-								if(!error)
+								if (!error)
 								{
-									z_engine_send_to_client(client, "dms", data.reverse());
+									z_engine_send_to_client(client, "dms", data);
 								}
 							});
 						break;
 						case "dms-outbox":
 							tw.getOutbox({count: startup_count, include_entities: true}, function(error, data, response)
 							{
-								if(!error)
+								if (!error)
 								{
-									z_engine_send_to_client(client, "dms", data.reverse());
+									z_engine_send_to_client(client, "dms", data);
 								}
 							});
 						break;
 						case "home":
 							tw.getTimeline({type: "home_timeline", count: startup_count, include_entities: true}, function(error, data, response)
 							{
-								if(!error)
+								if (!error)
 								{
-									z_engine_send_to_client(client, "home", data.reverse());
+									z_engine_send_to_client(client, "home", data);
 								}
 							});
 						break;
 						case "mentions":
 							tw.getTimeline({type: "mentions", count: startup_count, include_entities: true}, function(error, data, response)
 							{
-								if(!error)
+								if (!error)
 								{
 									z_engine_send_to_client(client, "mentions", data);
 								}
@@ -283,58 +264,17 @@ socket.on('sconnection', function(client, session)
 						case "rates":
 							tw.rateLimit(function(error, data, response)
 							{
-								if(!error)
+								if (!error)
 								{
 									z_engine_send_to_client(client, "rates", data);
 								}
 							});
 						break;
 						case "userstream":
-							tw.stream("user", {include_entities: true}, function(stream)
+							if (!sitestream_key)
 							{
-								stream.on("data", function (data)
-								{
-									try
-									{
-										if (data.text && data.created_at && data.user)
-										{
-											z_engine_send_to_client(client, "tweet", data);
-										}
-										else if (data["delete"])
-										{
-											z_engine_send_to_client(client, "delete", data["delete"]);
-										}
-										else if (data.direct_message)
-										{
-											z_engine_send_to_client(client, "direct_message", data.direct_message);
-										}
-										else if (data.event)
-										{
-											z_engine_send_to_client(client, "event", data);
-										}
-										else if (data.friends)
-										{
-											z_engine_send_to_client(client, "friends", data.friends);
-										}
-									}
-									catch(error)
-									{
-										console.error("userstream message error: "+sys.inspect(error));
-									}
-								});
-								client.on("disconnect", function()
-								{
-									stream.destroy();
-								});
-								stream.on("error", function(data)
-								{
-									z_engine_send_to_client(client, "server_error", {event: "error"});
-								});
-								stream.on("end", function()
-								{
-									z_engine_send_to_client(client, "server_error", {event: "end"});
-								});
-							});
+								z_engine_userstream(tw, client);
+							}
 						break;
 					}
 				});
@@ -342,7 +282,7 @@ socket.on('sconnection', function(client, session)
 				{
 					klout.show(json.klout, function(error, data)
 					{
-						if(error)
+						if (error)
 						{
 							z_engine_send_to_client(client, "klout", {klout: "error", id_str: json.id_str});
 						}
@@ -352,11 +292,21 @@ socket.on('sconnection', function(client, session)
 						}
 					});
 				});
+				client.on("related", function(json)
+				{
+					tw.related_results(json.id_str, {count: startup_count, include_entities: true}, function(error, data, response)
+					{
+						if (!error)
+						{
+							z_engine_send_to_client(client, "related", {data: data, origin: json.origin});
+						}
+					});
+				});
 				client.on("retweet", function(json)
 				{
 					tw.retweet(json.id_str, function(error, data, response)
 					{
-						if(!error)
+						if (!error)
 						{
 							z_engine_send_to_client(client, "retweet_info", data);
 						}
@@ -376,11 +326,7 @@ socket.on('sconnection', function(client, session)
 				{
 					tw.show(json.id_str, {include_entities: true}, function(error, data, response)
 					{
-						if(error)
-						{
-							console.log(error);
-						}
-						else
+						if (!error)
 						{
 							z_engine_send_to_client(client, "show", data);
 						}
@@ -421,17 +367,117 @@ socket.on('error', function(error)
 });
 
 /*
- * some functions used by the server
+ * globalized functions and vars
  */
 
-/* send data to everyone */
+var sitestream_clients = new Array();
+
+/* send message to all connected clients */
 function z_engine_send_to_all(type, message)
 {
 	io.sockets.emit(type, message);
 }
-
-/* send data to a specific client */
+/* send message to a specific client */
 function z_engine_send_to_client(client, type, message)
 {
 	client.json.emit(type, message);
+}
+
+function z_engine_sitestream()
+{
+	/*var tw = new twitter(key, secret);
+	tw.stream("site", {include_entities: true}, function(stream)
+	{
+		stream.on("data", function (data)
+		{
+			try
+			{
+				if (data.text && data.created_at && data.user)
+				{
+					z_engine_send_to_client(client, "tweet", data);
+				}
+				else if (data["delete"])
+				{
+					z_engine_send_to_client(client, "delete", data["delete"]);
+				}
+				else if (data.direct_message)
+				{
+					z_engine_send_to_client(client, "direct_message", data.direct_message);
+				}
+				else if (data.event)
+				{
+					z_engine_send_to_client(client, "event", data);
+				}
+				else if (data.friends)
+				{
+					z_engine_send_to_client(client, "friends", data.friends);
+				}
+			}
+			catch(error)
+			{
+				console.error("userstream message error: "+sys.inspect(error));
+			}
+		});
+		stream.on("error", function(data)
+		{
+			z_engine_send_to_client(client, "server_error", {event: "error"});
+		});
+		stream.on("end", function()
+		{
+			z_engine_send_to_client(client, "server_error", {event: "end"});
+		});
+		setInterval(function()
+		{
+			stream.destroy();
+		}, 300 * 1000);
+	});*/
+}
+
+function z_engine_userstream(tw, client)
+{
+	tw.stream("user", {include_entities: true}, function(stream)
+	{
+		stream.on("data", function (data)
+		{
+			try
+			{
+				if (data.text && data.created_at && data.user)
+				{
+					z_engine_send_to_client(client, "tweet", data);
+				}
+				else if (data["delete"])
+				{
+					z_engine_send_to_client(client, "delete", data["delete"]);
+				}
+				else if (data.direct_message)
+				{
+					z_engine_send_to_client(client, "direct_message", data.direct_message);
+				}
+				else if (data.event)
+				{
+					z_engine_send_to_client(client, "event", data);
+				}
+				else if (data.friends)
+				{
+					z_engine_send_to_client(client, "friends", data.friends);
+				}
+			}
+			catch(error)
+			{
+				console.error("userstream message error: "+sys.inspect(error));
+			}
+		});
+		client.on("disconnect", function()
+		{
+			stream.destroy();
+		});
+		stream.on("error", function(data)
+		{
+			z_engine_send_to_client(client, "server_error", {event: "error"});
+		});
+		stream.on("end", function()
+		{
+			z_engine_send_to_client(client, "server_error", {event: "end"});
+		});
+	});
 }

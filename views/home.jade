@@ -1,10 +1,10 @@
-#float(class='comment-list-wrapper')
+header(class='comment-list-wrapper')
   #sub-nav
     ul(class='tabbed')
       li(style='float: right;', class='navigation')
         a#logout(href='#', onclick='return false;')
       li(style='float: right;', class='navigation')
-        a#settings(href='/account/settings')
+        a#settings(href='#settings-div')
       li#image(style='display: none; float: right;', title='drop images here!', class='navigation')
       li(style='float: right;', class='navigation')
         a#pause(href='#')
@@ -42,6 +42,33 @@
     img#loading-outbox(src='/img/spinner.gif', class='loading', style='display: none;')
   #threaded-timeline(style='display: none;')
 
-script(type='text/javascript', src='/socket.io/socket.io-sessions.js?'+(new Date()).getTime())
+#settings-div(style='display: none;')
+  fieldset
+    legend#language-settings
+    select#language
+      option(value='english', id='english') english
+      option(value='russian', id='russian') русский
+  fieldset
+    legend#notify-settings
+    input#use-notify(type='checkbox')
+    span#notify-enable-settings
+    br
+    input#use-audio(type='checkbox')
+    span#notify-audio-settings
+  fieldset
+    legend#notify-length-settings
+    input#notify-length(type='range', min='1', max='10', step='0.5')
+  fieldset
+    legend#wait-length-settings
+    input#stream-interval(type='range', min='0.25', max='5', step='0.25')
+  fieldset
+    legend#other-settings
+    input#use-geo(type='checkbox')
+    span#geo-settings
+    br
+    input#use-klout(type='checkbox')
+    span#klout-settings
+
+script(src='/socket.io/socket.io-sessions.js?'+(new Date()).getTime())
 script var growler = new Growler(); z_engine_attrition();
 script= imgur_script

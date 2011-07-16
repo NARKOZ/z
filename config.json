@@ -1,5 +1,6 @@
 {
 	"oauth_key": "",
+	"oauth_key_sitestream": false,
 	"oauth_secret": "",
 	"imgur_key": "",
 	"klout_key": "",
