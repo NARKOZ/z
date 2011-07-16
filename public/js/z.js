@@ -131,10 +131,6 @@ function z_engine_attrition()
 		if (!loaded)
 		{
 			z_engine_get_language();
-			if (store.get('geo') == "on")
-			{
-				z_engine_geo();
-			}
 			new Event.observe("logout","click",function(event)
 			{
 				Event.stop(event);
@@ -512,6 +508,10 @@ function z_engine_attrition()
 				Event.stop(event);
 				z_engine_tweet_pause();
 			});
+			if (store.get('geo') == "on")
+			{
+				z_engine_geo();
+			}
 			z_engine_image_dropper();
 			z_engine_notification_setup();
 			z_engine_settings_setup();
@@ -676,12 +676,6 @@ function z_engine_attrition()
 		});
 		socket.on("tweet", function(json)
 		{
-			content_queued.push(JSON.stringify(json));
-			if (paused)
-			{
-				$("paused-count").update("("+pttid+")");
-				pttid++;
-			}
 			if (json.retweeted_status && json.retweeted_status.user.screen_name == screen_name && json.user.screen_name != screen_name)
 			{
 				var av = json.user.profile_image_url;
@@ -700,6 +694,15 @@ function z_engine_attrition()
 					var title = "@"+json.user.screen_name+" retweeted you!";
 				}
 				z_engine_notification(av, title, text);
+			}
+			else
+			{
+				content_queued.push(JSON.stringify(json));
+				if (paused)
+				{
+					$("paused-count").update("("+pttid+")");
+					pttid++;
+				}
 			}
 		});
 		socket.on("disconnect", function()
