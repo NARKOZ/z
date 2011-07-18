@@ -266,18 +266,7 @@ function z_engine_attrition()
 						}
 						var av = json.source.profile_image_url;
 						var text = json.target_object.text;
-						if (content_faved_stored[json.target_object.id_str] == 2)
-						{
-							var title = "@"+json.source.screen_name+" and "+content_faved_stored[json.target_object.id_str]-1+" other faved your tweet!";
-						}
-						else if (content_faved_stored[json.target_object.id_str] > 2)
-						{
-							var title = "@"+json.source.screen_name+" and "+content_faved_stored[json.target_object.id_str]-1+" others faved your tweet!";
-						}
-						else if (content_faved_stored[json.target_object.id_str] == 1)
-						{
-							var title = "@"+json.source.screen_name+" faved your tweet!";
-						}
+						var title = "@"+json.source.screen_name+" faved your tweet!";
 						z_engine_notification(av, title, text);
 					}
 				break;
