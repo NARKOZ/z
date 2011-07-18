@@ -1597,6 +1597,11 @@ function z_engine_settings_checked_clicker(id, storage)
 				{
 					z_engine_geo();
 				}
+				else
+				{
+					latitude = false;
+					longitude = false;
+				}
 			break;
 			case 'lang':
 				store.set(storage, value);
