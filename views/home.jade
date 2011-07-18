@@ -34,13 +34,9 @@ header(class='comment-list-wrapper')
 
 #container(class='comment-list-wrapper')
   #home-timeline
-    img#loading-home(src='/img/spinner.gif', class='loading')
   #mentions-timeline(style='display: none;')
-    img#loading-mentions(src='/img/spinner.gif', class='loading', style='display: none;')
   #dms-inbox-timeline(style='display: none;')
-    img#loading-inbox(src='/img/spinner.gif', class='loading', style='display: none;')
   #dms-outbox-timeline(style='display: none;')
-    img#loading-outbox(src='/img/spinner.gif', class='loading', style='display: none;')
   #threaded-timeline(style='display: none;')
 
 #settings-div(style='display: none;')
@@ -49,6 +45,11 @@ header(class='comment-list-wrapper')
     select#language
       option(value='english', id='english') english
       option(value='russian', id='russian') русский
+  fieldset
+    legend#retweet-settings
+    select#retweet
+      option(value='comment', id='comment')
+      option(value='quote', id='quote')
   fieldset
     legend#notify-settings
     input#use-notify(type='checkbox')
