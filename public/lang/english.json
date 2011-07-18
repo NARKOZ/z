@@ -37,5 +37,10 @@
 	"notify_enable_settings": "enable",
 	"notify_audio_settings": "audio",
 	"geo_settings": "geo",
-	"klout_settings": "klout"
+	"klout_settings": "klout",
+	"location": "location",
+	"tweets": "tweets",
+	"following": "following",
+	"followers": "followers",
+	"listed": "listed"
 }

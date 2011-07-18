@@ -37,5 +37,10 @@
 	"notify_enable_settings": "позволяют",
 	"notify_audio_settings": "аудио",
 	"geo_settings": "гео",
-	"klout_settings": "klout"
+	"klout_settings": "klout",
+	"location": "местоположение",
+	"tweets": "твиты",
+	"following": "читает",
+	"followers": "читатели",
+	"listed": "списки"
 }

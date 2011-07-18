@@ -268,6 +268,7 @@ legend
 	-webkit-border-radius: 5px;
 	background-color: white;
 	border: 1px solid #DDD;
+	letter-spacing: 0.5px;
 	padding: 1px 12px 0 9px;
 
 	behavior: url(border-radius.htc);
@@ -422,7 +423,7 @@ input[type="text"]:hover, textarea:hover
 	filter:progid:DXImageTransform.Microsoft.Shadow (color=#fefefe, Direction=135, Strength=5);
 	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=#fefefe, Direction=135, Strength=5)";
 }
-input[type="text"]:focus, textarea:focus
+input[type="text"]:focus.tweet, textarea:focus.tweet
 {
 	box-shadow: 0 0 4px inset 0 0 4px rgba(81, 203, 238, 0.75), inset 0 0 4px rgba(81, 203, 238, 0.75);
 	background-color: #fefefe;
@@ -436,15 +437,15 @@ input[type="text"]:focus, textarea:focus
 }
 input[type="text"]:focus.dm, textarea:focus.dm
 {
-	box-shadow: 0 0 4px #BDC3FF, inset 0 0 4px #BDC3FF;
+	box-shadow: 0 0 4px orange, inset 0 0 4px orange;
 	background-color: #fefefe;
 	border: 1px solid #c4c4c4;
-	-khtml-box-shadow: 0 0 4px #BDC3FF, inset 0 0 4px #BDC3FF;
-	-moz-box-shadow: 0 0 4px #BDC3FF, inset 0 0 4px #BDC3FF;
-	-o-box-shadow: 0 0 4px #BDC3FF, inset 0 0 4px #BDC3FF;
-	-webkit-box-shadow: 0 0 4px #BDC3FF, inset 0 0 4px #BDC3FF;
-	filter:progid:DXImageTransform.Microsoft.Shadow (color=#BDC3FF, Direction=135, Strength=5);
-	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=#BDC3FF, Direction=135, Strength=5)";
+	-khtml-box-shadow: 0 0 4px orange, inset 0 0 4px orange;
+	-moz-box-shadow: 0 0 4px orange, inset 0 0 4px orange;
+	-o-box-shadow: 0 0 4px orange, inset 0 0 4px orange;
+	-webkit-box-shadow: 0 0 4px orange, inset 0 0 4px orange;
+	filter:progid:DXImageTransform.Microsoft.Shadow (color=orange, Direction=135, Strength=5);
+	-ms-filter:"progid:DXImageTransform.Microsoft.Shadow (color=orange, Direction=135, Strength=5)";
 }
 input[type="text"]:disabled, textarea:disabled
 {
@@ -651,23 +652,10 @@ div.growls div.black
 	-webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
 	behavior: url(border-radius.htc);
 }
-div.growls div.small
-{
-	border-radius: 5px;
-	width: 200px;
-	min-height: 40px;
-	padding: 5px;
-	margin: 5px;
-	-khtml-border-radius: 5px;
-	-moz-border-radius: 5px;
-	-o-border-radius: 5px;
-	-webkit-border-radius: 5px;
-	behavior: url(border-radius.htc);
-}
 div.growls div.medium
 {
 	border-radius: 10px;
-	width: 250px;
+	width: 300px;
 	min-height: 50px;
 	padding: 10px;	background: #F6F6F6;
 	margin: 10px;
@@ -675,19 +663,6 @@ div.growls div.medium
 	-moz-border-radius: 10px;
 	-o-border-radius: 10px;
 	-webkit-border-radius: 10px;
-	behavior: url(border-radius.htc);
-}
-div.growls div.large
-{
-	border-radius: 15px;
-	width: 300px;
-	min-height: 60px;
-	padding: 15px;
-	margin: 15px;
-	-khtml-border-radius: 15px;
-	-moz-border-radius: 15px;
-	-o-border-radius: 15px;
-	-webkit-border-radius: 15px;
 	behavior: url(border-radius.htc);
 }
 
@@ -794,7 +769,8 @@ div.autocomplete ul li.selected
 	cursor: pointer;
 	display: block;
 	outline: none;
-	padding: 5px;
+	padding: 6px;
+	text-align: center;
 	-khtml-border-radius: 4px;
 	-moz-border-radius: 4px;
 	-o-border-radius: 4px;
