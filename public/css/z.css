@@ -22,7 +22,7 @@ a
 	-khtml-transition: all .20s ease-in-out;
 	-moz-transition: all .20s ease-in-out;
 	-ms-transition: all .20s ease-in-out;
-	-o-transition: all .20s ease-in-out;
+	/*-o-transition: all .20s ease-in-out;*/
 	-webkit-transition: all .20s ease-in-out;
 }
 a:focus, a:hover
@@ -368,7 +368,7 @@ form
 	padding: 1px;
 	margin: 0 10px 50px 10px;
 }
-input, textarea
+input[type="text"], textarea
 {
 	background-color: #fafafa;
 	border: 1px solid #c4c4c4;
@@ -398,7 +398,7 @@ input, textarea
 }
 input[type="range"]
 {
-	width: 95%;
+	width: 100%;
 }
 input[type="text"], input[type="text"]:hover, input[type="text"]:focus, input[type="text"]:disabled,
 textarea, textarea:hover, textarea:focus, textarea:disabled
@@ -1054,12 +1054,6 @@ div.autocomplete ul li.selected
 	-ms-transform: scale(1.15);
 	-o-transform: scale(1.15);
 	-webkit-transform: scale(1.15);
-}
-.loading
-{
-	z-index: 1px;
-	display: inline-block;
-	margin: auto;
 }
 .klout
 {

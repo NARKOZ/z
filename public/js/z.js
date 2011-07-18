@@ -9,7 +9,6 @@ var content_queued = Array(); //outputs our tweets nicely
 var content_rts_stored = Array();
 var content_stored = Array(); //stores all tweets
 var dms_cutoff = 50; //max amount of tweets to display before pruning occurs on all dms
-var dms_loaded = 0; //quick method to hide each dm timelines loading image without needing to write a ton of code to do it
 var following = Array(); //holds our following id's array
 if (!store.get('geo'))
 {
@@ -71,6 +70,10 @@ var pttid = 0; //this serves as the (#) amount displayed when paused
 var rates = 350;
 var remember_cutoff = 199; //the maximum amount of names to store for autocompletion
 var reply_id = false; //catch reply
+if (!store.get('rt_type'))
+{
+	store.set('rt_type', "comment");
+}
 var screen_name = ""; //our own screen name
 var shortened = false;
 var socket = "";
@@ -140,10 +143,6 @@ function z_engine_attrition()
 				Event.stop(event);
 				z_engine_logout();
 			});
-			$("loading-home").center(8);
-			$("loading-mentions").center(8);
-			$("loading-inbox").center(8);
-			$("loading-outbox").center(8);
 		}
 		socket.on("connect",function()
 		{
@@ -180,21 +179,10 @@ function z_engine_attrition()
 		});
 		socket.on("dms", function(json)
 		{
-			dms_loaded++;
 			json.each(function(item)
 			{
 				z_engine_tweet(item, "dms bottom");
 			});
-			switch (dms_loaded)
-			{
-				case 1:
-					$("loading-inbox").fade();
-					$("loading-outbox").appear();
-				break;
-				case 2:
-					$("loading-outbox").fade();
-				break;
-			}
 			rates--;
 		});
 		socket.on("event", function(json)
@@ -330,8 +318,6 @@ function z_engine_attrition()
 			{
 				z_engine_tweet(item, "home bottom");
 			});
-			$("loading-home").fade();
-			$("loading-mentions").appear();
 			rates--;
 			z_engine_fetch_timeline("userstream");
 		});
@@ -367,7 +353,7 @@ function z_engine_attrition()
 			if (!loaded && json.loaded)
 			{
 				loaded = true;
-				$("new-tweet").setValue("");
+				$("new-tweet").clear();
 				$("new-tweet").enable();
 				z_engine_fetch_timeline("rates");
 				z_engine_fetch_timeline("home");
@@ -495,7 +481,7 @@ function z_engine_attrition()
 							case "mentions-timeline":
 							case "threaded-timeline":
 								$("new-tweet").removeClassName("dm").addClassName("tweet");
-								$("new-dm-user").fade().setValue("");
+								$("new-dm-user").fade().clear();
 							break;
 						}
 						if (visible != "threaded-timeline")
@@ -547,8 +533,6 @@ function z_engine_attrition()
 			{
 				z_engine_tweet(item, "mentions bottom");
 			});
-			$("loading-mentions").fade();
-			$("loading-inbox").appear();
 			rates--;
 		});
 		socket.on("rates", function(json)
@@ -1466,15 +1450,22 @@ function z_engine_retweet(id)
 /* retweet a tweet (old way) */
 function z_engine_retweet_comment(id, author, text)
 {
-	reply_id = id; //set this as a reply, it looks nicer
-	$("new-tweet").setValue("RT @"+author+" "+text.unescapeHTML());
+	reply_id = id;
+	switch (store.get('rt_type'))
+	{
+		case "comment":
+			$("new-tweet").setValue("RT @"+author+": "+text.unescapeHTML());
+		break;
+		case "quote":
+			$("new-tweet").setValue("\"@"+author+": "+text.unescapeHTML()+"\" ");
+		break;
+	}
 	$("new-tweet").focus();
 }
 
 /* send our tweet */
 function z_engine_send_tweet()
 {
-	var type = "";
 	if ($("new-tweet").getValue().length > 0 && $("new-tweet").getValue().length <= 140)
 	{
 		$("new-tweet").disable();
@@ -1486,7 +1477,6 @@ function z_engine_send_tweet()
 			case 'home-timeline':
 			case 'mentions-timeline':
 			case 'threaded-timeline':
-				type = "tweet";
 				var send = {
 					action: "tweet",
 					data: {
@@ -1513,7 +1503,6 @@ function z_engine_send_tweet()
 			break;
 			case 'dms-inbox-timeline':
 			case 'dms-outbox-timeline':
-				type = "dm";
 				if (temp_user_element.length > 0)
 				{
 					if (temp_user_element.startsWith("@"))
@@ -1534,8 +1523,8 @@ function z_engine_send_tweet()
 		reply_id = false;
 		shortened = false;
 		$("new-dm-user").enable();
-		$("new-dm-user").setValue("");
-		$("new-tweet").setValue("");
+		$("new-dm-user").clear();
+		$("new-tweet").clear();
 		$("new-tweet").enable();
 		$("new-tweet").focus();
 	}
@@ -1566,12 +1555,6 @@ function z_engine_set_klout(data, id)
 				$("klout-"+id).writeAttribute('src', '/img/kltd.png');
 				$("klout-"+id).writeAttribute('title', '');
 			}
-			if ($("klout-"+id+"-mentioned"))
-			{
-				$("klout-"+id+"-mentioned").addTip(kloutinfo, kloutinfo_params);
-				$("klout-"+id+"-mentioned").writeAttribute('src', '/img/kltd.png');
-				$("klout-"+id+"-mentioned").writeAttribute('title', '');
-			}
 		}
 	}
 }
@@ -1600,11 +1583,29 @@ function z_engine_settings_checked_clicker(id, storage)
 		var value = $(id).getValue();
 		switch (storage)
 		{
+			case 'geo':
+				if (store.get(storage) == "on")
+				{
+					var reset = "off";
+				}
+				else
+				{
+					var reset = "on";
+				}
+				store.set(storage, reset);
+				if (store.get(storage) == "on")
+				{
+					z_engine_geo();
+				}
+			break;
 			case 'lang':
 				store.set(storage, value);
 				z_engine_get_language();
 			break;
 			case 'notifications_timeout':
+				store.set(storage, value);
+			break;
+			case 'rt_type':
 				store.set(storage, value);
 			break;
 			case 'stream_interval':
@@ -1638,18 +1639,25 @@ function z_engine_settings_get(id, storage)
 {
 	switch (storage)
 	{
-		case 'notifications_timeout':
-			$(id).setValue(store.get(storage));
-		break;
-		case 'stream_interval':
-			$(id).setValue(store.get(storage));
-		break;
 		case 'lang':
 			$("language").childElements().each(function(item)
 			{
 				item.removeAttribute("selected");
 			});
 			$(store.get(storage)).writeAttribute("selected", "selected");
+		break;
+		case 'notifications_timeout':
+			$(id).setValue(store.get(storage));
+		break;
+		case 'rt_type':
+			$("retweet").childElements().each(function(item)
+			{
+				item.removeAttribute("selected");
+			});
+			$(store.get(storage)).writeAttribute("selected", "selected");
+		break;
+		case 'stream_interval':
+			$(id).setValue(store.get(storage));
 		break;
 		default:
 			if (store.get(storage) == "on")
@@ -1664,6 +1672,9 @@ function z_engine_settings_get(id, storage)
 function z_engine_settings_set_language()
 {
 	$("language-settings").update(translation.language_settings);
+	$("retweet-settings").update(translation.retweet_settings);
+	$("comment").update(translation.comment);
+	$("quote").update(translation.quote);
 	$("notify-settings").update(translation.notify_settings);
 	$("notify-enable-settings").update(translation.notify_enable_settings);
 	$("notify-audio-settings").update(translation.notify_audio_settings);
@@ -1679,6 +1690,8 @@ function z_engine_settings_setup()
 {
 	z_engine_settings_get("language", "lang");
 	z_engine_settings_checked_clicker("language", "lang");
+	z_engine_settings_get("retweet", "rt_type");
+	z_engine_settings_checked_clicker("retweet", "rt_type");
 	z_engine_settings_get("use-audio", "sound");
 	z_engine_settings_checked_clicker("use-audio", "sound");
 	z_engine_settings_get("use-notify", "notifications");
