@@ -45,5 +45,13 @@
 	"tweets": "твиты",
 	"following": "читает",
 	"followers": "читатели",
-	"listed": "списки"
+	"listed": "списки",
+	"retweeted_by": "ретвиты",
+	"others": "чужие",
+	"favorite": "ретвитнуть",
+	"unfavorite": "убрать из избранного",
+	"retweet": "ретвитнуть",
+	"unretweet": "отменить ретвит",
+	"reply": "ответить",
+	"destroy": "удалить"
 }

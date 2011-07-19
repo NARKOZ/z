@@ -378,8 +378,6 @@ socket.on('error', function(error)
  * globalized functions and vars
  */
 
-var sitestream_clients = new Array();
-
 /* send message to all connected clients */
 function z_engine_send_to_all(type, message)
 {
@@ -391,7 +389,7 @@ function z_engine_send_to_client(client, type, message)
 	client.json.emit(type, message);
 }
 
-/*  */
+/* send the client small bits of data instead of giant array they need to iterate over (do that for them) */
 function z_engine_sort_timeline(client, type, data)
 {
 	try
@@ -413,57 +411,7 @@ function z_engine_sort_timeline(client, type, data)
 	}
 }
 
-/* hopefully will contain the sitestream if i can get a key */
-function z_engine_sitestream()
-{
-	/*var tw = new twitter(key, secret);
-	tw.stream("site", {include_entities: true}, function(stream)
-	{
-		stream.on("data", function (data)
-		{
-			try
-			{
-				if (data.text && data.created_at && data.user)
-				{
-					z_engine_send_to_client(client, "tweet", data);
-				}
-				else if (data["delete"])
-				{
-					z_engine_send_to_client(client, "delete", data["delete"]);
-				}
-				else if (data.direct_message)
-				{
-					z_engine_send_to_client(client, "direct_message", data.direct_message);
-				}
-				else if (data.event)
-				{
-					z_engine_send_to_client(client, "event", data);
-				}
-				else if (data.friends)
-				{
-					z_engine_send_to_client(client, "friends", data.friends);
-				}
-			}
-			catch(error)
-			{
-				console.error("userstream message error: "+sys.inspect(error));
-			}
-		});
-		stream.on("error", function(data)
-		{
-			z_engine_send_to_client(client, "server_error", {event: "error"});
-		});
-		stream.on("end", function()
-		{
-			z_engine_send_to_client(client, "server_error", {event: "end"});
-		});
-		setInterval(function()
-		{
-			stream.destroy();
-		}, 300 * 1000);
-	});*/
-}
-
+/* a regular single userstream connection */
 function z_engine_userstream(tw, client)
 {
 	tw.stream("user", {include_entities: true}, function(stream)

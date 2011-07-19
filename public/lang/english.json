@@ -45,5 +45,13 @@
 	"tweets": "tweets",
 	"following": "following",
 	"followers": "followers",
-	"listed": "listed"
+	"listed": "listed",
+	"retweeted_by": "retweeted by",
+	"others": "others",
+	"favorite": "favorite",
+	"unfavorite": "undo favorite",
+	"retweet": "retweet",
+	"unretweet": "undo retweet",
+	"reply": "reply",
+	"destroy": "delete"
 }
