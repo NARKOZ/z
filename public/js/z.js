@@ -2258,7 +2258,6 @@ function z_engine_tweet(data, divinfo)
 		z_engine_threaded(false, replyid);
 	}
 	z_engine_tweet_recalculate_layouts();
-	z_engine_timeline_recalculate_layouts();
 }
 
 /* the reply / rt / fave / delete / klout buttons */
