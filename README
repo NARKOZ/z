@@ -11,7 +11,8 @@ this is a "two part" twitter client i am writing in my spare time. by "two part"
 
 license:
 
-the code as a whole is is licensed under the freebsd license.
+the code as a whole is licensed under the freebsd license.
 
 some contained code is based on http://github.com/kazuyukitanimura/designo, the streaming
-code from http://github.com/jdub/node-twitter, and a free template from arcsin.se.
+code from http://github.com/jdub/node-twitter, and a free template from arcsin.se. see
+the public/js/lib folder for the full javascript source of libs.min.js.
