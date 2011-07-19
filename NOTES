@@ -1,16 +1,7 @@
 1) install libs:
 
-   trunk requirements (required by multiple modules below, install these first and in order!):
-     sudo npm install formidable
-     sudo npm install mime
-     sudo npm install policyfile
-     sudo npm install qs
-     sudo npm install redis
-     sudo npm install socket.io-client
-
    leaf requirements (install in order!):
      sudo npm install connect
-     sudo npm install connect-redis
      sudo npm install connect-gzip
      sudo npm install express
      sudo npm install jade
@@ -18,6 +9,16 @@
      sudo npm install oauth
      sudo npm install socket.io
      sudo npm install socket.io-sessions
+
+   optional:
+
+     mongo support:
+       sudo npm install connect-mongo
+       set storage_type to "mongo" in config.json
+
+     redis support:
+       sudo npm install connect-redis
+       set storage_type to "redis" in config.json
 
 2) configure config.json
 

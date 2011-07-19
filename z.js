@@ -33,6 +33,13 @@ switch (storage_type)
 	case 'memory':
 		var storage = new express.session.MemoryStore();
 	break;
+	case 'mongo':
+		var MongoStore = require('connect-mongo');
+		var storage =  new MongoStore(
+		{
+			db: 'sessions'
+		});
+	break;
 	case 'redis':
 		var RedisStore = require('connect-redis')(express);
 		var storage = new RedisStore;
