@@ -1,5 +1,7 @@
 1) fix some general but minor cloning issues that seem to arise with the increasing complexity of displaying tweets
 2) opera bugs:
-   a) fix relative time updater
-   b) fix the context menu
-3) site streams
+   a) fix the context menu
+   b) work with some of the general stupid things opera tends to do despite there being a general unspoken rule of
+      "how to do certain things a very certain way", kind of like how you see logos on the left side of a hat.
+3) site streams support - when this is implemented, it will be possible to host multiple users without getting a
+   nice ban / blacklist from the entire twitter api )for doing multiple userstreams from one server)
