@@ -7,5 +7,6 @@
 	"port": 8080,
 	"startup_count": 25,
 	"storage_fingerprint": "",
-	"storage_secret": ""
+	"storage_secret": "",
+	"storage_type": "memory"
 }
