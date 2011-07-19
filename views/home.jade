@@ -14,15 +14,15 @@ header(class='comment-list-wrapper')
         div#progress-bar(style='display: none;')
     ul#tabbed(class='tabbed')
       li(class='navigation')
-        a#home-timeline-click(href='#home-timeline')
+        a#home-timeline-click(href='#home-timeline-container')
       li(class='navigation')
-        a#mentions-timeline-click(href='#mentions-timeline')
+        a#mentions-timeline-click(href='#mentions-timeline-container')
       li(class='navigation')
-        a#dms-inbox-timeline-click(href='#dms-inbox-timeline')
+        a#dms-inbox-timeline-click(href='#dms-inbox-timeline-container')
       li(class='navigation')
-        a#dms-outbox-timeline-click(href='#dms-outbox-timeline')
+        a#dms-outbox-timeline-click(href='#dms-outbox-timeline-container')
       li(class='navigation')
-        a#threaded-timeline-click(href='#threaded-timeline')
+        a#threaded-timeline-click(href='#threaded-timeline-container')
       li
         input#new-dm-user(type='text', maxlength='15', class='dm-user dm', style='display: none;')
         #autocompleter-dm(class='autocomplete', style='font-size: 0.8em; width: 100%; display: none;')
@@ -33,11 +33,26 @@ header(class='comment-list-wrapper')
     #autocompleter(class='autocomplete', style='width: 98%; display: none;')
 
 #container(class='comment-list-wrapper')
-  #home-timeline
-  #mentions-timeline(style='display: none;')
-  #dms-inbox-timeline(style='display: none;')
-  #dms-outbox-timeline(style='display: none;')
-  #threaded-timeline(style='display: none;')
+  #home-timeline-container
+    #home-timeline-scroll(class='scrollbar-track')
+      .scrollbar-handle
+    #home-timeline(class='scrollbar-content')
+  #mentions-timeline-container
+    #mentions-timeline-scroll(class='scrollbar-track')
+      .scrollbar-handle
+    #mentions-timeline(class='scrollbar-content')
+  #dms-inbox-timeline-container
+    #dms-inbox-timeline-scroll(class='scrollbar-track')
+      .scrollbar-handle
+    #dms-inbox-timeline(class='scrollbar-content')
+  #dms-outbox-timeline-container
+    #dms-outbox-timeline-scroll(class='scrollbar-track')
+      .scrollbar-handle
+    #dms-outbox-timeline(class='scrollbar-content')
+  #threaded-timeline-container
+    #threaded-timeline-scroll(class='scrollbar-track')
+      .scrollbar-handle
+    #threaded-timeline(class='scrollbar-content')
 
 #settings-div(style='display: none;')
   fieldset

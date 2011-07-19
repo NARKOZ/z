@@ -366,7 +366,7 @@ legend
 form
 {
 	padding: 1px;
-	margin: 0 10px 50px 10px;
+	margin: 0 10px 0 10px;
 }
 input[type="text"], textarea
 {
@@ -743,9 +743,9 @@ div.autocomplete ul li.selected
 	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	border: 1px solid #DDD;
 	left: 0;
+	top: 100px;
 	font-size: 0.87em;
 	position: absolute;
-	top: 100px;
 	z-index: 100;
 	transition: all .20s ease-in-out;
 	-khtml-transition: all .20s ease-in-out;
@@ -793,6 +793,44 @@ div.autocomplete ul li.selected
 	height: 1px;
 	padding: 0;
 	overflow: hidden;
+}
+
+/*
+ * scrollbar stuff
+ */
+#container
+{
+	overflow: hidden;
+	position: absolute;
+	top: 100px;
+} 
+.scrollbar-track
+{
+	background-color: transparent;
+	cursor: move;
+	height: 100%;
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 10px;
+} 
+.scrollbar-handle
+{
+	border-radius: 4px;
+	cursor: move;
+	background-color: #5F5F5F;
+	width: 10px;
+	-khtml-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-o-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	behavior: url(border-radius.htc);
+} 
+.scrollbar-content
+{
+	position: relative;
+	overflow: hidden;
+	width: 100%;
 }
 
 /*
@@ -1066,24 +1104,6 @@ div.autocomplete ul li.selected
 ::-moz-selection
 {
 	background: rgba(175,175,175,0.4);
-}
-::-webkit-scrollbar
-{
-	width: 10px;
-	height: 10px;
-}
-::-webkit-scrollbar-track-piece
-{
-	background-color: #F6F6F6;
-}
-::-webkit-scrollbar-track-piece:horizontal
-{
-	width: 25px;
-}
-::-webkit-scrollbar-thumb
-{
-	background-color: #5F5F5F;
-	border-radius: 4px;
 }
 
 /*

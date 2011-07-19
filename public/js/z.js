@@ -24,7 +24,7 @@ if (!store.get('hashtag_blocks'))
 {
 	store.set('hashtag_blocks', "");
 }
-var home_cutoff = 200; //max amount of tweets to display before pruning occurs on the home timeline
+var home_cutoff = 100; //max amount of tweets to display before pruning occurs on the home timeline
 if (!store.get('image_dropper'))
 {
 	store.set('image_dropper', "on");
@@ -54,7 +54,7 @@ if (!store.get('mention_blocks'))
 {
 	store.set('mention_blocks', "");
 }
-var mentions_cutoff = 100; //max amount of tweets to display before pruning occurs on the mentions timeline
+var mentions_cutoff = 75; //max amount of tweets to display before pruning occurs on the mentions timeline
 if (!store.get('notifications'))
 {
 	store.set('notifications', "on");
@@ -66,7 +66,6 @@ if (!store.get('notifications_timeout'))
 var paused = false; //allow the engine itself to be momentarily 'paused'..not sure how im going to work this out properly
 var progress_bar = "";
 var prune_tweets_interval = 60; //start the pruning loop over again every minute
-var pttid = 0; //this serves as the (#) amount displayed when paused
 var rates = 350;
 var remember_cutoff = 199; //the maximum amount of names to store for autocompletion
 var reply_id = false; //catch reply
@@ -75,6 +74,11 @@ if (!store.get('rt_type'))
 	store.set('rt_type', "comment");
 }
 var screen_name = ""; //our own screen name
+var scrollbar_home = "";
+var scrollbar_inbox = "";
+var scrollbar_mentions = "";
+var scrollbar_outbox = "";
+var scrollbar_threads = "";
 var shortened = false;
 var socket = "";
 var stream_queue_interval = "";
@@ -90,13 +94,16 @@ if (!store.get('sound-src'))
 	}
 	else
 	{
-		store.set('sound_src', "/audio/notify.ogg");
+		store.set('sound_src', "/audio/notify.ogg");  //and ogg for anyone else who supports the audio api
 	}
 }
 if (store.get('sound') == "on" && store.get('sound_src').length > 0)
 {
-	var audio = new Audio();
-	audio.src = store.get('sound_src'); //and ogg for anyone else who supports the audio api
+	if (window.HTMLAudioElement)
+	{
+		var audio = new Audio();
+		audio.src = store.get('sound_src');
+	}
 }
 if (!store.get('stream_interval'))
 {
@@ -128,6 +135,12 @@ if (!store.get('users'))
 {
 	store.set('users', "");
 }
+
+Event.observe(document.onresize ? document : window, "resize", function()
+{
+	z_engine_timeline_recalculate_layouts()
+	z_engine_tweet_recalculate_layouts();
+});
 
 /* the websocket itself */
 function z_engine_attrition()
@@ -177,13 +190,13 @@ function z_engine_attrition()
 				z_engine_notification(av, title, text);
 			}
 		});
-		socket.on("dms", function(json)
+		socket.on("dms-inbox", function(json)
 		{
-			json.each(function(item)
-			{
-				z_engine_tweet(item, "dms bottom");
-			});
-			rates--;
+			z_engine_tweet(json, "dms bottom");
+		});
+		socket.on("dms-outbox", function(json)
+		{
+			z_engine_tweet(json, "dms bottom");
 		});
 		socket.on("event", function(json)
 		{
@@ -314,12 +327,7 @@ function z_engine_attrition()
 		});
 		socket.on("home", function(json)
 		{
-			json.each(function(item)
-			{
-				z_engine_tweet(item, "home bottom");
-			});
-			rates--;
-			z_engine_fetch_timeline("userstream");
+			z_engine_tweet(json, "home bottom");
 		});
 		socket.on("info", function(json)
 		{
@@ -350,13 +358,15 @@ function z_engine_attrition()
 		});
 		socket.on("loaded", function(json)
 		{
-			if (!loaded && json.loaded)
+			if (!loaded)
 			{
 				loaded = true;
 				$("new-tweet").clear();
 				$("new-tweet").enable();
+				z_engine_timeline_recalculate_layouts();
 				z_engine_fetch_timeline("rates");
 				z_engine_fetch_timeline("home");
+				z_engine_fetch_timeline.delay(1, "userstream");
 				z_engine_fetch_timeline.delay(10, "mentions");
 				z_engine_fetch_timeline.delay(20, "dms-inbox");
 				z_engine_fetch_timeline.delay(30, "dms-outbox");
@@ -465,8 +475,14 @@ function z_engine_attrition()
 					fade: true,
 					overlayOpacity: 0.5
 				});
+				scrollbar_home = new Control.ScrollBar("home-timeline", "home-timeline-scroll");
+				scrollbar_mentions = new Control.ScrollBar("mentions-timeline", "mentions-timeline-scroll");
+				scrollbar_inbox = new Control.ScrollBar("dms-inbox-timeline", "dms-inbox-timeline-scroll");
+				scrollbar_outbox = new Control.ScrollBar("dms-outbox-timeline", "dms-outbox-timeline-scroll");
+				scrollbar_threads = new Control.ScrollBar("threaded-timeline", "threaded-timeline-scroll");
 				tabs = new Control.Tabs('tabbed',
 				{
+					defaultTab: "first",
 					afterChange: function()
 					{
 						var visible = z_engine_current_timeline();
@@ -474,13 +490,27 @@ function z_engine_attrition()
 						{
 							case "dms-inbox-timeline":
 							case "dms-outbox-timeline":
-								$("new-tweet").removeClassName("tweet").addClassName("dm");
+								if ($("new-tweet").hasClassName("tweet"))
+								{
+									$("new-tweet").removeClassName("tweet");
+								}
+								if (!$("new-tweet").hasClassName("dm"))
+								{
+									$("new-tweet").addClassName("dm");
+								}
 								$("new-dm-user").appear();
 							break;
 							case "home-timeline":
 							case "mentions-timeline":
 							case "threaded-timeline":
-								$("new-tweet").removeClassName("dm").addClassName("tweet");
+								if ($("new-tweet").hasClassName("dm"))
+								{
+									$("new-tweet").removeClassName("dm");
+								}
+								if (!$("new-tweet").hasClassName("tweet"))
+								{
+									$("new-tweet").addClassName("tweet");
+								}
 								$("new-dm-user").fade().clear();
 							break;
 						}
@@ -489,9 +519,10 @@ function z_engine_attrition()
 							$("threaded-timeline").update();
 							latest_threaded_id = 0;
 						}
+						z_engine_timeline_recalculate_layouts();
+						z_engine_tweet_recalculate_layouts();
 					}
 				});
-				tabs.first();
 				new Event.observe("new-tweet","keyup",function(event)
 				{
 					z_engine_input();
@@ -526,14 +557,14 @@ function z_engine_attrition()
 				}
 				z_engine_settings_setup();
 			}
+			else
+			{
+				$("new-tweet").enable();
+			}
 		});
 		socket.on("mentions", function(json)
 		{
-			json.each(function(item)
-			{
-				z_engine_tweet(item, "mentions bottom");
-			});
-			rates--;
+			z_engine_tweet(json, "mentions bottom");
 		});
 		socket.on("rates", function(json)
 		{
@@ -624,7 +655,6 @@ function z_engine_attrition()
 			{
 				console.log(error);
 			}
-			rates--;
 		});
 		socket.on("retweet_info", function(json)
 		{
@@ -686,7 +716,6 @@ function z_engine_attrition()
 			}
 			content_stored[id] = Object.toJSON(json);
 			z_engine_tweet(json, "threaded bottom");
-			rates--;
 		});
 		socket.on("tweet", function(json)
 		{
@@ -714,8 +743,7 @@ function z_engine_attrition()
 				content_queued.push(Object.toJSON(json));
 				if (paused)
 				{
-					$("paused-count").update("("+pttid+")");
-					pttid++;
+					$("paused-count").update("("+content_queued.length+")");
 				}
 			}
 		});
@@ -775,6 +803,7 @@ function z_engine_current_timeline()
 	{
 		return "threaded-timeline";
 	}
+	z_engine_tweet_recalculate_layouts();;
 }
 
 /* check to see if css3 is possible */
@@ -932,6 +961,7 @@ function z_engine_drop_tweet(id)
 		}
 		z_engine_fade_up.delay(3, "comment-"+id+"-threaded");
 	}
+	z_engine_tweet_recalculate_layouts();;
 }
 
 /* the fading + blind down animation */
@@ -1053,14 +1083,19 @@ function z_engine_geo_set(position)
 }
 
 /* get an accurate measurement of the _documents_ height (NOT the viewport) */
-function z_engine_get_height()
+function z_engine_get_height(offset)
 {
 	var D = document;
-	return Math.max(
+	var height = Math.max(
 		Math.max(D.body.scrollHeight, D.documentElement.scrollHeight),
 		Math.max(D.body.offsetHeight, D.documentElement.offsetHeight),
 		Math.max(D.body.clientHeight, D.documentElement.clientHeight)
 	);
+	if (offset != null | offset != 0)
+	{
+		height = height - offset;
+	}
+	return height;
 }
 
 /* get a users klout score */
@@ -1106,6 +1141,35 @@ function z_engine_get_language()
 		default:
 			//do something else here?
 		break;
+	}
+}
+
+/* highlight tweet body */
+function z_engine_highlight_tweet(id)
+{
+	if ($("comment-body-"+id))
+	{
+		new Effect.Highlight("comment-body-"+id,
+		{
+			startcolor: "#fbfbfb",
+			endcolor: "#ffffff"
+		});
+	}
+	if ($("comment-body-"+id+"-mentioned"))
+	{
+		new Effect.Highlight("comment-body-"+id+"-mentioned",
+		{
+			startcolor: "#fbfbfb",
+			endcolor: "#ffffff"
+		});
+	}
+	if ($("comment-body-"+id+"-threaded"))
+	{
+		new Effect.Highlight("comment-body-"+id+"-threaded",
+		{
+			startcolor: "#fbfbfb",
+			endcolor: "#ffffff"
+		});
 	}
 }
 
@@ -1991,11 +2055,11 @@ function z_engine_tweet(data, divinfo)
 			{
 				if (!mentioned)
 				{
-					var comment_body_element = new Element('div', {'class': 'comment-body'}); //regular shadow
+					var comment_body_element = new Element('div', {'class': 'comment-body', 'id': "comment-body-"+id}); //regular shadow
 				}
 				else
 				{
-					var comment_body_element = new Element('div', {'class': 'comment-body-mentioned'}); //a noticeable red shadow
+					var comment_body_element = new Element('div', {'class': 'comment-body-mentioned', 'id': "comment-body-"+id}); //a noticeable red shadow
 				}
 			}
 			else
@@ -2116,7 +2180,7 @@ function z_engine_tweet(data, divinfo)
 			container_element.insert(profile_wrapper_element);
 			container_element.insert({'bottom': comment_content_element});
 			container_element.insert({'bottom': clearer_element});
-		new Element.extend(gravatar_author_img_element);
+		new Element.extend(comment_body_element);
 		new Element.extend(left_element);
 		new Element.extend(right2_element);
 		new Element.extend(container_element);
@@ -2152,6 +2216,7 @@ function z_engine_tweet(data, divinfo)
 		{
 			var mentioned_clone = cloneNodeWithEvents(container_element);
 			mentioned_clone.writeAttribute("id", "comment-"+id+"-mentioned");
+			comment_body_element.writeAttribute("id", "comment-body-"+id+"-mentioned");
 			left_element.writeAttribute("id", "left-"+id+"-mentioned");
 			right2_element.writeAttribute("id", "right-"+id+"-mentioned");
 			gravatar_author_img_element.writeAttribute("id", "av-"+id+"-mentioned");
@@ -2172,6 +2237,7 @@ function z_engine_tweet(data, divinfo)
 		}
 		if (output == "threaded")
 		{
+			comment_body_element.writeAttribute("id", "comment-body-"+id+"-threaded");
 			left_element.writeAttribute("id", "left-"+id+"-threaded");
 			right2_element.writeAttribute("id", "right-"+id+"-threaded");
 			gravatar_author_img_element.writeAttribute("id", "av-"+id+"-threaded");
@@ -2201,6 +2267,7 @@ function z_engine_tweet(data, divinfo)
 	{
 		z_engine_threaded(false, replyid);
 	}
+	z_engine_tweet_recalculate_layouts();;
 }
 
 /* the reply / rt / fave / delete / klout buttons */
@@ -2233,7 +2300,7 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			{
 				if ($("left-"+id) && !$('klout-'+id))
 				{
-					var klout_element = new Element('span', {'class': 'klout'});
+					var klout_element = new Element('klout', {'class': 'klout', 'id': 'klout-'+id+'-container'});
 					klout_element.update(" ");
 					var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': '/img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score'});
 					klout_element.insert({'top': klout_img_element});
@@ -2285,9 +2352,9 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			{
 				$("av-"+id+"-mentioned").addTip(z_engine_parse_tweet(userinfo), userinfo_params);
 			}
-			if ($("klout-"+id))
+			if ($("klout-"+id+"-container"))
 			{
-				$("klout-"+id).remove();
+				$("klout-"+id+"-container").remove();
 			}
 			if (author != screen_name)
 			{
@@ -2464,12 +2531,32 @@ function z_engine_tweet_pause()
 			{
 				$("paused-count").update("(0)");
 				$("pause").update(translation.stop);
-				pttid = 0;
 			}
 		});
 	}
 }
 
+/* recalculate timeline sizes when the window is resized */
+function z_engine_timeline_recalculate_layouts()
+{
+	$("home-timeline").setStyle("height: "+z_engine_get_height(115)+"px;");
+	$("mentions-timeline").setStyle("height: "+z_engine_get_height(115)+"px;");
+	$("dms-inbox-timeline").setStyle("height: "+z_engine_get_height(115)+"px;");
+	$("dms-outbox-timeline").setStyle("height: "+z_engine_get_height(115)+"px;");
+	$("threaded-timeline").setStyle("height: "+z_engine_get_height(115)+"px;");
+}
+
+/* recalculate the timeline sizes here */
+function z_engine_tweet_recalculate_layouts()
+{
+	scrollbar_home.recalculateLayout();
+	scrollbar_inbox.recalculateLayout();
+	scrollbar_mentions.recalculateLayout();
+	scrollbar_outbox.recalculateLayout();
+	scrollbar_threads.recalculateLayout();
+}
+
+/* the neat context menu shown on tweets */
 function z_engine_tweet_right_click(id, divid, author, author2, userid, usermentions, text, faved, rtd, locked, type)
 {
 	var is_me = false;
@@ -2651,6 +2738,10 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 			});
 		break;
 	}
+	context_menu.observe("beforeOpen", function()
+	{
+		z_engine_highlight_tweet(id);
+	});
 }
 
 /* favorite a tweet */

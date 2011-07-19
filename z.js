@@ -5,11 +5,8 @@ var config = config = require('./vendor/config').config;
 var express = require('express');
 var gzip = require('connect-gzip');
 var io = require('socket.io');
-var redis = require('redis');
-var RedisStore = require('connect-redis')(express);
 var sio = require('socket.io-sessions');
 var shorten = require('./vendor/shorten')();
-var storage = new RedisStore;
 var sys = require('sys');
 var twitter = require('./vendor/twitter');
 
@@ -26,10 +23,21 @@ var port = config.port;
 var startup_count = config.startup_count;
 var storage_fingerprint = config.storage_fingerprint;
 var storage_secret = config.storage_secret;
+var storage_type = config.storage_type;
 
 /*
  * server
  */
+switch (storage_type)
+{
+	case 'memory':
+		var storage = new express.session.MemoryStore();
+	break;
+	case 'redis':
+		var RedisStore = require('connect-redis')(express);
+		var storage = new RedisStore;
+	break;
+}
 var server = module.exports = express.createServer();
 
 server.configure(function()
@@ -186,169 +194,169 @@ socket.on('sconnection', function(client, session)
 		try
 		{
 			var tw = new twitter(key, secret, session.oauth);
-			if(tw)
-			{
-				var loaded = {
-					loaded: true
-				}
-				var info = {
-					screen_name: session.oauth._results.screen_name,
-					user_id: session.oauth._results.user_id
-				}
-				z_engine_send_to_client(client, "loaded", loaded);
-				z_engine_send_to_client(client, "info", info);
-				client.on("delete", function(json)
-				{
-					switch (json.action)
-					{
-						case "dm":
-							tw.destroy_dm(json.id_str);
-						break;
-						case "tweet":
-							tw.destroy(json.id_str);
-						break;
-					}
-				});
-				client.on("favorite", function(json)
-				{
-					switch (json.action)
-					{
-						case "do":
-							tw.favorite(json.id_str);
-						break;
-						case "undo":
-							tw.unfavorite(json.id_str);
-						break;
-					}
-				});
-				client.on("fetch", function(message)
-				{
-					switch (message)
-					{
-						case "dms-inbox":
-							tw.getInbox({count: startup_count, include_entities: true}, function(error, data, response)
-							{
-								if (!error)
-								{
-									z_engine_send_to_client(client, "dms", data);
-								}
-							});
-						break;
-						case "dms-outbox":
-							tw.getOutbox({count: startup_count, include_entities: true}, function(error, data, response)
-							{
-								if (!error)
-								{
-									z_engine_send_to_client(client, "dms", data);
-								}
-							});
-						break;
-						case "home":
-							tw.getTimeline({type: "home_timeline", count: startup_count, include_entities: true}, function(error, data, response)
-							{
-								if (!error)
-								{
-									z_engine_send_to_client(client, "home", data);
-								}
-							});
-						break;
-						case "mentions":
-							tw.getTimeline({type: "mentions", count: startup_count, include_entities: true}, function(error, data, response)
-							{
-								if (!error)
-								{
-									z_engine_send_to_client(client, "mentions", data);
-								}
-							});
-						break;
-						case "rates":
-							tw.rateLimit(function(error, data, response)
-							{
-								if (!error)
-								{
-									z_engine_send_to_client(client, "rates", data);
-								}
-							});
-						break;
-						case "userstream":
-							if (!sitestream_key)
-							{
-								z_engine_userstream(tw, client);
-							}
-						break;
-					}
-				});
-				client.on("klout", function(json)
-				{
-					klout.show(json.klout, function(error, data)
-					{
-						if (error)
-						{
-							z_engine_send_to_client(client, "klout", {klout: "error", id_str: json.id_str});
-						}
-						else
-						{
-							z_engine_send_to_client(client, "klout", {klout: data, id_str: json.id_str});
-						}
-					});
-				});
-				client.on("related", function(json)
-				{
-					tw.related_results(json.id_str, {count: startup_count, include_entities: true}, function(error, data, response)
-					{
-						if (!error)
-						{
-							z_engine_send_to_client(client, "related", {data: data, origin: json.origin});
-						}
-					});
-				});
-				client.on("retweet", function(json)
-				{
-					tw.retweet(json.id_str, function(error, data, response)
-					{
-						if (!error)
-						{
-							z_engine_send_to_client(client, "retweet_info", data);
-						}
-					});
-				});
-				client.on("shorten", function(json)
-				{
-					shorten.fetch(json.shorten, function(error, data)
-					{
-						if (!error)
-						{
-							z_engine_send_to_client(client, "shorten", {shorten: data, original: json.shorten});
-						}
-					});
-				});
-				client.on("show", function(json)
-				{
-					tw.show(json.id_str, {include_entities: true}, function(error, data, response)
-					{
-						if (!error)
-						{
-							z_engine_send_to_client(client, "show", data);
-						}
-					});
-				});
-				client.on("status", function(json)
-				{
-					switch (json.action)
-					{
-						case "dm":
-							tw.direct_message(json.data);
-						break;
-						case "tweet":
-							tw.update(json.data);
-						break;
-					}
-				});
-			}
 		}
-		catch(error)
+		catch (error)
 		{
 			console.error("oauth session issue: "+sys.inspect(error));
+		}
+		if(tw)
+		{
+			z_engine_send_to_client(client, "loaded",
+			{
+				loaded: true
+			});
+			z_engine_send_to_client(client, "info",
+			{
+				screen_name: session.oauth._results.screen_name,
+				user_id: session.oauth._results.user_id
+			});
+			client.on("delete", function(json)
+			{
+				switch (json.action)
+				{
+					case "dm":
+						tw.destroy_dm(json.id_str);
+					break;
+					case "tweet":
+						tw.destroy(json.id_str);
+					break;
+				}
+			});
+			client.on("favorite", function(json)
+			{
+				switch (json.action)
+				{
+					case "do":
+						tw.favorite(json.id_str);
+					break;
+					case "undo":
+						tw.unfavorite(json.id_str);
+					break;
+				}
+			});
+			client.on("fetch", function(message)
+			{
+				switch (message)
+				{
+					case "dms-inbox":
+						tw.getInbox({count: startup_count, include_entities: true}, function(error, data, response)
+						{
+							if (!error)
+							{
+								z_engine_sort_timeline(client, "dms-inbox", data);
+							}
+						});
+					break;
+					case "dms-outbox":
+						tw.getOutbox({count: startup_count, include_entities: true}, function(error, data, response)
+						{
+							if (!error)
+							{
+								z_engine_sort_timeline(client, "dms-outbox", data);
+							}
+						});
+					break;
+					case "home":
+						tw.getTimeline({type: "home_timeline", count: startup_count, include_entities: true}, function(error, data, response)
+						{
+							if (!error)
+							{
+								z_engine_sort_timeline(client, "home", data);
+							}
+						});
+					break;
+					case "mentions":
+						tw.getTimeline({type: "mentions", count: startup_count, include_entities: true}, function(error, data, response)
+						{
+							if (!error)
+							{
+								z_engine_sort_timeline(client, "mentions", data);
+							}
+						});
+					break;
+					case "rates":
+						tw.rateLimit(function(error, data, response)
+						{
+							if (!error)
+							{
+								z_engine_send_to_client(client, "rates", data);
+							}
+						});
+					break;
+					case "userstream":
+						if (!sitestream_key)
+						{
+							z_engine_userstream(tw, client);
+						}
+					break;
+				}
+			});
+			client.on("klout", function(json)
+			{
+				klout.show(json.klout, function(error, data)
+				{
+					if (error)
+					{
+						z_engine_send_to_client(client, "klout", {klout: "error", id_str: json.id_str});
+					}
+					else
+					{
+						z_engine_send_to_client(client, "klout", {klout: data, id_str: json.id_str});
+					}
+				});
+			});
+			client.on("related", function(json)
+			{
+				tw.related_results(json.id_str, {count: startup_count, include_entities: true}, function(error, data, response)
+				{
+					if (!error)
+					{
+						z_engine_send_to_client(client, "related", {data: data, origin: json.origin});
+					}
+				});
+			});
+			client.on("retweet", function(json)
+			{
+				tw.retweet(json.id_str, function(error, data, response)
+				{
+					if (!error)
+					{
+						z_engine_send_to_client(client, "retweet_info", data);
+					}
+				});
+			});
+			client.on("shorten", function(json)
+			{
+				shorten.fetch(json.shorten, function(error, data)
+				{
+					if (!error)
+					{
+						z_engine_send_to_client(client, "shorten", {shorten: data, original: json.shorten});
+					}
+				});
+			});
+			client.on("show", function(json)
+			{
+				tw.show(json.id_str, {include_entities: true}, function(error, data, response)
+				{
+					if (!error)
+					{
+						z_engine_send_to_client(client, "show", data);
+					}
+				});
+			});
+			client.on("status", function(json)
+			{
+				switch (json.action)
+				{
+					case "dm":
+						tw.direct_message(json.data);
+					break;
+					case "tweet":
+						tw.update(json.data);
+					break;
+				}
+			});
 		}
 	}
 });
@@ -383,6 +391,29 @@ function z_engine_send_to_client(client, type, message)
 	client.json.emit(type, message);
 }
 
+/*  */
+function z_engine_sort_timeline(client, type, data)
+{
+	try
+	{
+		for (var index in data)
+		{
+			setTimeout(function()
+			{
+				if (client)
+				{
+					z_engine_send_to_client(client, type, data.shift());
+				}
+			}, index * 250);
+		}
+	}
+	catch (error)
+	{
+		console.error("timeline sorting error: "+sys.inspect(error));
+	}
+}
+
+/* hopefully will contain the sitestream if i can get a key */
 function z_engine_sitestream()
 {
 	/*var tw = new twitter(key, secret);
