@@ -136,6 +136,14 @@ if (!store.get('users'))
 	store.set('users', "");
 }
 
+
+/* attempts to resize the emulated scrolling areas when the window itself is resized */
+Event.observe(window, "resize", function()
+{
+	z_engine_tweet_recalculate_layouts();
+	z_engine_timeline_recalculate_layouts();
+});
+
 /* the websocket itself */
 function z_engine_attrition()
 {
@@ -163,15 +171,7 @@ function z_engine_attrition()
 			if (typeof(json.status) == "object")
 			{
 				var id = json.status.id_str;
-				if (content_queued[id])
-				{
-					var index = content_stored.indexOf(id);
-					content_queued.splice(index, 1); //dont forget to drop this from the streaming queue
-				}
-				else
-				{
-					z_engine_drop_tweet(id);
-				}
+				z_engine_drop_tweet(id);
 			}
 		});
 		socket.on("direct_message", function(json)
@@ -415,11 +415,6 @@ function z_engine_attrition()
 				new PeriodicalExecuter(function()
 				{
 					z_engine_input();
-				}, 1);
-				new PeriodicalExecuter(function()
-				{
-					z_engine_timeline_recalculate_layouts(); //reset the timeline container heights..
-					z_engine_tweet_recalculate_layouts(); //and recalculate the scrollbar heights.
 				}, 1);
 				var autocomplete_users = $w(store.get('users').strip()).uniq();
 				var autocomplete_users_dm = "";
@@ -966,7 +961,8 @@ function z_engine_drop_tweet(id)
 		}
 		z_engine_fade_up.delay(3, "comment-"+id+"-threaded");
 	}
-	z_engine_tweet_recalculate_layouts();;
+	z_engine_tweet_recalculate_layouts();
+	z_engine_timeline_recalculate_layouts();
 }
 
 /* the fading + blind down animation */
@@ -1003,6 +999,7 @@ function z_engine_fade_up(id)
 /* favorite a tweet */
 function z_engine_favorite(id)
 {
+	id = z_engine_reset_id(id);
 	socket.emit("favorite", {action: "do", id_str: id});
 	if ($("fave-"+id))
 	{
@@ -1477,6 +1474,25 @@ function z_engine_reply_dm(id, user)
 {
 	$("new-dm-user").setValue(user);
 	$("new-tweet").focus();
+}
+
+/* get the original id for things we retweet */
+function z_engine_reset_id(id)
+{
+	content_rts_stored.each(function(item, index)
+	{
+		if (item.isJSON())
+		{
+			var data = item.evalJSON(true);
+			var new_id = data.id_str;
+			if (id == new_id)
+			{
+				id = data.retweeted_status.id_str;
+				$break;
+			}
+		}
+	});
+	return id;
 }
 
 /* retweet a tweet (official way) */
@@ -2241,7 +2257,8 @@ function z_engine_tweet(data, divinfo)
 	{
 		z_engine_threaded(false, replyid);
 	}
-	z_engine_tweet_recalculate_layouts();;
+	z_engine_tweet_recalculate_layouts();
+	z_engine_timeline_recalculate_layouts();
 }
 
 /* the reply / rt / fave / delete / klout buttons */
@@ -2717,6 +2734,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 /* favorite a tweet */
 function z_engine_unfavorite(id)
 {
+	id = z_engine_reset_id(id);
 	socket.emit("favorite", {action: "undo", id_str: id});
 	if ($("fave-"+id))
 	{
