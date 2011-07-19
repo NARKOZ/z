@@ -376,7 +376,7 @@ function z_engine_attrition()
 				z_engine_timeline_recalculate_layouts();
 				z_engine_fetch_timeline("rates");
 				z_engine_fetch_timeline("home");
-				z_engine_fetch_timeline.delay(5, "userstream");
+				z_engine_fetch_timeline.delay(2, "userstream");
 				z_engine_fetch_timeline.delay(15, "mentions");
 				z_engine_fetch_timeline.delay(30, "dms-inbox");
 				z_engine_fetch_timeline.delay(45, "dms-outbox");
@@ -2520,11 +2520,11 @@ function z_engine_tweet_pause()
 /* recalculate timeline sizes when the window is resized */
 function z_engine_timeline_recalculate_layouts()
 {
-	$("home-timeline").setStyle("height: "+z_engine_get_height(118)+"px;");
-	$("mentions-timeline").setStyle("height: "+z_engine_get_height(118)+"px;");
-	$("dms-inbox-timeline").setStyle("height: "+z_engine_get_height(118)+"px;");
-	$("dms-outbox-timeline").setStyle("height: "+z_engine_get_height(118)+"px;");
-	$("threaded-timeline").setStyle("height: "+z_engine_get_height(118)+"px;");
+	$("home-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	$("mentions-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	$("dms-inbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	$("dms-outbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	$("threaded-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
 }
 
 /* recalculate the timeline sizes here */
