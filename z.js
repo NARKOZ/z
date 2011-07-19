@@ -3,10 +3,10 @@
  */
 var config = config = require('./vendor/config').config;
 var express = require('express');
+var googl = require('goo.gl');
 var gzip = require('connect-gzip');
 var io = require('socket.io');
 var sio = require('socket.io-sessions');
-var shorten = require('./vendor/shorten')();
 var sys = require('sys');
 var twitter = require('./vendor/twitter');
 
@@ -16,6 +16,7 @@ var twitter = require('./vendor/twitter');
 var key = config.oauth_key;
 var secret = config.oauth_secret;
 var sitestream_key = config.oauth_key_sitestream;
+var googl_key = config.googl_key;
 var imgur_key = config.imgur_key;
 var klout_key = config.klout_key;
 var klout = require('./vendor/klout')(klout_key);
@@ -28,6 +29,7 @@ var storage_type = config.storage_type;
 /*
  * server
  */
+googl.setKey(googl_key);
 switch (storage_type)
 {
 	case 'memory':
@@ -334,12 +336,9 @@ socket.on('sconnection', function(client, session)
 			});
 			client.on("shorten", function(json)
 			{
-				shorten.fetch(json.shorten, function(error, data)
+				googl.shorten(json.shorten, function (data) 
 				{
-					if (!error)
-					{
-						z_engine_send_to_client(client, "shorten", {shorten: data, original: json.shorten});
-					}
+					z_engine_send_to_client(client, "shorten", {shortened: data.id, original: json.shorten});
 				});
 			});
 			client.on("show", function(json)

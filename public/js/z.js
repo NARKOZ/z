@@ -697,12 +697,12 @@ function z_engine_attrition()
 		});
 		socket.on("shorten", function(json)
 		{
-			if (typeof(json.shorten) == "undefined")
+			if (typeof(json.shortened) == "undefined")
 			{
 			}
 			else
 			{
-				$("new-tweet").setValue($("new-tweet").getValue().replace(json.original, json.shorten));
+				$("new-tweet").setValue($("new-tweet").getValue().sub(json.original, json.shortened));
 			}
 		});
 		socket.on("show", function(json)
