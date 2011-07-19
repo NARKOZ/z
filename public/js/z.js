@@ -136,13 +136,6 @@ if (!store.get('users'))
 	store.set('users', "");
 }
 
-/* attempts to resize the emulated scrolling areas when the window itself is resized */
-Event.observe(document.onresize ? document : window, "resize", function()
-{
-	z_engine_timeline_recalculate_layouts();
-	z_engine_tweet_recalculate_layouts();
-});
-
 /* the websocket itself */
 function z_engine_attrition()
 {
@@ -342,8 +335,6 @@ function z_engine_attrition()
 		{
 			screen_name = json.screen_name;
 			user_id = json.user_id;
-			store.set('screen_name', json.screen_name);
-			store.set('user_id', user_id);
 		});
 		socket.on("klout", function(json)
 		{
@@ -424,6 +415,11 @@ function z_engine_attrition()
 				new PeriodicalExecuter(function()
 				{
 					z_engine_input();
+				}, 1);
+				new PeriodicalExecuter(function()
+				{
+					z_engine_timeline_recalculate_layouts(); //reset the timeline container heights..
+					z_engine_tweet_recalculate_layouts(); //and recalculate the scrollbar heights.
 				}, 1);
 				var autocomplete_users = $w(store.get('users').strip()).uniq();
 				var autocomplete_users_dm = "";
@@ -813,7 +809,6 @@ function z_engine_current_timeline()
 	{
 		return "threaded-timeline";
 	}
-	z_engine_tweet_recalculate_layouts();;
 }
 
 /* check to see if css3 is possible */
@@ -1292,8 +1287,6 @@ function z_engine_logout()
 	socket.disconnect();
 	$("new-tweet").disable();
 	$("new-tweet").setValue("see ya!");
-	store.remove('screen_name');
-	store.remove('user_id');
 	window.location = "/oauth/logout";
 }
 
