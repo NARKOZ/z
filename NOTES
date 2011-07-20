@@ -32,6 +32,5 @@
    copy the oauth key and secret into config.json (and change anything you would like in there)...
    be sure to change the storage_secret to something other than blank - it is a salt for sessions!
 3) register a gmail account, and go here for a url shortener key: https://code.google.com/apis/console
-4) register for a klout api key here: http://developer.klout.com/apps/mykeys
-5) register for an imgur api key here: http://imgur.com/register/api_anon
-6) configure config.json
+4) register for an imgur api key here: http://imgur.com/register/api_anon
+5) configure config.json

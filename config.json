@@ -4,7 +4,6 @@
 	"oauth_secret": "",
 	"googl_key": "",
 	"imgur_key": "",
-	"klout_key": "",
 	"port": 8080,
 	"startup_count": 25,
 	"storage_fingerprint": "",

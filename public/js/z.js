@@ -29,18 +29,6 @@ if (!store.get('image_dropper'))
 {
 	store.set('image_dropper', "on");
 }
-if (!store.get('klout'))
-{
-	store.set('klout', "off");
-}
-var klout = Array(); //holds klout data
-var kloutinfo_params = {
-	className: 'klout',
-	stem: true,
-	target: true,
-	targetJoint: ['left', 'top'],
-	tipJoint: ['right', 'bottom']
-}
 if (!store.get('lang'))
 {
 	store.set('lang', "english");
@@ -116,17 +104,6 @@ var update_relative_dms_interval = 60; //once a minute
 var update_relative_home_interval = 15; //every 15 seconds
 var update_relative_mentions_interval = 30; //every 30 seconds
 var user_id = 0; //our own user id
-var userinfo_params = {
-	className: 'user',
-	hideDelay: 3,
-	hideOn: 'mouseout',
-	showOn: 'click',
-	offset: [11, 0],
-	stem: true,
-	target: true,
-	targetJoint: ['right', 'middle'],
-	tipJoint: ['left', 'middle']
-}
 if (!store.get('user_blocks'))
 {
 	store.set('user_blocks', "");
@@ -335,27 +312,6 @@ function z_engine_attrition()
 		{
 			screen_name = json.screen_name;
 			user_id = json.user_id;
-		});
-		socket.on("klout", function(json)
-		{
-			var data = json.klout;
-			var id = json.id_str;
-			if (data != "error")
-			{
-				z_engine_set_klout(data.users, id);
-				var userid = data.users[0].twitter_id;
-				klout[userid] = Object.toJSON(data.users);
-			}
-			else
-			{
-				if ($("klout-"+id))
-				{
-					$("klout-"+id).setStyle('cursor: default;');
-					$("klout-"+id).writeAttribute('onclick', '');
-					$("klout-"+id).writeAttribute('src', '/img/kltd.png');
-					$("klout-"+id).addTip('<big><strong>?</strong></big>', kloutinfo_params);
-				}
-			}
 		});
 		socket.on("loaded", function(json)
 		{
@@ -1116,23 +1072,6 @@ function z_engine_get_height(offset)
 	return height;
 }
 
-/* get a users klout score */
-function z_engine_get_klout(author, userid, id)
-{
-	if (!klout[userid])
-	{
-		socket.emit("klout", {klout: author, id_str: id});
-	}
-	else
-	{
-		if (klout[userid].isJSON())
-		{
-			var data = klout[userid].evalJSON(true);
-			z_engine_set_klout(data, id);
-		}
-	}
-}
-
 /* get the language */
 function z_engine_get_language()
 {
@@ -1600,35 +1539,6 @@ function z_engine_send_tweet()
 	}
 }
 
-/* set the klout icon up properly */
-function z_engine_set_klout(data, id)
-{
-	if (typeof(data) == "object")
-	{
-		if (data.length > 0 && typeof(id) == "string")
-		{
-			var amp = Math.round(data[0].score.amplification_score);
-			var one_day = Math.round(data[0].score.delta_1day);
-			var description = data[0].score.description;
-			var five_days = Math.round(data[0].score.delta_5day);
-			var kclass = data[0].score.kclass;
-			var kclass_description = data[0].score.kclass_description;
-			var kscore = Math.round(data[0].score.kscore);
-			var kscore_description = data[0].score.kscore_description;
-			var net = Math.round(data[0].score.network_score);
-			var reach = Math.round(data[0].score.true_reach);
-			var slope = Math.round(data[0].score.slope);
-			var kloutinfo = '<big><strong>'+kscore+'</strong></big>';
-			if ($("klout-"+id))
-			{
-				$("klout-"+id).addTip(kloutinfo, kloutinfo_params);
-				$("klout-"+id).writeAttribute('src', '/img/kltd.png');
-				$("klout-"+id).writeAttribute('title', '');
-			}
-		}
-	}
-}
-
 /* set up the language for the client */
 function z_engine_set_language()
 {
@@ -1757,7 +1667,6 @@ function z_engine_settings_set_language()
 	$("wait-length-settings").update(translation.wait_length_settings);
 	$("other-settings").update(translation.other_settings);
 	$("geo-settings").update(translation.geo_settings);
-	$("klout-settings").update(translation.klout_settings);
 }
 
 /* initialize all of your values on the settings page automatically */
@@ -1777,8 +1686,6 @@ function z_engine_settings_setup()
 	z_engine_settings_checked_clicker("stream-interval", "stream_interval");
 	z_engine_settings_get("use-geo", "geo");
 	z_engine_settings_checked_clicker("use-geo", "geo");
-	z_engine_settings_get("use-klout", "klout");
-	z_engine_settings_checked_clicker("use-klout", "klout");
 }
 
 /* shorten urls */
@@ -2276,16 +2183,12 @@ function z_engine_tweet(data, divinfo)
 	z_engine_tweet_recalculate_layouts();
 }
 
-/* the reply / rt / fave / delete / klout buttons */
+/* the reply / rt / fave / delete buttons */
 function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked, faved, rtd, usermentions, userinfo)
 {
 	switch (type)
 	{
 		case 'dms':
-			if ($("av-"+id))
-			{
-				$("av-"+id).addTip(z_engine_parse_tweet(userinfo), userinfo_params);
-			}
 			if (author != screen_name)
 			{
 				var reply_img_element = new Element('img', {'onclick': 'z_engine_reply_dm("'+userid+'", "'+author+'");', 'src': '/img/rep.png', 'title': translation.reply, 'id': 'reply-'+id, 'alt': ''});
@@ -2298,22 +2201,6 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			z_engine_tweet_right_click(id, "comment-"+id, author, author2, userid, usermentions, text, faved, rtd, locked, type);
 		break;
 		case 'home':
-			if ($("av-"+id))
-			{
-				$("av-"+id).addTip(z_engine_parse_tweet(userinfo), userinfo_params);
-			}
-			if (store.get('klout') == "on")
-			{
-				if ($("left-"+id) && !$('klout-'+id))
-				{
-					var klout_element = new Element('klout', {'class': 'klout', 'id': 'klout-'+id+'-container'});
-					klout_element.update(" ");
-					var klout_img_element = new Element('img', {'onclick': 'z_engine_get_klout("'+author+'", "'+userid+'", "'+id+'");', 'src': '/img/klt.png', 'id': 'klout-'+id, 'alt': '', 'title': 'click to get this users klout score'});
-					klout_element.insert({'top': klout_img_element});
-					new Element.extend(klout_img_element);
-					$("left-"+id).insert({'top': klout_element});
-				}
-			}
 			if (author != screen_name)
 			{
 				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'title': translation.reply, 'id': 'reply-'+id, 'alt': ''});
@@ -2350,18 +2237,6 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			z_engine_tweet_right_click(id, "comment-"+id, author, author2, userid, usermentions, text, faved, rtd, locked, type);
 		break;
 		case 'mentions':
-			if ($("av-"+id))
-			{
-				$("av-"+id).addTip(z_engine_parse_tweet(userinfo), userinfo_params);
-			}
-			if ($("av-"+id+"-mentioned"))
-			{
-				$("av-"+id+"-mentioned").addTip(z_engine_parse_tweet(userinfo), userinfo_params);
-			}
-			if ($("klout-"+id+"-container"))
-			{
-				$("klout-"+id+"-container").remove();
-			}
 			if (author != screen_name)
 			{
 				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'-mentioned", "'+usermentions+'");', 'title': translation.reply, 'id': 'reply-'+id+'-mentioned', 'alt': ''});
@@ -2423,14 +2298,6 @@ function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked,
 			}
 		break;
 		case 'threaded':
-			if ($("av-"+id+"-threaded"))
-			{
-				$("av-"+id+"-threaded").addTip(z_engine_parse_tweet(userinfo), userinfo_params);
-			}
-			if ($("klout-"+id))
-			{
-				$("klout-"+id).remove();
-			}
 			if (author != screen_name)
 			{
 				var reply_img_element = new Element('img', {'src': '/img/rep.png', 'onclick': 'z_engine_reply("'+author+'", "'+id+'", "'+usermentions+'");', 'title': translation.reply, 'id': 'reply-'+id+'-threaded', 'alt': ''});
