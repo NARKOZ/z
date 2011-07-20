@@ -365,12 +365,12 @@ function z_engine_attrition()
 				$("new-tweet").clear();
 				$("new-tweet").enable();
 				z_engine_timeline_recalculate_layouts();
-				//z_engine_fetch_timeline("rates");
+				z_engine_fetch_timeline("rates");
 				z_engine_fetch_timeline("home");
-				/*z_engine_fetch_timeline.delay(2, "userstream");
+				z_engine_fetch_timeline.delay(2, "userstream");
 				z_engine_fetch_timeline.delay(15, "mentions");
 				z_engine_fetch_timeline.delay(30, "dms-inbox");
-				z_engine_fetch_timeline.delay(45, "dms-outbox");*/
+				z_engine_fetch_timeline.delay(45, "dms-outbox");
 				new PeriodicalExecuter(function()
 				{
 					z_engine_update_relative_time("time.home");
