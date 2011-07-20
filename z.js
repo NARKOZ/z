@@ -1,7 +1,7 @@
 /*
  * vars
  */
-var config = config = require('./vendor/config').config;
+var config = require('./vendor/config').config;
 var express = require('express');
 var googl = require('goo.gl');
 var gzip = require('connect-gzip');
