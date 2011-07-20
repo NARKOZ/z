@@ -5,3 +5,24 @@
       "how to do certain things a very certain way", kind of like how you see logos on the left side of a hat.
 3) site streams support - when this is implemented, it will be possible to host multiple users without getting a
    nice ban / blacklist from the entire twitter api )for doing multiple userstreams from one server)
+4) convert the userinfo tooltip thing into its own modal window (eg the settings window) & display more info
+   ^--in addition to this, possibly link to another hidden tab (like the threaded conversation tab) that will show
+   the last 20 or so (whatever the startup_count int is) tweets there for convenience.
+5) generally improve the following items:
+     - url shortening mechanism (serverside = great, clientside coult possibly use a seperate button, more triggers
+       and sanity between resetting, etc things of this general nature?)
+     - context menu mechanism with more sanity, do more testing with undoing retweets (a rare occasion for me)
+     - repeat the above line, except with favorites (though this seems more stable now)
+     - finish off any remaining translation stuff and improve it as much as possible so it makes sense
+       - as a sidenote for this, feel free to maintain any translations for now, and send a pull request with them
+         once i have all of the general translating itself done and have a "spec", if you will
+6) decide whether to remove the current related_results request code since its not very stable and im in no rush
+   to decypher an undocumented api call (i found it looking around in the regular clientside javascript they send
+   with every request) or to just remove it from the git repo itself and wait for the code to become documented,
+   then recommit it.
+7) decide to either do like tweetdeck and have a "new tweet" button which opens a modal window with a textarea.
+   the upside and addition to funcitonality is submitting multilined tweets (linebreaks), or to leave it as it is.
+   im siding with the latter since i wrote it that way for a reason. right now there is code commented out that
+   provide a working textarea and resizer but it is not within a modal window (back this code up?)
+8) decide whether to do list support:
+     - lists are not available in realtime

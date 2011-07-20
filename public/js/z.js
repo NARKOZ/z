@@ -365,12 +365,12 @@ function z_engine_attrition()
 				$("new-tweet").clear();
 				$("new-tweet").enable();
 				z_engine_timeline_recalculate_layouts();
-				z_engine_fetch_timeline("rates");
+				//z_engine_fetch_timeline("rates");
 				z_engine_fetch_timeline("home");
-				z_engine_fetch_timeline.delay(2, "userstream");
+				/*z_engine_fetch_timeline.delay(2, "userstream");
 				z_engine_fetch_timeline.delay(15, "mentions");
 				z_engine_fetch_timeline.delay(30, "dms-inbox");
-				z_engine_fetch_timeline.delay(45, "dms-outbox");
+				z_engine_fetch_timeline.delay(45, "dms-outbox");*/
 				new PeriodicalExecuter(function()
 				{
 					z_engine_update_relative_time("time.home");
@@ -476,11 +476,26 @@ function z_engine_attrition()
 					fade: true,
 					overlayOpacity: 0.5
 				});
-				scrollbar_home = new Control.ScrollBar("home-timeline", "home-timeline-scroll");
-				scrollbar_mentions = new Control.ScrollBar("mentions-timeline", "mentions-timeline-scroll");
-				scrollbar_inbox = new Control.ScrollBar("dms-inbox-timeline", "dms-inbox-timeline-scroll");
-				scrollbar_outbox = new Control.ScrollBar("dms-outbox-timeline", "dms-outbox-timeline-scroll");
-				scrollbar_threads = new Control.ScrollBar("threaded-timeline", "threaded-timeline-scroll");
+				scrollbar_home = new Control.ScrollBar("home-timeline", "home-timeline-scroll",
+				{
+					scroll_to_smoothing: 0.5
+				});
+				scrollbar_mentions = new Control.ScrollBar("mentions-timeline", "mentions-timeline-scroll",
+				{
+					scroll_to_smoothing: 0.5
+				});
+				scrollbar_inbox = new Control.ScrollBar("dms-inbox-timeline", "dms-inbox-timeline-scroll",
+				{
+					scroll_to_smoothing: 0.5
+				});
+				scrollbar_outbox = new Control.ScrollBar("dms-outbox-timeline", "dms-outbox-timeline-scroll",
+				{
+					scroll_to_smoothing: 0.5
+				});
+				scrollbar_threads = new Control.ScrollBar("threaded-timeline", "threaded-timeline-scroll",
+				{
+					scroll_to_smoothing: 0.5
+				});
 				tabs = new Control.Tabs('tabbed',
 				{
 					defaultTab: "first",
@@ -781,6 +796,20 @@ function z_engine_clear_timeline()
 	}
 }
 
+/* check to see if css3 is possible */
+function z_engine_css3()
+{
+	return false;
+	/*if (BrowserDetect.browser == "Firefox" && BrowserDetect.version <= 5 || BrowserDetect.browser != "Chrome" || BrowserDetect.browser != "Safari")
+	{
+		return false;
+	}
+	else
+	{
+		return true; //css3 animations are supported
+	}*/
+}
+
 /* determine which timeline is currently visible */
 function z_engine_current_timeline()
 {
@@ -803,19 +832,6 @@ function z_engine_current_timeline()
 	else if ($("threaded-timeline").visible())
 	{
 		return "threaded-timeline";
-	}
-}
-
-/* check to see if css3 is possible */
-function z_engine_css3()
-{
-	if (BrowserDetect.browser == "Firefox" && BrowserDetect.version <= 5 || BrowserDetect.browser != "Chrome" || BrowserDetect.browser != "Safari")
-	{
-		return false;
-	}
-	else
-	{
-		return true; //css3 animations are supported
 	}
 }
 

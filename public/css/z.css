@@ -64,7 +64,7 @@ header
 {
 	background-color: #f6f6f6;
 	display: block;
-	width: 99%;
+	width: 98.5%;
 	left: 0px;
 	position: fixed;
 	top: 0px;
@@ -139,7 +139,7 @@ legend
 /*
  * animations
  */
-@keyframes fadein
+/*@keyframes fadein
 {
 	from {display: none; opacity: 0;}
 	to {display: block; opacity: 1;}
@@ -168,7 +168,7 @@ legend
 {
 	from {display: block; opacity: 1;}
 	to {display: none; opacity: 0;}
-}
+}*/
 
 /*
  * fade in between containers
@@ -176,16 +176,16 @@ legend
 .hider
 {
 	display: none;
-	animation: fadeout 0.5s ease-in-out;
+	/*animation: fadeout 0.5s ease-in-out;
 	-moz-animation: fadeout 0.5s ease-in-out;
-	-webkit-animation: fadeout 0.5s ease-in-out;
+	-webkit-animation: fadeout 0.5s ease-in-out;*/
 }
 .shower
 {
 	display: block;
-	animation: fadein 0.5s ease-in-out;
+	/*animation: fadein 0.5s ease-in-out;
 	-moz-animation: fadein 0.5s ease-in-out;
-	-webkit-animation: fadein 0.5s ease-in-out;
+	-webkit-animation: fadein 0.5s ease-in-out;*/
 }
 
 /*
@@ -193,23 +193,23 @@ legend
  */
 .comment-parent
 {
-	animation: fadein 1s ease-in-out;
+	/*animation: fadein 1s ease-in-out;*/
 	display: block;
 	margin-top: 15px;
 	margin-bottom: 15px;
 	z-index: 50;
-	-moz-animation: fadein 1s ease-in-out;
-	-webkit-animation: fadein 1s ease-in-out;
+	/*-moz-animation: fadein 1s ease-in-out;
+	-webkit-animation: fadein 1s ease-in-out;*/
 }
 .comment-parent-drop
 {
-	animation: fadeout 1s ease-in-out;
+	/*animation: fadeout 1s ease-in-out;*/
 	display: none;
 	margin-top: 15px;
 	margin-bottom: 15px;
 	z-index: 50;
-	-moz-animation: fadeout 1s ease-in-out;
-	-webkit-animation: fadeout 1s ease-in-out;
+	/*-moz-animation: fadeout 1s ease-in-out;
+	-webkit-animation: fadeout 1s ease-in-out;*/
 }
 .comment-list ul.children, #comments #respond ul
 {
@@ -611,7 +611,7 @@ ul.tabbed li.navigation
  */
 div.growls
 {
-	z-index: 50000;
+	z-index: 2000;
 	position: fixed;
 }
 div.growls.bottom-right
@@ -656,8 +656,9 @@ div.growls div.medium
 	border-radius: 10px;
 	width: 300px;
 	min-height: 50px;
-	padding: 10px;	background: #F6F6F6;
-	margin: 10px;
+	padding: 10px;
+	background: #F6F6F6;
+	margin: 20px 10px 10px 10px;
 	-khtml-border-radius: 10px;
 	-moz-border-radius: 10px;
 	-o-border-radius: 10px;
@@ -742,7 +743,7 @@ div.autocomplete ul li.selected
 	box-shadow: 2px 2px 5px rgba(15,15,15,0.1);
 	border: 1px solid #DDD;
 	left: 0;
-	top: 100px;
+	top: 0;
 	margin-top: -5px;
 	font-size: 0.87em;
 	position: absolute;
@@ -798,13 +799,6 @@ div.autocomplete ul li.selected
 /*
  * scrollbar stuff
  */
-#container
-{
-	overflow: hidden;
-	position: absolute;
-	top: 100px;
-	margin-top: 5px;
-} 
 .scrollbar-track
 {
 	background-color: transparent;
@@ -839,9 +833,9 @@ div.autocomplete ul li.selected
  */
 .ot-container
 {
+	z-index: 600;
 	position: absolute;
 	max-width: 500px;
-	z-index: 600;
 }
 .ot-container.ot-fixed
 {
@@ -1048,12 +1042,13 @@ div.autocomplete ul li.selected
  */
 #container
 {
-	position: relative;
+	position: fixed;
 	display: block;
 	bottom: 0;
-	top: 100px;
+	top: 100;
 	left: 0;
 	right: 0;
+	z-index: -1;
 }
 .login-inner
 {
