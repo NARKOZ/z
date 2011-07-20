@@ -32,6 +32,13 @@ var storage_type = config.storage_type;
 googl.setKey(googl_key);
 switch (storage_type)
 {
+	case 'couch':
+		var CouchStore = require('connect-couchdb')(express);
+		var storage =  new CouchStore(
+		{
+			name: 'sessions'
+		});
+	break;
 	case 'memory':
 		var storage = new express.session.MemoryStore();
 	break;

@@ -13,6 +13,10 @@
 
    optional:
 
+     couchdb support:
+       sudo npm install connect-couchdb
+       set storage_type to "couch" in config.json
+
      mongo support:
        sudo npm install connect-mongo
        set storage_type to "mongo" in config.json
@@ -21,12 +25,13 @@
        sudo npm install connect-redis
        set storage_type to "redis" in config.json
 
-2) configure config.json
+   it is highly recommended that you use one of the above store methods rather than memory, as it is known to leak.
 
-3) register your application here: https://dev.twitter.com/apps
+2) register your application here: https://dev.twitter.com/apps
    be sure to set the application type to "browser", use "http://127.0.0.1:8080/oauth/callback" as the callback url.
    copy the oauth key and secret into config.json (and change anything you would like in there)...
    be sure to change the storage_secret to something other than blank - it is a salt for sessions!
-4) register a gmail account, and go here for a url shortener key: https://code.google.com/apis/console
-5) register for a klout api key here: http://developer.klout.com/apps/mykeys
-6) register for an imgur api key here: http://imgur.com/register/api_anon
+3) register a gmail account, and go here for a url shortener key: https://code.google.com/apis/console
+4) register for a klout api key here: http://developer.klout.com/apps/mykeys
+5) register for an imgur api key here: http://imgur.com/register/api_anon
+6) configure config.json
