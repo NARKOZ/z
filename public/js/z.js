@@ -36,6 +36,7 @@ if (!store.get('lang'))
 var latest_threaded_id = 0;
 var latitude = false; //hold our latitude
 var loaded = false; //not loaded
+var loaded2 = false; //hide the loading icon
 var longitude = false; //hold our longitude
 var max_file_size = 2; //in megabytes
 if (!store.get('mention_blocks'))
@@ -174,6 +175,11 @@ function z_engine_attrition()
 		socket.on("dms-outbox", function(json)
 		{
 			z_engine_tweet(json, "dms bottom");
+			if (!loaded2)
+			{
+				loaded2 = true;
+				$("loading").fade();
+			}
 		});
 		socket.on("event", function(json)
 		{

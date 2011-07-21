@@ -26,6 +26,9 @@ header(class='comment-list-wrapper')
       li
         input#new-dm-user(type='text', maxlength='15', class='dm-user dm', style='display: none;')
         #autocompleter-dm(class='autocomplete', style='font-size: 0.8em; width: 100%; display: none;')
+    ul#loading
+      li(style='text-align: center; margin-top: 2px;', class='navigation')
+        img(src='/img/spinner.gif')
     .clearer &nbsp;
   form#new-tweet-form(autocomplete='off')
     //textarea#new-tweet(disabled='disabled', style='width: 98.5%; overflow: hidden;', rows='1', value='loading...')
