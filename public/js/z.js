@@ -2348,7 +2348,12 @@ function z_engine_tweet_pause()
 /* recalculate timeline sizes when the window is resized */
 function z_engine_timeline_recalculate_layouts()
 {
-	var visible = z_engine_current_timeline();
+	$("home-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	$("mentions-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	$("dms-inbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	$("dms-outbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	$("threaded-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	/*var visible = z_engine_current_timeline();
 	switch (visible)
 	{
 		case "dms-inbox-timeline-container":
@@ -2366,13 +2371,18 @@ function z_engine_timeline_recalculate_layouts()
 		case "threaded-timeline-container":
 			$("threaded-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
 		break;
-	}
+	}*/
 }
 
 /* recalculate the timeline sizes here */
 function z_engine_tweet_recalculate_layouts()
 {
-	var visible = z_engine_current_timeline();
+	scrollbar_home.recalculateLayout();
+	scrollbar_inbox.recalculateLayout();
+	scrollbar_mentions.recalculateLayout();
+	scrollbar_outbox.recalculateLayout();
+	scrollbar_threads.recalculateLayout();
+	/*var visible = z_engine_current_timeline();
 	switch (visible)
 	{
 		case "dms-inbox-timeline-container":
@@ -2390,7 +2400,7 @@ function z_engine_tweet_recalculate_layouts()
 		case "threaded-timeline-container":
 			scrollbar_threads.recalculateLayout();
 		break;
-	}
+	}*/
 }
 
 /* the neat context menu shown on tweets */

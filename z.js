@@ -13,11 +13,13 @@ var twitter = require('./vendor/twitter');
 /*
  * these vars are pulled in automatically from config.json
  */
-var key = config.oauth_key;
-var secret = config.oauth_secret;
 var sitestream_key = config.oauth_key_sitestream;
+var host = config.host;
 var googl_key = config.googl_key;
 var imgur_key = config.imgur_key;
+var oauth_callback = config.oauth_callback;
+var key = config.oauth_key;
+var secret = config.oauth_secret;
 var port = config.port;
 var startup_count = config.startup_count;
 var storage_fingerprint = config.storage_fingerprint;
@@ -40,6 +42,10 @@ switch (storage_type)
 	case 'memory':
 		var storage = new express.session.MemoryStore()
 	break;
+	/*case 'nstore':
+		var nStoreSession = require('./vendor/session')(express);
+		var storage = new nStoreSession();
+	break;*/
 	case 'mongo':
 		var MongoStore = require('connect-mongo');
 		var storage =  new MongoStore(
@@ -139,7 +145,7 @@ server.get('/oauth/login', function(req, res)
 });
 
 /* oauth callback */
-server.get('/oauth/callback', function(req, res)
+server.get(oauth_callback, function(req, res)
 {
 	if (!req.session.oauth)
 	{
@@ -177,7 +183,9 @@ server.get('/oauth/logout', function(req, res)
 
 if (!module.parent)
 {
-	server.listen(port);
+	server.listen(port, host);
+	console.log('z engine running at http://'+host+':'+config.port+'/');
+	console.log('accepting oauth callbacks at: at http://'+host+':'+config.port+'/'+oauth_callback);
 }
 
 /* gzipping */

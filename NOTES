@@ -7,7 +7,6 @@
      sudo npm install goo.gl
      sudo npm install jade
      sudo npm install jsonreq
-     sudo npm install nstore
      sudo npm install oauth
      sudo npm install socket.io
      sudo npm install socket.io-sessions
