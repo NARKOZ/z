@@ -83,15 +83,6 @@ legend
 	font-weight: bold;
 	behavior: url(border-radius.htc);
 }
-.hr
-{
-	height: 1px;
-	margin-left: 15px;
-	margin-right: 15px;
-	background: #fff;
-	background: #fff no-repeat center top -moz-radial-gradient(top center, #ddd, #fff);
-	background: #ddd no-repeat top center -webkit-gradient(radial, center top, 0, center top, 1000, from(#ddd), to(#fff));
-}
 .huge, h1
 {
 	text-shadow: rgba(215,215,215,0.3) 5px 5px 8px;
@@ -204,7 +195,6 @@ legend
 	-webkit-border-radius: 5px;
 	background-color: white;
 	border: 1px solid #DDD;
-	letter-spacing: 0.5px;
 	padding: 1px 12px 0 9px;
 
 	behavior: url(border-radius.htc);

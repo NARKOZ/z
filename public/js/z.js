@@ -2348,50 +2348,48 @@ function z_engine_tweet_pause()
 /* recalculate timeline sizes when the window is resized */
 function z_engine_timeline_recalculate_layouts()
 {
-	if ($("home-timeline"))
+	var visible = z_engine_current_timeline();
+	switch (visible)
 	{
-		$("home-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-	}
-	if ($("mentions-timeline"))
-	{
-		$("mentions-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-	}
-	if ($("dms-inbox-timeline"))
-	{
-		$("dms-inbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-	}
-	if ($("dms-outbox-timeline"))
-	{
-		$("dms-outbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-	}
-	if ($("threaded-timeline"))
-	{
-		$("threaded-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+		case "dms-inbox-timeline-container":
+			$("dms-inbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+		break;
+		case "dms-outbox-timeline-container":
+			$("dms-outbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+		break;
+		case "home-timeline-container":
+			$("home-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+		break;
+		case "mentions-timeline-container":
+			$("mentions-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+		break;
+		case "threaded-timeline-container":
+			$("threaded-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+		break;
 	}
 }
 
 /* recalculate the timeline sizes here */
 function z_engine_tweet_recalculate_layouts()
 {
-	if ($("home-timeline"))
+	var visible = z_engine_current_timeline();
+	switch (visible)
 	{
-		scrollbar_home.recalculateLayout();
-	}
-	if ($("mentions-timeline"))
-	{
-		scrollbar_inbox.recalculateLayout();
-	}
-	if ($("dms-inbox-timeline"))
-	{
-		scrollbar_mentions.recalculateLayout();
-	}
-	if ($("dms-outbox-timeline"))
-	{
-		scrollbar_outbox.recalculateLayout();
-	}
-	if ($("threaded-timeline"))
-	{
-		scrollbar_threads.recalculateLayout();
+		case "dms-inbox-timeline-container":
+			scrollbar_inbox.recalculateLayout();
+		break;
+		case "dms-outbox-timeline-container":
+			scrollbar_outbox.recalculateLayout();
+		break;
+		case "home-timeline-container":
+			scrollbar_home.recalculateLayout();
+		break;
+		case "mentions-timeline-container":
+			scrollbar_mentions.recalculateLayout();
+		break;
+		case "threaded-timeline-container":
+			scrollbar_threads.recalculateLayout();
+		break;
 	}
 }
 
