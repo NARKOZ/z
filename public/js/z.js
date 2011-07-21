@@ -2348,21 +2348,51 @@ function z_engine_tweet_pause()
 /* recalculate timeline sizes when the window is resized */
 function z_engine_timeline_recalculate_layouts()
 {
-	$("home-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-	$("mentions-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-	$("dms-inbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-	$("dms-outbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-	$("threaded-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	if ($("home-timeline"))
+	{
+		$("home-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	}
+	if ($("mentions-timeline"))
+	{
+		$("mentions-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	}
+	if ($("dms-inbox-timeline"))
+	{
+		$("dms-inbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	}
+	if ($("dms-outbox-timeline"))
+	{
+		$("dms-outbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	}
+	if ($("threaded-timeline"))
+	{
+		$("threaded-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
+	}
 }
 
 /* recalculate the timeline sizes here */
 function z_engine_tweet_recalculate_layouts()
 {
-	scrollbar_home.recalculateLayout();
-	scrollbar_inbox.recalculateLayout();
-	scrollbar_mentions.recalculateLayout();
-	scrollbar_outbox.recalculateLayout();
-	scrollbar_threads.recalculateLayout();
+	if ($("home-timeline"))
+	{
+		scrollbar_home.recalculateLayout();
+	}
+	if ($("mentions-timeline"))
+	{
+		scrollbar_inbox.recalculateLayout();
+	}
+	if ($("dms-inbox-timeline"))
+	{
+		scrollbar_mentions.recalculateLayout();
+	}
+	if ($("dms-outbox-timeline"))
+	{
+		scrollbar_outbox.recalculateLayout();
+	}
+	if ($("threaded-timeline"))
+	{
+		scrollbar_threads.recalculateLayout();
+	}
 }
 
 /* the neat context menu shown on tweets */
@@ -2424,7 +2454,7 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 						callback: function()
 						{
 							z_engine_retweet(id);
-							context_menu.close();
+							context_menu.destroy();
 							new PeriodicalExecuter(function(event)
 							{
 								if (content_rts_stored[id] && content_rts_stored[id].isJSON())
@@ -2432,7 +2462,6 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 									event.stop();
 									var data = content_rts_stored[id].evalJSON(true);
 									var new_id = data.id_str;
-									context_menu.destroy();
 									z_engine_tweet_right_click(new_id, divid, author, screen_name, userid, usermentions, text, faved, true, locked, type);
 								}
 							}, 0.25);
