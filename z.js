@@ -305,20 +305,6 @@ socket.on('sconnection', function(client, session)
 					break;
 				}
 			});
-			client.on("klout", function(json)
-			{
-				klout.show(json.klout, function(error, data)
-				{
-					if (error)
-					{
-						z_engine_send_to_client(client, "klout", {klout: "error", id_str: json.id_str});
-					}
-					else
-					{
-						z_engine_send_to_client(client, "klout", {klout: data, id_str: json.id_str});
-					}
-				});
-			});
 			client.on("related", function(json)
 			{
 				tw.related_results(json.id_str, {count: startup_count, include_entities: true}, function(error, data, response)
