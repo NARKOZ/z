@@ -175,11 +175,6 @@ function z_engine_attrition()
 		socket.on("dms-outbox", function(json)
 		{
 			z_engine_tweet(json, "dms bottom");
-			if (!loaded2)
-			{
-				loaded2 = true;
-				$("loading").fade();
-			}
 		});
 		socket.on("event", function(json)
 		{
@@ -311,6 +306,11 @@ function z_engine_attrition()
 		socket.on("home", function(json)
 		{
 			z_engine_tweet(json, "home bottom");
+			if (!loaded2)
+			{
+				loaded2 = true;
+				$("loading").fade();
+			}
 		});
 		socket.on("info", function(json)
 		{
