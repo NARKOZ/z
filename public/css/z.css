@@ -275,6 +275,10 @@ legend
 /*
  * form related stuff
  */
+#loading-img
+{
+	margin-top: 5px;
+}
 #new-dm-user
 {
 	font-size: 0.65em;
@@ -282,7 +286,7 @@ legend
 	max-width: 80px;
 	padding: 7px;
 	margin-left: 15px;
-	margin-top: -2px;
+	margin-top: -3px;
 }
 #new-tweet-input-li
 {
