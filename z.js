@@ -183,7 +183,14 @@ server.get('/oauth/logout', function(req, res)
 
 if (!module.parent)
 {
-	server.listen(port, host);
+	if (host == "")
+	{
+		server.listen(port);
+	}
+	else
+	{
+		server.listen(port, host);
+	}
 	console.log('z engine running at http://'+host+':'+config.port+'/');
 	console.log('accepting oauth callbacks at: at http://'+host+':'+config.port+'/'+oauth_callback);
 }
