@@ -103,6 +103,7 @@ var translation = ""; //will hold our translation info
 var update_relative_dms_interval = 60; //once a minute
 var update_relative_home_interval = 15; //every 15 seconds
 var update_relative_mentions_interval = 30; //every 30 seconds
+var uploading = false;
 var user_id = 0; //our own user id
 if (!store.get('user_blocks'))
 {
@@ -523,10 +524,6 @@ function z_engine_attrition()
 				{
 					z_engine_image_dropper();
 				}
-				if (store.get("notifications") == "on")
-				{
-					z_engine_notification_setup();
-				}
 				z_engine_settings_setup();
 			}
 			else
@@ -543,7 +540,7 @@ function z_engine_attrition()
 			rates = json.remaining_hits;
 			if (json.remaining_hits <= 10)
 			{
-				z_engine_notification("/img/dummy.png","notice!","you have "+json.remaining_hits+" (of "+json.hourly_limit+") request tokens left!");
+				growler.growl("/img/dummy.png","notice!","you have "+json.remaining_hits+" (of "+json.hourly_limit+") request tokens left!");
 			}
 		});
 		socket.on("related", function(json) //very alpha material right here, it clones the sidebar in new twitter somewhat.
@@ -658,11 +655,11 @@ function z_engine_attrition()
 			{
 				case 'end':
 					$("new-tweet").disable();
-					z_engine_notification("/img/dummy.png", "notice!", "lost connection to the userstream, reconnecting...");
+					growler.growl("/img/dummy.png", "notice!", "lost connection to the userstream, reconnecting...");
 				break;
 				case 'error':
 					$("new-tweet").disable();
-					z_engine_notification("/img/dummy.png", "notice!", "error occurred, reconnecting...");
+					growler.growl("/img/dummy.png", "notice!", "error occurred, reconnecting...");
 				break;
 			}
 		});
@@ -692,7 +689,7 @@ function z_engine_attrition()
 		socket.on("tweet", function(json)
 		{
 			if (json.retweeted_status && json.retweeted_status.user.screen_name == screen_name && json.user.screen_name != screen_name)
-			{
+			{ //this is to prevent outputting any of our content that is retweeted from being queued again
 				var av = json.user.profile_image_url;
 				var rtd = json.retweeted_status.retweet_count - 1;
 				var text = json.retweeted_status.text;
@@ -708,7 +705,7 @@ function z_engine_attrition()
 				{
 					var title = "@"+json.user.screen_name+" retweeted you!";
 				}
-				z_engine_notification(av, title, text);
+				z_engine_notification(av, title, text); //so instead we will send a notification about this
 			}
 			else
 			{
@@ -734,36 +731,14 @@ function z_engine_attrition()
 function z_engine_clear_timeline()
 {
 	var visible = z_engine_current_timeline();
-	if (!z_engine_css3())
+	new Effect.Fade(visible,
 	{
-		new Effect.Fade(visible,
+		duration: 0.5,
+		afterFinish: function()
 		{
-			duration: 0.5,
-			afterFinish: function()
-			{
-				$(visible).update().appear();
-			}
-		});
-	}
-	else
-	{
-		$(visible).addClassName("comment-parent-drop").removeClassName("comment-parent");
-		$(visible).update().appear().delay(0.5);
-	}
-}
-
-/* check to see if css3 is possible */
-function z_engine_css3()
-{
-	return false;
-	/*if (BrowserDetect.browser == "Firefox" && BrowserDetect.version <= 5 || BrowserDetect.browser != "Chrome" || BrowserDetect.browser != "Safari")
-	{
-		return false;
-	}
-	else
-	{
-		return true; //css3 animations are supported
-	}*/
+			$(visible).update().appear();
+		}
+	});
 }
 
 /* determine which timeline is currently visible */
@@ -940,32 +915,22 @@ function z_engine_drop_tweet(id)
 /* the fading + blind down animation */
 function z_engine_fade_down(id)
 {
-	if (!z_engine_css3())
+	$(id).setStyle("display: none;");
+	new Effect.Appear(id,
 	{
-		$(id).setStyle("display: none;");
-		new Effect.Appear(id,
-		{
-			duration: 1,
-			transition: Effect.Transitions.sinoidal
-		});
-	}
+		duration: 1,
+		transition: Effect.Transitions.sinoidal
+	});
 }
 
 /* the fading + blind up animation */
 function z_engine_fade_up(id)
 {
-	if (!z_engine_css3())
+	new Effect.Fade(id,
 	{
-		new Effect.Fade(id,
-		{
-			duration: 1,
-			transition: Effect.Transitions.sinoidal
-		});
-	}
-	else
-	{
-		$(id).addClassName("comment-parent-drop").removeClassName("comment-parent");
-	}
+		duration: 1,
+		transition: Effect.Transitions.sinoidal
+	});
 }
 
 /* favorite a tweet */
@@ -1122,76 +1087,87 @@ function z_engine_image_dropper()
 		$("image").ondrop = function(event)
 		{
 			event.preventDefault();
-			var image = event.dataTransfer.files[0];
-			if (image.size <= max_file_size * 1024 * 1024)
+			if (!uploading)
 			{
-				switch(image.type)
+				var image = event.dataTransfer.files[0];
+				if (image.size <= max_file_size * 1024 * 1024)
 				{
-					case 'application/pdf':
-					case 'image/apng':
-					case 'image/bmp':
-					case 'image/gif':
-					case 'image/jpeg':
-					case 'image/jpg':
-					case 'image/png':
-					case 'image/tiff':
-						var form = new FormData();
-						form.append("image", image);
-						form.append("key", imgur_key);
-						var xhr = new XMLHttpRequest(); //this would be written in prototypes ajax method but only this works
-						xhr.upload.onprogress = function(event)
-						{
-							if (event.lengthComputable)
+					switch(image.type)
+					{
+						case 'application/pdf':
+						case 'image/apng':
+						case 'image/bmp':
+						case 'image/gif':
+						case 'image/jpeg':
+						case 'image/jpg':
+						case 'image/png':
+						case 'image/tiff':
+							var form = new FormData();
+							form.append("image", image);
+							form.append("key", imgur_key);
+							var xhr = new XMLHttpRequest(); //this would be written in prototypes ajax method but only this works
+							xhr.upload.onprogress = function(event)
 							{
-								var percent = (event.loaded / event.total) * 100;
-								progress_bar.step(percent);
-							}
-						}
-						xhr.onreadystatechange = function()
-						{
-							if (this.readyState == 1)
-							{
-								$("progress-bar").appear();
-								$("image").setStyle("border-color: #ddd;"); //force it back
-							}
-							else if (this.readyState == 4)
-							{
-								$("progress-bar").fade();
-								if (this.status == 200)
+								uploading = true;
+								if (event.lengthComputable)
 								{
-									if (this.responseText.isJSON())
+									var percent = (event.loaded / event.total) * 100;
+									progress_bar.step(percent);
+								}
+							}
+							xhr.onreadystatechange = function()
+							{
+								if (this.readyState == 1)
+								{
+									$("progress-bar").appear();
+									$("image").setStyle("border-color: #ddd;"); //force it back
+								}
+								else if (this.readyState == 4)
+								{
+									$("progress-bar").fade();
+									if (this.status == 200)
 									{
-										var response = this.responseText.evalJSON(true);
-										var image_url = response.upload.links.original;
-										var current_tweet = $("new-tweet").getValue();
-										if (current_tweet.length > 0)
+										if (this.responseText.isJSON())
 										{
-											var new_tweet = current_tweet+" "+image_url;
+											var response = this.responseText.evalJSON(true);
+											var image_url = response.upload.links.original;
+											var current_tweet = $("new-tweet").getValue();
+											if (current_tweet.length > 0)
+											{
+												var new_tweet = current_tweet+" "+image_url;
+											}
+											else if (current_tweet.length == 0)
+											{
+												var new_tweet = image_url;
+											}
+											$("new-tweet").setValue(new_tweet);
 										}
-										else if (current_tweet.length == 0)
-										{
-											var new_tweet = image_url;
-										}
-										$("new-tweet").setValue(new_tweet);
 									}
-								}
-								else
-								{
-									z_engine_notification("/img/dummy.png", "error!", "there seems to have been an error on imgur's end!");
-									$("image").setStyle("border-color: red;");
-									Element.setStyle.delay(2, "image", "border-color: #ddd;");
+									else
+									{
+										growler.growl("/img/dummy.png", "error!", "there seems to have been an error on imgur's end!");
+										$("image").setStyle("border-color: red;");
+										Element.setStyle.delay(2, "image", "border-color: #ddd;");
+									}
+									uploading = false;
 								}
 							}
-						}
-						xhr.open("POST", "http://api.imgur.com/2/upload.json", true);
-						xhr.send(form);
-					break;
-					default:
-						z_engine_notification("/img/dummy.png", "error!", "this file is not supported, sorry!");
-						$("image").setStyle("border-color: red;");
-						Element.setStyle.delay(2, "image", "border-color: #ddd;");
-					break;
+							xhr.open("POST", "http://api.imgur.com/2/upload.json", true);
+							xhr.send(form);
+						break;
+						default:
+							growler.growl("/img/dummy.png", "error!", "this file is not supported, sorry!");
+							$("image").setStyle("border-color: red;");
+							Element.setStyle.delay(2, "image", "border-color: #ddd;");
+						break;
+					}
 				}
+			}
+			else
+			{
+				growler.growl("/img/dummy.png", "error!", "wait until the current upload is finished!");
+				$("image").setStyle("border-color: red;");
+				Element.setStyle.delay(2, "image", "border-color: #ddd;");
 			}
 			return false;
 		}
@@ -1255,33 +1231,7 @@ function z_engine_notification(av, title, text)
 		{
 			text = "";
 		}
-		if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) //we can access webkit notifications
-		{
-			var notification = window.webkitNotifications.createNotification(av, title, text.unescapeHTML());
-			notification.show();
-			window.setTimeout(function()
-			{
-				notification.cancel();
-			}, store.get('notifications_timeout') * 1000);
-		}
-		else if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1) //we might be able to access them if the user allows us to
-		{
-			window.webkitNotifications.requestPermission();
-			growler.growl(av, title, text.unescapeHTML()); //send a growler notification anyway
-		}
-		else if (!window.webkitNotifications || window.webkitNotifications && window.webkitNotifications.checkPermission() == 2) //we cant access notifications
-		{
-			growler.growl(av, title, text.unescapeHTML());
-		}
-	}
-}
-
-/* currently for webkit browsers only (requests permission to use webkit notifications) */
-function z_engine_notification_setup()
-{
-	if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1)
-	{
-		window.webkitNotifications.requestPermission();
+		growler.growl(av, title, text.unescapeHTML());
 	}
 }
 
@@ -1926,19 +1876,6 @@ function z_engine_tweet(data, divinfo)
 		{
 			z_engine_remember_author(author);
 		}
-		var userinfo = "";
-		if (description != null && description != "")
-		{
-				userinfo += description+'<br /><br />';
-		}
-		if (location != null && location != "")
-		{
-			userinfo += translation.location+': <strong>'+location+'</strong><br />';
-		}
-		userinfo += translation.tweets+': <strong>'+tweets+'</strong><br />';
-		userinfo += translation.following+': <strong>'+following+'</strong><br />';
-		userinfo += translation.followers+': <strong>'+followers+'</strong><br />';
-		userinfo += translation.listed+': <strong>'+listed+'</strong>';
 		if (!entities)
 		{
 			var mentioned = false;
@@ -1960,7 +1897,7 @@ function z_engine_tweet(data, divinfo)
 		}
 			var profile_wrapper_element = new Element('div', {'class': 'comment-profile-wrapper left'});
 				var gravatar_element = new Element('div', {'class': 'comment-gravatar'});
-					var gravatar_author_img_element = new Element('img', {'id': 'av-'+id, 'src': avatar, 'style': 'height: 50px; width: 50px; cursor: pointer;', 'alt': ''});
+					var gravatar_author_img_element = new Element('img', {'id': 'av-'+id, 'src': avatar, 'style': 'height: 50px; width: 50px;', 'alt': ''});
 					gravatar_element.insert(gravatar_author_img_element);
 				profile_wrapper_element.insert(gravatar_element);
 			var comment_content_element = new Element('div', {'id': 'comment-'+id+'content', 'class': 'comment-content-wrapper right'});
@@ -2144,7 +2081,7 @@ function z_engine_tweet(data, divinfo)
 				break;
 			}
 			$("mentions-timeline").insert(mentioned_output);
-			z_engine_tweet_buttons("mentions", id, author, author2, userid, text, locked, faved, rtd, mentions_string, userinfo);
+			z_engine_tweet_buttons("mentions", id, author, author2, userid, text, locked, faved, rtd, mentions_string);
 			z_engine_fade_down("comment-"+id+"-mentioned");
 			z_engine_notification(avatar, "@"+author+" mentioned you!", text);
 		}
@@ -2167,12 +2104,12 @@ function z_engine_tweet(data, divinfo)
 				break;
 			}
 			$("threaded-timeline").insert(threaded_output);
-			z_engine_tweet_buttons("threaded", id, author, author2, userid, text, locked, faved, rtd, mentions_string, userinfo);
+			z_engine_tweet_buttons("threaded", id, author, author2, userid, text, locked, faved, rtd, mentions_string);
 			z_engine_fade_down("comment-"+id+"-threaded");
 		}
 		if ($("comment-"+id))
 		{
-			z_engine_tweet_buttons(output, id, author, author2, userid, text, locked, faved, rtd, mentions_string, userinfo);
+			z_engine_tweet_buttons(output, id, author, author2, userid, text, locked, faved, rtd, mentions_string);
 			z_engine_fade_down("comment-"+id);
 		}
 	}
@@ -2184,7 +2121,7 @@ function z_engine_tweet(data, divinfo)
 }
 
 /* the reply / rt / fave / delete buttons */
-function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked, faved, rtd, usermentions, userinfo)
+function z_engine_tweet_buttons(type, id, author, author2, userid, text, locked, faved, rtd, usermentions)
 {
 	switch (type)
 	{

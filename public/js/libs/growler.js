@@ -69,7 +69,7 @@ function insertGrowl(growls, image, title, message, options)
 	var table = new Element("table");
 	var tr = new Element('tr');
 	var td1 = new Element('td', {'style': 'width: 55px; margin-right: 15px;'});
-	var td2 = new Element('td', {'style': 'width: 180px;'});
+	var td2 = new Element('td', {'style': 'width: 240px;'});
 	td1.insert(new Element("img", {"src": image, "style": "height: 50px; width: 50px;", "alt": ""}));
 	td2.insert({'top': new Element("div", {"class": "title"}).update(title)});
 	td2.insert({'bottom': new Element("div", {"class": "message"}).update(message)});
