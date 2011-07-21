@@ -37,12 +37,8 @@ switch (storage_type)
 			name: 'sessions'
 		});
 	break;
-	case 'nstore':
-		var nStoreSession = require('./vendor/session');
-		var storate = new nStoreSession(
-		{
-			dbFile: __dirname + "/store/sessions.db"
-		});
+	case 'memory':
+		var storage = new express.session.MemoryStore()
 	break;
 	case 'mongo':
 		var MongoStore = require('connect-mongo');
