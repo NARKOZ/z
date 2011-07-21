@@ -114,19 +114,16 @@ if (!store.get('users'))
 	store.set('users', "");
 }
 
-
-/* attempts to resize the emulated scrolling areas when the window itself is resized */
-Event.observe(window, "resize", function()
-{
-	z_engine_tweet_recalculate_layouts();
-	z_engine_timeline_recalculate_layouts();
-});
-
 /* the websocket itself */
 function z_engine_attrition()
 {
 	if (BrowserDetect.browser == "MSIE" && BrowserDetect.version >= 9 || BrowserDetect.browser == "Firefox" && BrowserDetect.version >= 3 || BrowserDetect.browser == "Chrome" || BrowserDetect.browser == "Opera" && BrowserDetect.version >= 9 || BrowserDetect.browser == "Safari")
 	{
+		Event.observe(window, "resize", function()
+		{
+			z_engine_tweet_recalculate_layouts();
+			z_engine_timeline_recalculate_layouts();
+		});
 		socket = io.connectWithSession();
 		if (!loaded)
 		{
@@ -319,211 +316,11 @@ function z_engine_attrition()
 			if (!loaded)
 			{
 				loaded = true;
-				$("new-tweet").clear();
-				$("new-tweet").enable();
-				z_engine_timeline_recalculate_layouts();
-				z_engine_fetch_timeline("rates");
-				z_engine_fetch_timeline("home");
-				z_engine_fetch_timeline.delay(2, "userstream");
-				z_engine_fetch_timeline.delay(15, "mentions");
-				z_engine_fetch_timeline.delay(30, "dms-inbox");
-				z_engine_fetch_timeline.delay(45, "dms-outbox");
-				new PeriodicalExecuter(function()
-				{
-					z_engine_update_relative_time("time.home");
-				}, update_relative_home_interval);
-				new PeriodicalExecuter(function()
-				{
-					z_engine_update_relative_time("time.mentions");
-				}, update_relative_mentions_interval);
-				new PeriodicalExecuter(function()
-				{
-					z_engine_update_relative_time("time.dms");
-				}, update_relative_dms_interval);
-				new PeriodicalExecuter(function()
-				{
-					z_engine_update_relative_time("time.threaded");
-				}, update_relative_home_interval);
-				new PeriodicalExecuter(function()
-				{
-					z_engine_fetch_timeline("rates");
-				}, check_ratelimit_interval);
-				new PeriodicalExecuter(function()
-				{
-					if (!paused)
-					{
-						z_engine_prune_tweets();
-					}
-				}, prune_tweets_interval);
-				stream_queue_interval = new PeriodicalExecuter(function()
-				{
-					if (!paused)
-					{
-						z_engine_stream_queue();
-					}
-				}, store.get('stream_interval'));
-				if (store.get('geo') == "on")
-				{
-					new PeriodicalExecuter(function()
-					{
-						z_engine_geo();
-					}, geo_refresh_interval);
-				}
-				new PeriodicalExecuter(function()
-				{
-					z_engine_input();
-				}, 1);
-				var autocomplete_users = $w(store.get('users').strip()).uniq();
-				var autocomplete_users_dm = "";
-				autocomplete_users.each(function(item)
-				{
-					autocomplete_users_dm += item.replace(/@/i,"")+" ";
-				});
-				new Autocompleter.Local("new-tweet", "autocompleter", autocomplete_users,
-				{
-					choices: 20,
-					minChars: 2,
-					tokens: ' ',
-					afterUpdateElement: function(item)
-					{
-						$("new-tweet").setValue($("new-tweet").getValue()+" ");
-					}
-				});
-				new Autocompleter.Local("new-dm-user", "autocompleter-dm", $w(autocomplete_users_dm.strip()).uniq(),
-				{
-					choices: 20,
-					minChars: 2
-				});
-				if (store.get('geo') == "on")
-				{
-					new HotKey('l',function(event)
-					{
-						z_engine_geo();
-					},
-					{
-						shiftKey: true
-					});
-				}
-				new HotKey('o',function(event)
-				{
-					z_engine_clear_timeline();
-				},
-				{
-					shiftKey: true
-				});
-				new HotKey('p',function(event)
-				{
-					z_engine_tweet_pause();
-				},
-				{
-					shiftKey: true
-				});
-				new HotKey('s',function(event)
-				{
-					z_engine_shorten_urls();
-				},
-				{
-					shiftKey: true
-				});
-				progress_bar = new Control.ProgressBar('progress-bar');
-				var settings_window = new Control.Modal($(document.body).down('[href=#settings-div]'),
-				{
-					className: 'window',
-					closeOnClick: 'overlay',
-					fade: true,
-					overlayOpacity: 0.5
-				});
-				scrollbar_home = new Control.ScrollBar("home-timeline", "home-timeline-scroll",
-				{
-					scroll_to_smoothing: 0.5
-				});
-				scrollbar_mentions = new Control.ScrollBar("mentions-timeline", "mentions-timeline-scroll",
-				{
-					scroll_to_smoothing: 0.5
-				});
-				scrollbar_inbox = new Control.ScrollBar("dms-inbox-timeline", "dms-inbox-timeline-scroll",
-				{
-					scroll_to_smoothing: 0.5
-				});
-				scrollbar_outbox = new Control.ScrollBar("dms-outbox-timeline", "dms-outbox-timeline-scroll",
-				{
-					scroll_to_smoothing: 0.5
-				});
-				scrollbar_threads = new Control.ScrollBar("threaded-timeline", "threaded-timeline-scroll",
-				{
-					scroll_to_smoothing: 0.5
-				});
-				tabs = new Control.Tabs('tabbed',
-				{
-					defaultTab: "first",
-					afterChange: function(element)
-					{
-						switch (element.id)
-						{
-							case "dms-inbox-timeline-container":
-							case "dms-outbox-timeline-container":
-								if ($("new-tweet").hasClassName("tweet"))
-								{
-									$("new-tweet").removeClassName("tweet");
-								}
-								if (!$("new-tweet").hasClassName("dm"))
-								{
-									$("new-tweet").addClassName("dm");
-								}
-								$("new-dm-user").appear();
-							break;
-							case "home-timeline-container":
-							case "mentions-timeline-container":
-							case "threaded-timeline-container":
-								if ($("new-tweet").hasClassName("dm"))
-								{
-									$("new-tweet").removeClassName("dm");
-								}
-								if (!$("new-tweet").hasClassName("tweet"))
-								{
-									$("new-tweet").addClassName("tweet");
-								}
-								$("new-dm-user").fade().clear();
-							break;
-						}
-						if (element.id != "threaded-timeline")
-						{
-							$("threaded-timeline").update();
-							latest_threaded_id = 0;
-						}
-						z_engine_timeline_recalculate_layouts();
-						z_engine_tweet_recalculate_layouts();
-					}
-				});
-				new Event.observe("new-tweet","keyup",function(event)
-				{
-					z_engine_input();
-					//z_engine_input_resize();
-				});
-				new Event.observe("new-tweet","keydown",function(event)
-				{
-					z_engine_input();
-					//z_engine_input_resize();
-				});
-				new Event.observe("new-tweet-form", "submit", function(event)
-				{
-					Event.stop(event);
-					z_engine_send_tweet();
-				});
-				new Event.observe("pause", "click", function(event)
-				{
-					Event.stop(event);
-					z_engine_tweet_pause();
-				});
-				if (store.get('geo') == "on")
-				{
-					z_engine_geo();
-				}
-				if (store.get("image_dropper") == "on")
-				{
-					z_engine_image_dropper();
-				}
+				z_engine_events();
 				z_engine_settings_setup();
+				z_engine_timers();
+				z_engine_timeline_recalculate_layouts();
+				z_engine_ui_components();
 			}
 			else
 			{
@@ -909,6 +706,31 @@ function z_engine_drop_tweet(id)
 	}
 	z_engine_tweet_recalculate_layouts();
 	z_engine_timeline_recalculate_layouts();
+}
+
+/* setup all events needed */
+function z_engine_events()
+{
+	new Event.observe("new-tweet","keyup",function(event)
+	{
+		z_engine_input();
+		//z_engine_input_resize();
+	});
+	new Event.observe("new-tweet","keydown",function(event)
+	{
+		z_engine_input();
+		//z_engine_input_resize();
+	});
+	new Event.observe("new-tweet-form", "submit", function(event)
+	{
+		Event.stop(event);
+		z_engine_send_tweet();
+	});
+	new Event.observe("pause", "click", function(event)
+	{
+		Event.stop(event);
+		z_engine_tweet_pause();
+	});
 }
 
 /* the fading + blind down animation */
@@ -1671,6 +1493,62 @@ function z_engine_stream_queue()
 	}
 }
 
+/* timers */
+function z_engine_timers()
+{
+	/*z_engine_fetch_timeline("rates");
+	z_engine_fetch_timeline("home");
+	z_engine_fetch_timeline.delay(2, "userstream");
+	z_engine_fetch_timeline.delay(15, "mentions");
+	z_engine_fetch_timeline.delay(30, "dms-inbox");
+	z_engine_fetch_timeline.delay(45, "dms-outbox");*/
+	new PeriodicalExecuter(function()
+	{
+		z_engine_update_relative_time("time.home");
+	}, update_relative_home_interval);
+	new PeriodicalExecuter(function()
+	{
+		z_engine_update_relative_time("time.mentions");
+	}, update_relative_mentions_interval);
+	new PeriodicalExecuter(function()
+	{
+		z_engine_update_relative_time("time.dms");
+	}, update_relative_dms_interval);
+	new PeriodicalExecuter(function()
+	{
+		z_engine_update_relative_time("time.threaded");
+	}, update_relative_home_interval);
+	new PeriodicalExecuter(function()
+	{
+		z_engine_fetch_timeline("rates");
+	}, check_ratelimit_interval);
+	new PeriodicalExecuter(function()
+	{
+		if (!paused)
+		{
+			z_engine_prune_tweets();
+		}
+	}, prune_tweets_interval);
+	stream_queue_interval = new PeriodicalExecuter(function()
+	{
+		if (!paused)
+		{
+			z_engine_stream_queue();
+		}
+	}, store.get('stream_interval'));
+	if (store.get('geo') == "on")
+	{
+		new PeriodicalExecuter(function()
+		{
+			z_engine_geo();
+		}, geo_refresh_interval);
+	}
+	new PeriodicalExecuter(function()
+	{
+		z_engine_input();
+	}, 1);
+}
+
 /* the threaded engine */
 function z_engine_threaded(init, id)
 {
@@ -2353,25 +2231,6 @@ function z_engine_timeline_recalculate_layouts()
 	$("dms-inbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
 	$("dms-outbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
 	$("threaded-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-	/*var visible = z_engine_current_timeline();
-	switch (visible)
-	{
-		case "dms-inbox-timeline-container":
-			$("dms-inbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-		break;
-		case "dms-outbox-timeline-container":
-			$("dms-outbox-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-		break;
-		case "home-timeline-container":
-			$("home-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-		break;
-		case "mentions-timeline-container":
-			$("mentions-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-		break;
-		case "threaded-timeline-container":
-			$("threaded-timeline").setStyle("height: "+z_engine_get_height(120)+"px;");
-		break;
-	}*/
 }
 
 /* recalculate the timeline sizes here */
@@ -2382,25 +2241,6 @@ function z_engine_tweet_recalculate_layouts()
 	scrollbar_mentions.recalculateLayout();
 	scrollbar_outbox.recalculateLayout();
 	scrollbar_threads.recalculateLayout();
-	/*var visible = z_engine_current_timeline();
-	switch (visible)
-	{
-		case "dms-inbox-timeline-container":
-			scrollbar_inbox.recalculateLayout();
-		break;
-		case "dms-outbox-timeline-container":
-			scrollbar_outbox.recalculateLayout();
-		break;
-		case "home-timeline-container":
-			scrollbar_home.recalculateLayout();
-		break;
-		case "mentions-timeline-container":
-			scrollbar_mentions.recalculateLayout();
-		break;
-		case "threaded-timeline-container":
-			scrollbar_threads.recalculateLayout();
-		break;
-	}*/
 }
 
 /* the neat context menu shown on tweets */
@@ -2584,6 +2424,143 @@ function z_engine_tweet_right_click(id, divid, author, author2, userid, userment
 			});
 		break;
 	}
+}
+
+/* load the ui components here */
+function z_engine_ui_components()
+{
+	$("new-tweet").clear();
+	$("new-tweet").enable();
+	if (store.get('geo') == "on")
+	{
+		z_engine_geo();
+	}
+	if (store.get("image_dropper") == "on")
+	{
+		z_engine_image_dropper();
+	}
+	var autocomplete_users = $w(store.get('users').strip()).uniq();
+	var autocomplete_users_dm = "";
+	autocomplete_users.each(function(item)
+	{
+		autocomplete_users_dm += item.replace(/@/i,"")+" ";
+	});
+	new Autocompleter.Local("new-tweet", "autocompleter", autocomplete_users,
+	{
+		choices: 20,
+		minChars: 2,
+		tokens: ' ',
+		afterUpdateElement: function(item)
+		{
+			$("new-tweet").setValue($("new-tweet").getValue()+" ");
+		}
+	});
+	new Autocompleter.Local("new-dm-user", "autocompleter-dm", $w(autocomplete_users_dm.strip()).uniq(),
+	{
+		choices: 20,
+		minChars: 2
+	});
+	if (store.get('geo') == "on")
+	{
+		new HotKey('l',function(event)
+		{
+			z_engine_geo();
+		},
+		{
+			shiftKey: true
+		});
+	}
+	new HotKey('o',function(event)
+	{
+		z_engine_clear_timeline();
+	},
+	{
+		shiftKey: true
+	});
+	new HotKey('p',function(event)
+	{
+		z_engine_tweet_pause();
+	},
+	{
+		shiftKey: true
+	});
+	new HotKey('s',function(event)
+	{
+		z_engine_shorten_urls();
+	},
+	{
+		shiftKey: true
+	});
+	progress_bar = new Control.ProgressBar('progress-bar');
+	var settings_window = new Control.Modal($(document.body).down('[href=#settings-div]'),
+	{
+		className: 'window',
+		closeOnClick: 'overlay',
+		fade: true,
+		overlayOpacity: 0.5
+	});
+	scrollbar_home = new Control.ScrollBar("home-timeline", "home-timeline-scroll",
+	{
+		scroll_to_smoothing: 0.5
+	});
+	scrollbar_mentions = new Control.ScrollBar("mentions-timeline", "mentions-timeline-scroll",
+	{
+		scroll_to_smoothing: 0.5
+	});
+	scrollbar_inbox = new Control.ScrollBar("dms-inbox-timeline", "dms-inbox-timeline-scroll",
+	{
+		scroll_to_smoothing: 0.5
+	});
+	scrollbar_outbox = new Control.ScrollBar("dms-outbox-timeline", "dms-outbox-timeline-scroll",
+	{
+		scroll_to_smoothing: 0.5
+	});
+	scrollbar_threads = new Control.ScrollBar("threaded-timeline", "threaded-timeline-scroll",
+	{
+		scroll_to_smoothing: 0.5
+	});
+	tabs = new Control.Tabs('tabbed',
+	{
+		defaultTab: "first",
+		afterChange: function(element)
+		{
+			switch (element.id)
+			{
+				case "dms-inbox-timeline-container":
+				case "dms-outbox-timeline-container":
+					if ($("new-tweet").hasClassName("tweet"))
+					{
+						$("new-tweet").removeClassName("tweet");
+					}
+					if (!$("new-tweet").hasClassName("dm"))
+					{
+						$("new-tweet").addClassName("dm");
+					}
+					$("new-dm-user").appear();
+				break;
+				case "home-timeline-container":
+				case "mentions-timeline-container":
+				case "threaded-timeline-container":
+					if ($("new-tweet").hasClassName("dm"))
+					{
+						$("new-tweet").removeClassName("dm");
+					}
+					if (!$("new-tweet").hasClassName("tweet"))
+					{
+						$("new-tweet").addClassName("tweet");
+					}
+					$("new-dm-user").fade().clear();
+				break;
+			}
+			if (element.id != "threaded-timeline")
+			{
+				$("threaded-timeline").update();
+				latest_threaded_id = 0;
+			}
+			z_engine_timeline_recalculate_layouts();
+			z_engine_tweet_recalculate_layouts();
+		}
+	});
 }
 
 /* favorite a tweet */
