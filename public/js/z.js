@@ -456,13 +456,12 @@ function z_engine_attrition()
 				tabs = new Control.Tabs('tabbed',
 				{
 					defaultTab: "first",
-					afterChange: function()
+					afterChange: function(element)
 					{
-						var visible = z_engine_current_timeline();
-						switch (visible)
+						switch (element.id)
 						{
-							case "dms-inbox-timeline":
-							case "dms-outbox-timeline":
+							case "dms-inbox-timeline-container":
+							case "dms-outbox-timeline-container":
 								if ($("new-tweet").hasClassName("tweet"))
 								{
 									$("new-tweet").removeClassName("tweet");
@@ -473,9 +472,9 @@ function z_engine_attrition()
 								}
 								$("new-dm-user").appear();
 							break;
-							case "home-timeline":
-							case "mentions-timeline":
-							case "threaded-timeline":
+							case "home-timeline-container":
+							case "mentions-timeline-container":
+							case "threaded-timeline-container":
 								if ($("new-tweet").hasClassName("dm"))
 								{
 									$("new-tweet").removeClassName("dm");
@@ -487,7 +486,7 @@ function z_engine_attrition()
 								$("new-dm-user").fade().clear();
 							break;
 						}
-						if (visible != "threaded-timeline")
+						if (element.id != "threaded-timeline")
 						{
 							$("threaded-timeline").update();
 							latest_threaded_id = 0;
