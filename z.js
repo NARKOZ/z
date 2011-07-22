@@ -280,8 +280,7 @@ socket.on("sconnection", function(client, session)
 		{
 			try
 			{
-				connected_clients[session.oauth._results.user_id].client = client;
-				connected_clients[session.oauth._results.user_id].session = session;
+				connected_clients[session.oauth._results.user_id] = {client: client, session: session};
 			}
 			catch (error)
 			{
