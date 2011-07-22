@@ -1,3 +1,9 @@
+0)
+   do not, under any circumstances, do any of the following until these notices are removed:
+     1) run this server in a production environment, or allow more than a single user to connect (localhost + you!)
+     2) enable the sitestream code, it is untested right now and is mostly considered "scaffolding" pseudocode to doc
+        what is described on the page.
+
 1) install libs:
 
    leaf requirements (install in order!):
