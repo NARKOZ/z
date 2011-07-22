@@ -1,6 +1,8 @@
 {
-	"oauth_key": "",
 	"oauth_key_sitestream": false,
+	"oauth_access_key_sitestream": false,
+	"oauth_access_secret_sitestream": false,
+	"oauth_key": "",
 	"oauth_secret": "",
 	"googl_key": "",
 	"host": "",

@@ -778,6 +778,31 @@ div.autocomplete ul li.selected
 	right: 0;
 	z-index: -1;
 }
+.login
+{
+  border-radius: 4px;
+  box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+  transition-duration: 0.35s;
+  transition-property: all, transform;
+  -khtml-border-radius: 4px;
+  -khtml-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+  -khtml-transition-duration: 0.35s;
+  -khtml-transition-property: all, -khtml-transform;
+  -moz-border-radius: 5px;
+  -moz-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+  -moz-transition-duration: 0.35s;
+  -moz-transition-property: all, -moz-transform;
+  -ms-transition-duration: 0.35s;
+  -ms-transition-property: all, -moz-transform;
+  -o-border-radius: 5px;
+  -o-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+  -o-transition-duration: 0.35s;
+  -o-transition-property: all, -moz-transform;
+  -webkit-border-radius: 5px;
+  -webkit-box-shadow: 0 0 5px 5px rgba(15,15,15,0.1);
+  -webkit-transition-duration: 0.35s;
+  -webkit-transition-property: all, -webkit-transform;
+}
 .center-outer
 {
 	position: relative;

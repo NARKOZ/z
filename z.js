@@ -7,8 +7,9 @@ var googl = require('goo.gl');
 var gzip = require('connect-gzip');
 var io = require('socket.io');
 var sio = require('socket.io-sessions');
+var site = require('./vendor/sitestreams');
 var sys = require('sys');
-var twitter = require('./vendor/twitter');
+var user = require('./vendor/clientstreams');
 
 /*
  * these vars are pulled in automatically from config.json
@@ -21,6 +22,8 @@ var key = config.oauth_key;
 var secret = config.oauth_secret;
 var port = config.port;
 var sitestream_key = config.oauth_key_sitestream;
+var sitestream_access_key = config.oauth_access_key_sitestream;
+var sitestream_access_secret = config.oauth_access_secret_sitestream;
 var startup_count = config.startup_count;
 var storage_fingerprint = config.storage_fingerprint;
 var storage_secret = config.storage_secret;
@@ -121,7 +124,7 @@ server.get("/",function(req, res)
 /* initial logging in */
 server.get("/oauth/login", function(req, res)
 {
-	var tw = new twitter(key, secret);
+	var tw = new user(key, secret);
 	tw.getRequestToken(function(error, url)
 	{
 		if(error)
@@ -148,7 +151,7 @@ server.get("/"+oauth_callback, function(req, res)
 	}
 	else
 	{
-		var tw = new twitter(key, secret, req.session.oauth);
+		var tw = new user(key, secret, req.session.oauth);
 		tw.getAccessToken(req.query.oauth_verifier, function(error)
 		{
 			if(error)
@@ -219,18 +222,28 @@ var socket = sio.enable(
 /* drop the client from everything */
 socket.drop = function (session)
 {
-	for (var index in connected_clients)
+	try
 	{
-		var user_id = connected_clients[index].session.oauth._results.user_id;
-		if (user_id == session.oauth._results.user_id)
+		for (var index in connected_clients)
 		{
-			if (!sitestream_key && typeof(connected_clients[index].userstream) == "object")
+			if (typeof(connected_clients[index].client) == "object" && typeof(connected_clients[index].session) == "object")
 			{
-				connected_clients[index].userstream.destroy();
+				var user_id = connected_clients[index].session.oauth._results.user_id;
+				if (user_id == session.oauth._results.user_id)
+				{
+					if (!sitestream_key && typeof(connected_clients[index].userstream) == "object")
+					{
+						connected_clients[index].userstream.destroy();
+					}
+					connected_clients.splice(index, 1);
+					break;
+				}
 			}
-			connected_clients.splice(index, 1);
-			break;
 		}
+	}
+	catch (error)
+	{
+		console.error("socket.drop error: "+error);
 	}
 	return this;
 };
@@ -270,11 +283,11 @@ socket.on("sconnection", function(client, session)
 	{
 		try
 		{
-			var tw = new twitter(key, secret, session.oauth);
+			var tw = new user(key, secret, session.oauth);
 		}
 		catch (error)
 		{
-			console.error("oauth session issue: "+sys.inspect(error));
+			console.error("user oauth session issue: "+error);
 		}
 		if(tw)
 		{
@@ -339,7 +352,7 @@ socket.on("sconnection", function(client, session)
 						{
 							if (!error)
 							{
-								socket.sortradio(client, "dms-inbox", data);
+								socket.radiosort(client, "dms-inbox", data);
 							}
 						});
 					break;
@@ -348,7 +361,7 @@ socket.on("sconnection", function(client, session)
 						{
 							if (!error)
 							{
-								socket.sortradio(client, "dms-outbox", data);
+								socket.radiosort(client, "dms-outbox", data);
 							}
 						});
 					break;
@@ -357,7 +370,7 @@ socket.on("sconnection", function(client, session)
 						{
 							if (!error)
 							{
-								socket.sortradio(client, "home", data);
+								socket.radiosort(client, "home", data);
 							}
 						});
 					break;
@@ -366,7 +379,7 @@ socket.on("sconnection", function(client, session)
 						{
 							if (!error)
 							{
-								socket.sortradio(client, "mentions", data);
+								socket.radiosort(client, "mentions", data);
 							}
 						});
 					break;
@@ -454,7 +467,7 @@ socket.radio = function (client, type, message)
 };
 
 /* sorts the timeline really nicely when a client first connects */
-socket.sortradio = function (client, type, data)
+socket.radiosort = function (client, type, data)
 {
 	try
 	{
@@ -471,11 +484,111 @@ socket.sortradio = function (client, type, data)
 	}
 	catch (error) //since there is the chance a client may disconnect before the above finishes, we prevent a crash here
 	{
-		console.error("socket.sortradio error: "+error);
+		console.error("socket.radiosort error: "+error);
 	}
 	return this;
 };
 
+/* single sitestream connection */
+socket.sitestream = function ()
+{
+	if (sitestream_key && secret && sitestream_access_key && sitestream_access_secret)
+	{
+		var connected_clients_sitestream = new Array();
+		if (connected_clients.length > 0)
+		{
+			var sitestream_index = 0;
+			for (var index in connected_clients)
+			{
+				if (index >= 100)
+				{
+					sitestream_index++;
+				}
+				if (typeof(connected_clients[index].client) == "object" && typeof(connected_clients[index].session) == "object")
+				{
+					var found = false;
+					var user_id = connected_clients[index].session.oauth._results.user_id;
+					for (var index2 in connected_clients_sitestream[sitestream_index]) //make sure this user_id doesnt exist already
+					{
+						if (connected_clients_sitestream[sitestream_index][index2] == user_id)
+						{
+							found = true; //if so, we wont add it twice
+						}
+					}
+					if (!found)
+					{
+						connected_clients_sitestream[sitestream_index].push(user_id);
+					}
+				}
+			}
+		}
+		try
+		{
+			var tw = new site(sitestream_key, secret, sitestream_access_key, sitestream_access_secret);
+		}
+		catch (error)
+		{
+			console.error("user oauth session issue: "+error);
+		}
+		for (var index in connected_clients_sitestream[sitestream_index])
+		{
+			tw.stream("site", {follow: connected_clients_sitestream[index], with: followings, include_entities: true}, function(stream)
+			{
+				stream.on("data", function (data)
+				{
+					try
+					{
+						if (data.for_user && data.message)
+						{
+							var user_id = data.for_user;
+							var payload = data.message;
+							var client = connected_clients[user_id].client;
+							if (payload.text && payload.created_at && payload.user)
+							{
+								socket.radio(client, "tweet", payload);
+							}
+							else if (payload["delete"])
+							{
+								socket.radio(client, "delete", payload["delete"]);
+							}
+							else if (payload.direct_message)
+							{
+								socket.radio(client, "direct_message", payload.direct_message);
+							}
+							else if (payload.event)
+							{
+								socket.radio(client, "event", payload);
+							}
+							else if (payload.friends)
+							{
+								socket.radio(client, "friends", payload.friends);
+							}
+						}
+					}
+					catch(error)
+					{
+						console.error("socket.sitestream message error: "+error);
+					}
+				});
+				stream.on("error", function(data)
+				{
+					//
+				});
+				stream.on("end", function()
+				{
+					//
+				});
+			});
+		}
+	}
+	else
+	{
+		console.log("socket.sitestream error: no sitestream keys");
+	}
+	return this;
+};
+
+/* basic userstream connection,  */
 socket.userstream = function (tw, client, session)
 {
 	if (typeof(connected_clients[session.oauth._results.user_id].userstream) == "undefined")
@@ -510,7 +623,7 @@ socket.userstream = function (tw, client, session)
 				}
 				catch(error)
 				{
-					console.error("userstream message error: "+sys.inspect(error));
+					console.error("socket.userstream message error: "+error);
 				}
 			});
 			stream.on("error", function(data)

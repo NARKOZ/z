@@ -39,7 +39,6 @@ var OAUTH_CONFIG = {
  * Twitter API endpoint URL
  */
 var API_URL = 'https://api.twitter.com/1',
-	SITESTREAM_URL = 'http://sitestream.twitter.com/2b',
 	USERSTREAM_URL = 'https://userstream.twitter.com/2',
 	AUTHORIZE_URL = 'https://twitter.com/oauth/authorize?oauth_token=';
 
@@ -76,7 +75,7 @@ function Twitter(consumerKey, consumerSecret, options)
 	this._token_secret = options._token_secret;
 	this._results = options._results;
 	this._apiUrl = options._apiUrl || API_URL;
-	this._streamUrl = options._streamUrl || USERSTREAM_URL; //force usage of userstreams if we dont have a sitestream key
+	this._streamUrl = options._streamUrl || USERSTREAM_URL;
 }
 /*
  * Normalize the error as an Error object.
@@ -429,22 +428,7 @@ Twitter.prototype.stream = function(method, params, callback)
 	if (typeof(params) == 'function')
 	{
 		callback = params;
-		params = null;
-	}
-	switch (method)
-	{
-		case 'site':
-			if (params && params.follow && Array.isArray(params.follow))
-			{
-				params.follow = params.follow.join(',');
-			}
-		break;
-		case 'user':
-			if (params && params.track && Array.isArray(params.track))
-			{
-				params.track = params.track.join(',');
-			}
-		break;
+		params = {include_entities: true};
 	}
 	var url = buildUrl([this._streamUrl,'/'+method+'.json'].join(''), params);
 	var request = this._oa.post(url, this.accessKey, this.accessSecret);

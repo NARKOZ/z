@@ -1,31 +1,23 @@
 var sys = require('sys');
 var nStore = require('nstore');
-nStore = nStore.extend(require('nstore/query')());
 
 module.exports = function(connect)
 {
 	var Store = connect.session.Store;
 
-	function filterFn(doc, meta)
-	{
-		return doc.lastAccess > Date.now() - options.maxAge;
-	};
-
 	function nStoreSession(options)
 	{
 		options = options || {};
-		options.maxAge = options.maxAge || 3600000; // Expunge after an hour
-		var dbFile = options.dbFile || __dirname + "/../store/sessions.db";
+		options.maxAge = options.maxAge || 3600000;
 		Store.call(this, options);
+		var dbFile = options.dbFile || __dirname + "/../store/sessions.db";
 		this.db = nStore.new(dbFile);
-		if (options.dbFile)
-		{
-			var self = this;
-		}
 	};
-
 	nStoreSession.prototype.__proto__ = Store.prototype;
-
+	nStoreSession.prototype.filterFn = function (doc, meta)
+	{
+		return doc.lastAccess > Date.now() - options.maxAge;
+	};
 	nStoreSession.prototype.get = function (hash, fn)
 	{
 		this.db.get(hash, function(err,data,meta)
@@ -40,17 +32,30 @@ module.exports = function(connect)
 			}
 		});
 	};
-
 	nStoreSession.prototype.set = function (hash, sess, fn)
 	{
+		var exists = false;
+		this.db.get(hash, function(err,data,meta)
+		{
+			if(err instanceof Error)
+			{
+				fn();
+			}
+			else
+			{
+				exists = true;
+			}
+		});
+		if (exists)
+		{
+			this.db.remove(hash, fn);
+		}
 		this.db.save(hash, sess, fn);
 	};
-
 	nStoreSession.prototype.destroy = function (hash, fn)
 	{
 		this.db.remove(hash, fn);
 	};
-
 	nStoreSession.prototype.length = function (fn)
 	{
 		process.nextTick(function ()
@@ -58,7 +63,6 @@ module.exports = function(connect)
 			fn(this.db.length);
 		});
 	};
-
 	nStoreSession.prototype.clear = function (fn)
 	{
 		var count = this.db.length;
@@ -74,6 +78,5 @@ module.exports = function(connect)
 			});
 		}, this.db);
 	};
-
 	return nStoreSession;
 }

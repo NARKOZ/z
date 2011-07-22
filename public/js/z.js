@@ -644,7 +644,7 @@ function z_engine_drop_tweet(id)
 		{
 			$("rt-"+id).fade();
 		}
-		z_engine_fade_up.delay(3, "comment-"+id);
+		z_engine_fade_up("comment-"+id);
 	}
 	if ($("comment-"+id+"-mentioned"))
 	{
@@ -664,7 +664,7 @@ function z_engine_drop_tweet(id)
 		{
 			$("rt-"+id+"-mentioned").fade();
 		}
-		z_engine_fade_up.delay(3, "comment-"+id+"-mentioned");
+		z_engine_fade_up("comment-"+id+"-mentioned");
 	}
 	if ($("comment-"+id+"-threaded"))
 	{
@@ -684,7 +684,7 @@ function z_engine_drop_tweet(id)
 		{
 			$("rt-"+id+"-threaded").fade();
 		}
-		z_engine_fade_up.delay(3, "comment-"+id+"-threaded");
+		z_engine_fade_up("comment-"+id+"-threaded");
 	}
 	z_engine_tweet_recalculate_layouts();
 	z_engine_timeline_recalculate_layouts();
