@@ -479,12 +479,7 @@ socket.sortradio = function (client, type, data)
 
 socket.userstream = function (tw, client, session)
 {
-	if (typeof(connected_clients[session.oauth._results.user_id].userstream) == "object")
-	{
-		socket.drop(session); //close the previous stream
-		socket.userstream(tw, client, session); //loop through here again
-	}
-	else
+	if (typeof(connected_clients[session.oauth._results.user_id].userstream) == "undefined")
 	{
 		tw.stream("user", {include_entities: true}, function(stream)
 		{
@@ -528,6 +523,11 @@ socket.userstream = function (tw, client, session)
 				socket.radio(client, "server_error", {event: "end"});
 			});
 		});
+	}
+	else
+	{
+		socket.drop(session); //close the previous stream
+		socket.userstream(tw, client, session); //loop through here again
 	}
 	return this;
 };
