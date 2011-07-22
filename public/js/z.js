@@ -168,6 +168,10 @@ function z_engine_attrition()
 				z_engine_notification(av, title, text);
 			}
 		});
+		socket.on("disconnect", function()
+		{
+			$("new-tweet").disable();
+		});
 		socket.on("dms-inbox", function(json)
 		{
 			z_engine_tweet(json, "dms bottom");
@@ -345,7 +349,7 @@ function z_engine_attrition()
 				growler.growl("/img/dummy.png","notice!","you have "+json.remaining_hits+" (of "+json.hourly_limit+") request tokens left!");
 			}
 		});
-		socket.on("related", function(json) //very alpha material right here, it clones the sidebar in new twitter somewhat.
+		/*socket.on("related", function(json) //very alpha material right here, it clones the sidebar in new twitter somewhat.
 		{                                   //this was built mostly from looking at standard calls to api, as there are no
 			try                             //official or unofficial docs on this method. hopefully it works for you too :)
 			{                               //it is possible that you may need new twitter enabled for this to work right!
@@ -426,7 +430,7 @@ function z_engine_attrition()
 			{
 				console.log(error);
 			}
-		});
+		});*/
 		socket.on("retweet_info", function(json)
 		{
 			var id = json.retweeted_status.id_str;
@@ -517,10 +521,6 @@ function z_engine_attrition()
 					$("paused-count").update("("+content_queued.length+")");
 				}
 			}
-		});
-		socket.on("disconnect", function()
-		{
-			$("new-tweet").disable();
 		});
 	}
 	else
@@ -1014,6 +1014,7 @@ function z_engine_input()
 	var dm = $("new-dm-user").getValue();
 	if (tweet.length == 0)
 	{
+		$("new-tweet").setStyle("color: #4d4d4d;");
 		reply_id = false;
 		shortened = false;
 	}
@@ -1479,6 +1480,7 @@ function z_engine_shorten_urls()
 			}
 		});
 		shortened = true;
+		z_engine_input();
 	}
 }
 

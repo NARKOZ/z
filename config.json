@@ -5,7 +5,7 @@
 	"googl_key": "",
 	"host": "",
 	"imgur_key": "",
-	"oauth_callback": "/oauth/callback",
+	"oauth_callback": "oauth/callback",
 	"port": 8080,
 	"startup_count": 25,
 	"storage_fingerprint": "",

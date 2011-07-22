@@ -13,24 +13,32 @@
 
    optional:
 
-     couchdb support:
+     couchdb support (tested, works):
        sudo npm install connect-couchdb
        set storage_type to "couch" in config.json
 
-     mongo support:
+     mongo support (tested, works):
        sudo npm install connect-mongo
        set storage_type to "mongo" in config.json
 
-     redis support:
+     redis support (thoroughly tested, you should use this one):
        sudo npm install connect-redis
        set storage_type to "redis" in config.json
+       redis extra support:
+         since redis is very cool and fast, if you have a *nix machine, install this too:
+         sudo npm install hiredis
+         this will use an interpreter written in C to access redis instead of one written in javascript...
+         (bootnote: rememeber to rebuild this _every_time_ you upgrade node, it can lead to issues otherwise)
 
    it is highly recommended that you use one of the above store methods rather than memory, as it is known to leak.
 
 2) register your application here: https://dev.twitter.com/apps
-   be sure to set the application type to "browser", use "http://127.0.0.1:8080/oauth/callback" as the callback url.
-   copy the oauth key and secret into config.json (and change anything you would like in there)...
-   be sure to change the storage_secret to something other than blank - it is a salt for sessions!
 3) register a gmail account, and go here for a url shortener key: https://code.google.com/apis/console
 4) register for an imgur api key here: http://imgur.com/register/api_anon
-5) configure config.json
+5) configure the remaineder config.json
+   a few things you should know:
+   on dev.twitter.com:
+     set application type to "browser", and use "http://<host>:<port>/<oauth_callback>" as the callback url.
+     set access to read + write + direct messages
+   if you cannot directly set the host and port, leave the host as "", and the port as 0.
+   be sure to change the storage_secret to something other than blank - it is a salt for sessions!

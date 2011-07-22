@@ -13,14 +13,14 @@ var twitter = require('./vendor/twitter');
 /*
  * these vars are pulled in automatically from config.json
  */
-var sitestream_key = config.oauth_key_sitestream;
 var host = config.host;
-var googl_key = config.googl_key;
+googl.setKey(config.googl_key);
 var imgur_key = config.imgur_key;
 var oauth_callback = config.oauth_callback;
 var key = config.oauth_key;
 var secret = config.oauth_secret;
 var port = config.port;
+var sitestream_key = config.oauth_key_sitestream;
 var startup_count = config.startup_count;
 var storage_fingerprint = config.storage_fingerprint;
 var storage_secret = config.storage_secret;
@@ -29,58 +29,53 @@ var storage_type = config.storage_type;
 /*
  * server
  */
-googl.setKey(googl_key);
 switch (storage_type)
 {
-	case 'couch':
+	case "couch":
 		var CouchStore = require('connect-couchdb')(express);
 		var storage =  new CouchStore(
 		{
-			name: 'sessions'
+			name: "sessions"
 		});
 	break;
-	case 'memory':
-		var storage = new express.session.MemoryStore()
+	case "memory":
+		var storage = new express.session.MemoryStore();
 	break;
-	/*case 'nstore':
-		var nStoreSession = require('./vendor/session')(express);
-		var storage = new nStoreSession();
-	break;*/
-	case 'mongo':
+	case "mongo":
 		var MongoStore = require('connect-mongo');
 		var storage =  new MongoStore(
 		{
-			db: 'sessions'
+			db: "sessions"
 		});
 	break;
-	case 'redis':
+	case "redis":
 		var RedisStore = require('connect-redis')(express);
-		var storage = new RedisStore;
+		var storage = new RedisStore();
 	break;
 }
-var server = module.exports = express.createServer();
+var server = express.createServer();
 
 server.configure(function()
 {
-	server.set('views', __dirname + '/views');
+	server.set("views", __dirname + "/views");
 	server.use(express.cookieParser());
 	server.use(express.session({secret: storage_secret, fingerprint: storage_fingerprint, store: storage}));
 	server.use(express.bodyParser());
 	server.use(express.methodOverride());
 	server.use(server.router);
-	server.use(express['static'](__dirname+'/public'));
-	server.use(express.logger({format: ':method :url'}));
+	server.use(express["static"](__dirname+"/public"));
+	server.use(express.logger({format: ":method :url"}));
 });
 
-server.configure('development', function()
+server.configure("development", function()
 {
-	express.logger('development node');
+	express.logger("development node");
 	server.use(express.errorHandler({dumpExceptions: true, showStack: true}));
 });
 
-server.configure('production', function()
+server.configure("production", function()
 {
-	express.logger('production node');
+	express.logger("production node");
 	server.use(express.errorHandler());
 });
 
@@ -93,24 +88,24 @@ server.dynamicHelpers(
 });
 
 /* index, does some detection on sessions */
-server.get('/',function(req, res)
+server.get("/",function(req, res)
 {
 	gzip.gzip();
 	if (!req.session.oauth)
 	{
-		res.render('index.jade',
+		res.render("index.jade",
 		{
-			title: 'hello, welcome to z!'
+			title: "hello, welcome to z!"
 		});
 	}
 	else
 	{
 		if (typeof(req.session.oauth._results) == "object")
 		{
-			res.render('home.jade',
+			res.render("home.jade",
 			{
-				imgur_script: "var imgur_key = '"+imgur_key+"';",
-				title: 'hello @'+req.session.oauth._results.screen_name+'!'
+				imgur_script: 'var imgur_key = "'+imgur_key+'";',
+				title: "hello @"+req.session.oauth._results.screen_name+"!"
 			});
 		}
 		else
@@ -124,7 +119,7 @@ server.get('/',function(req, res)
 });
 
 /* initial logging in */
-server.get('/oauth/login', function(req, res)
+server.get("/oauth/login", function(req, res)
 {
 	var tw = new twitter(key, secret);
 	tw.getRequestToken(function(error, url)
@@ -145,7 +140,7 @@ server.get('/oauth/login', function(req, res)
 });
 
 /* oauth callback */
-server.get(oauth_callback, function(req, res)
+server.get("/"+oauth_callback, function(req, res)
 {
 	if (!req.session.oauth)
 	{
@@ -173,7 +168,7 @@ server.get(oauth_callback, function(req, res)
 });
 
 /* destroy all session information (including the id) */
-server.get('/oauth/logout', function(req, res)
+server.get("/oauth/logout", function(req, res)
 {
 	req.session.destroy(function()
 	{
@@ -183,16 +178,19 @@ server.get('/oauth/logout', function(req, res)
 
 if (!module.parent)
 {
-	if (host == "")
+	if (host == "" && port == 0)
+	{
+		server.listen();
+	}
+	else if (host == "" && port != 0)
 	{
 		server.listen(port);
 	}
-	else
+	else if (host != "" && port != 0)
 	{
 		server.listen(port, host);
 	}
-	console.log('z engine running at http://'+host+':'+config.port+'/');
-	console.log('accepting oauth callbacks at: at http://'+host+':'+config.port+'/'+oauth_callback);
+	console.log("z engine running at "+server.address().port);
 }
 
 /* gzipping */
@@ -207,16 +205,66 @@ gzip.gzip({matchType: /socket.io/});
  * socket.io
  */
 
-/* the socket itself */
+/* some settings that will most certainly be used later on if we can sitestream access */
+var connected_clients = new Array();
+
+/* the sessioned socket itself */
 var socket = sio.enable(
 {
 	parser: express.cookieParser(),
-	socket: io.listen(server),
+	socket: io.listen(server), // <--note the raw io.listen is over yonder
 	store: storage
 });
 
+/* drop the client from everything */
+socket.drop = function (session)
+{
+	for (var index in connected_clients)
+	{
+		var user_id = connected_clients[index].session.oauth._results.user_id;
+		if (user_id == session.oauth._results.user_id)
+		{
+			if (!sitestream_key && typeof(connected_clients[index].userstream) == "object")
+			{
+				connected_clients[index].userstream.destroy();
+			}
+			connected_clients.splice(index, 1);
+			break;
+		}
+	}
+	return this;
+};
+
+/* safely broadcast to all clients */
+socket.megaphone = function (type, message)
+{
+	try
+	{
+		for (var index in connected_clients)
+		{
+			var client = connected_clients[index].client;
+			if (client)
+			{
+				socket.radio(client, type, message)
+			}
+		}
+	}
+	catch (error)
+	{
+		console.error("socket.megaphone error: "+error);
+	}
+	return this;
+};
+
+/* error handling */
+socket.on("error", function(error)
+{
+	if (error.errno === process.ECONNRESET)
+	{/* prevent an error from being spit out, this is expected behavior! */}
+});
+
 /* the socket connection event which gets the gears started */
-socket.on('sconnection', function(client, session)
+socket.on("sconnection", function(client, session)
 {
 	if (typeof(session.oauth) == "object")
 	{
@@ -230,11 +278,20 @@ socket.on('sconnection', function(client, session)
 		}
 		if(tw)
 		{
-			z_engine_send_to_client(client, "loaded",
+			try
+			{
+				connected_clients[session.oauth._results.user_id].client = client;
+				connected_clients[session.oauth._results.user_id].session = session;
+			}
+			catch (error)
+			{
+				console.error("connected_client error: "+error);
+			}
+			socket.radio(client, "loaded",
 			{
 				loaded: true
 			});
-			z_engine_send_to_client(client, "info",
+			socket.radio(client, "info",
 			{
 				screen_name: session.oauth._results.screen_name,
 				user_id: session.oauth._results.user_id
@@ -249,6 +306,17 @@ socket.on('sconnection', function(client, session)
 					case "tweet":
 						tw.destroy(json.id_str);
 					break;
+				}
+			});
+			client.on("disconnect", function()
+			{
+				try
+				{
+					socket.drop(session);
+				}
+				catch (error)
+				{
+					console.error("client disconnect error: "+error);
 				}
 			});
 			client.on("favorite", function(json)
@@ -272,7 +340,7 @@ socket.on('sconnection', function(client, session)
 						{
 							if (!error)
 							{
-								z_engine_sort_timeline(client, "dms-inbox", data);
+								socket.sortradio(client, "dms-inbox", data);
 							}
 						});
 					break;
@@ -281,7 +349,7 @@ socket.on('sconnection', function(client, session)
 						{
 							if (!error)
 							{
-								z_engine_sort_timeline(client, "dms-outbox", data);
+								socket.sortradio(client, "dms-outbox", data);
 							}
 						});
 					break;
@@ -290,7 +358,7 @@ socket.on('sconnection', function(client, session)
 						{
 							if (!error)
 							{
-								z_engine_sort_timeline(client, "home", data);
+								socket.sortradio(client, "home", data);
 							}
 						});
 					break;
@@ -299,7 +367,7 @@ socket.on('sconnection', function(client, session)
 						{
 							if (!error)
 							{
-								z_engine_sort_timeline(client, "mentions", data);
+								socket.sortradio(client, "mentions", data);
 							}
 						});
 					break;
@@ -308,27 +376,21 @@ socket.on('sconnection', function(client, session)
 						{
 							if (!error)
 							{
-								z_engine_send_to_client(client, "rates", data);
+								socket.radio(client, "rates", data);
 							}
 						});
 					break;
 					case "userstream":
 						if (!sitestream_key)
 						{
-							z_engine_userstream(tw, client);
+							socket.userstream(tw, client, session);
+						}
+						else
+						{
+							//do something here!
 						}
 					break;
 				}
-			});
-			client.on("related", function(json)
-			{
-				tw.related_results(json.id_str, {count: startup_count, include_entities: true}, function(error, data, response)
-				{
-					if (!error)
-					{
-						z_engine_send_to_client(client, "related", {data: data, origin: json.origin});
-					}
-				});
 			});
 			client.on("retweet", function(json)
 			{
@@ -336,7 +398,7 @@ socket.on('sconnection', function(client, session)
 				{
 					if (!error)
 					{
-						z_engine_send_to_client(client, "retweet_info", data);
+						socket.radio(client, "retweet_info", data);
 					}
 				});
 			});
@@ -344,7 +406,7 @@ socket.on('sconnection', function(client, session)
 			{
 				googl.shorten(json.shorten, function (data) 
 				{
-					z_engine_send_to_client(client, "shorten", {shortened: data.id, original: json.shorten});
+					socket.radio(client, "shorten", {shortened: data.id, original: json.shorten});
 				});
 			});
 			client.on("show", function(json)
@@ -353,7 +415,7 @@ socket.on('sconnection', function(client, session)
 				{
 					if (!error)
 					{
-						z_engine_send_to_client(client, "show", data);
+						socket.radio(client, "show", data);
 					}
 				});
 			});
@@ -374,35 +436,26 @@ socket.on('sconnection', function(client, session)
 });
 
 /* log to console that an invalid session was found but do nothing further than this */
-socket.on('sinvalid', function(client)
+socket.on("sinvalid", function(client)
 {
 	//invalid session, just ignore
 });
 
-/* error handling */
-socket.on('error', function(error)
-{
-	if (error.errno === process.ECONNRESET)
-	{/* prevent an error from being spit out, this is expected behavior! */}
-});
+/* broadcast to a single client */
+socket.radio = function (client, type, message)
+{	try
+	{
+		client.json.emit(type, message);
+	}
+	catch (error)
+	{
+		console.error("socket.radio error: "+error);
+	}
+	return this;
+};
 
-/*
- * globalized functions and vars
- */
-
-/* send message to all connected clients */
-function z_engine_send_to_all(type, message)
-{
-	io.sockets.emit(type, message);
-}
-/* send message to a specific client */
-function z_engine_send_to_client(client, type, message)
-{
-	client.json.emit(type, message);
-}
-
-/* send the client small bits of data instead of giant array they need to iterate over (do that for them) */
-function z_engine_sort_timeline(client, type, data)
+/* sorts the timeline really nicely when a client first connects */
+socket.sortradio = function (client, type, data)
 {
 	try
 	{
@@ -412,63 +465,69 @@ function z_engine_sort_timeline(client, type, data)
 			{
 				if (client)
 				{
-					z_engine_send_to_client(client, type, data.shift());
+					socket.radio(client, type, data.shift()); //we use shift here because we will only send this once
 				}
-			}, index * 250);
+			}, index * 250); //zip through everything and use the index itself to increase the timeout. nice trick eh?
 		}
 	}
-	catch (error)
+	catch (error) //since there is the chance a client may disconnect before the above finishes, we prevent a crash here
 	{
-		console.error("timeline sorting error: "+sys.inspect(error));
+		console.error("socket.sortradio error: "+error);
 	}
-}
+	return this;
+};
 
-/* a regular single userstream connection */
-function z_engine_userstream(tw, client)
+socket.userstream = function (tw, client, session)
 {
-	tw.stream("user", {include_entities: true}, function(stream)
+	if (typeof(connected_clients[session.oauth._results.user_id].userstream) == "object")
 	{
-		stream.on("data", function (data)
+		socket.drop(session); //close the previous stream
+		socket.userstream(tw, client, session); //loop through here again
+	}
+	else
+	{
+		tw.stream("user", {include_entities: true}, function(stream)
 		{
-			try
+			connected_clients[session.oauth._results.user_id].userstream = stream;
+			stream.on("data", function (data)
 			{
-				if (data.text && data.created_at && data.user)
+				try
 				{
-					z_engine_send_to_client(client, "tweet", data);
+					if (data.text && data.created_at && data.user)
+					{
+						socket.radio(client, "tweet", data);
+					}
+					else if (data["delete"])
+					{
+						socket.radio(client, "delete", data["delete"]);
+					}
+					else if (data.direct_message)
+					{
+						socket.radio(client, "direct_message", data.direct_message);
+					}
+					else if (data.event)
+					{
+						socket.radio(client, "event", data);
+					}
+					else if (data.friends)
+					{
+						socket.radio(client, "friends", data.friends);
+					}
 				}
-				else if (data["delete"])
+				catch(error)
 				{
-					z_engine_send_to_client(client, "delete", data["delete"]);
+					console.error("userstream message error: "+sys.inspect(error));
 				}
-				else if (data.direct_message)
-				{
-					z_engine_send_to_client(client, "direct_message", data.direct_message);
-				}
-				else if (data.event)
-				{
-					z_engine_send_to_client(client, "event", data);
-				}
-				else if (data.friends)
-				{
-					z_engine_send_to_client(client, "friends", data.friends);
-				}
-			}
-			catch(error)
+			});
+			stream.on("error", function(data)
 			{
-				console.error("userstream message error: "+sys.inspect(error));
-			}
+				socket.radio(client, "server_error", {event: "error"});
+			});
+			stream.on("end", function()
+			{
+				socket.radio(client, "server_error", {event: "end"});
+			});
 		});
-		client.on("disconnect", function()
-		{
-			stream.destroy();
-		});
-		stream.on("error", function(data)
-		{
-			z_engine_send_to_client(client, "server_error", {event: "error"});
-		});
-		stream.on("end", function()
-		{
-			z_engine_send_to_client(client, "server_error", {event: "end"});
-		});
-	});
-}
+	}
+	return this;
+};

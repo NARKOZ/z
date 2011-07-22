@@ -1,0 +1,6 @@
+q: why is this written in prototype instead of jquery?
+a: i prefer to use raw javascript, as well as other one off libs that dont require anything like prototype, jquery, extjs, etc.
+   the reason behind this is because it helps lessen the amount of code behind very powerful framework, and i prefer prototype.
+
+q: somethings broken
+a: haha, i bet it is. yea i really dont pay much attention to what i commit so things might sneak in sometimes.
