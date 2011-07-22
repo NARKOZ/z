@@ -104,7 +104,7 @@ server.get("/",function(req, res)
 		{
 			res.render("home.jade",
 			{
-				imgur_script: 'var imgur_key = "'+imgur_key+'";',
+				imgur_script: "var imgur_key = '"+imgur_key+"';",
 				title: "hello @"+req.session.oauth._results.screen_name+"!"
 			});
 		}

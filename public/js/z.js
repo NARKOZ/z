@@ -8,6 +8,7 @@ var content_faved_stored = Array();
 var content_queued = Array(); //outputs our tweets nicely
 var content_rts_stored = Array();
 var content_stored = Array(); //stores all tweets
+var current_tab = "home-timeline";
 var dms_cutoff = 50; //max amount of tweets to display before pruning occurs on all dms
 var following = Array(); //holds our following id's array
 if (!store.get('geo'))
@@ -532,7 +533,7 @@ function z_engine_attrition()
 /* clear the current timeline */
 function z_engine_clear_timeline()
 {
-	var visible = z_engine_current_timeline();
+	var visible = current_tab;
 	new Effect.Fade(visible,
 	{
 		duration: 0.5,
@@ -541,31 +542,6 @@ function z_engine_clear_timeline()
 			$(visible).update().appear();
 		}
 	});
-}
-
-/* determine which timeline is currently visible */
-function z_engine_current_timeline()
-{
-	if ($("home-timeline").visible())
-	{
-		return "home-timeline";
-	}
-	else if ($("mentions-timeline").visible())
-	{
-		return "mentions-timeline";
-	}
-	else if ($("dms-inbox-timeline").visible())
-	{
-		return "dms-inbox-timeline";
-	}
-	if ($("dms-outbox-timeline").visible())
-	{
-		return "dms-outbox-timeline";
-	}
-	else if ($("threaded-timeline").visible())
-	{
-		return "threaded-timeline";
-	}
 }
 
 /* delete a tweet / dm */
@@ -1259,11 +1235,12 @@ function z_engine_send_tweet()
 		$("new-dm-user").disable();
 		var temp_element = $("new-tweet").getValue().strip();
 		var temp_user_element = $("new-dm-user").getValue().strip();
-		switch (z_engine_current_timeline())
+		var visible = current_tab;
+		switch (visible)
 		{
-			case 'home-timeline':
-			case 'mentions-timeline':
-			case 'threaded-timeline':
+			case 'home-timeline-container':
+			case 'mentions-timeline-container':
+			case 'threaded-timeline-container':
 				var send = {
 					action: "tweet",
 					data: {
@@ -1288,8 +1265,8 @@ function z_engine_send_tweet()
 					new Object.extend(send.data, in_reply_to_status);
 				}
 			break;
-			case 'dms-inbox-timeline':
-			case 'dms-outbox-timeline':
+			case 'dms-inbox-timeline-container':
+			case 'dms-outbox-timeline-container':
 				if (temp_user_element.length > 0)
 				{
 					if (temp_user_element.startsWith("@"))
@@ -2532,6 +2509,7 @@ function z_engine_ui_components()
 		defaultTab: "first",
 		afterChange: function(element)
 		{
+			current_tab = element.id;
 			switch (element.id)
 			{
 				case "dms-inbox-timeline-container":
