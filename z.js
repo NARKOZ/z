@@ -22,8 +22,7 @@ var key = config.oauth_key;
 var secret = config.oauth_secret;
 var port = config.port;
 var sitestream_key = config.oauth_key_sitestream;
-var sitestream_access_key = config.oauth_access_key_sitestream;
-var sitestream_access_secret = config.oauth_access_secret_sitestream;
+var sitestream_secret = config.oauth_secret_sitestream;
 var startup_count = config.startup_count;
 var redis_host = config.redis_host;
 var redis_name = config.redis_name;
@@ -60,7 +59,6 @@ switch (storage_type)
  * server
  */
 var server = express.createServer();
-
 server.configure(function()
 {
 	server.set("views", __dirname + "/views");
@@ -72,19 +70,16 @@ server.configure(function()
 	server.use(express["static"](__dirname+"/public"));
 	server.use(express.logger({format: ":method :url"}));
 });
-
 server.configure("development", function()
 {
 	express.logger("development node");
 	server.use(express.errorHandler({dumpExceptions: true, showStack: true}));
 });
-
 server.configure("production", function()
 {
 	express.logger("production node");
 	server.use(express.errorHandler());
 });
-
 server.dynamicHelpers(
 {
 	session: function(req, res)
@@ -131,6 +126,7 @@ server.get("/",function(req, res)
 	}
 });
 
+/* authed clients get redirected here */
 server.get("/howdy", function(req, res)
 {
 	gzip.gzip();
@@ -283,15 +279,12 @@ var connected_clients = new Array();
 
 /* the raw socket.io listener */
 var raw_socket = io.listen(server);
-
 raw_socket.enable("browser client minification");
-
 raw_socket.configure("production", function()
 {
 	raw_socket.enable("browser client etag");
 	raw_socket.set("log level", 1);
 });
-
 raw_socket.configure("development", function()
 {
 	raw_socket.set("log level", 3);
@@ -578,7 +571,7 @@ socket.radiosort = function (client, type, data)
 /* single sitestream connection */
 socket.sitestream = function ()
 {
-	if (sitestream_key && secret && sitestream_access_key && sitestream_access_secret)
+	if (sitestream_key && secret && sitestream_secret)
 	{
 		var connected_clients_sitestream = new Array();
 		if (connected_clients.length > 0)
@@ -586,7 +579,7 @@ socket.sitestream = function ()
 			var sitestream_index = 0;
 			for (var index in connected_clients)
 			{
-				if (index >= 100)
+				if (index++ % 100 == 0)
 				{
 					sitestream_index++;
 				}
@@ -594,6 +587,11 @@ socket.sitestream = function ()
 				{
 					var found = false;
 					var user_id = connected_clients[index].session.oauth._results.user_id;
+					var userstream = false;
+					if (typeof(connected_clients[index].userstream) == "object")
+					{
+						userstream = connected_clients[index].userstream;
+					}
 					for (var index2 in connected_clients_sitestream[sitestream_index]) //make sure this user_id doesnt exist already
 					{
 						if (connected_clients_sitestream[sitestream_index][index2] == user_id)
@@ -603,14 +601,18 @@ socket.sitestream = function ()
 					}
 					if (!found)
 					{
-						connected_clients_sitestream[sitestream_index].push(user_id);
+						if (userstream)
+						{
+							connected_clients[index].userstream.destroy(); //destroy the userstream
+						}
+						connected_clients_sitestream[sitestream_index].push(user_id); //push this non-duplicate user in
 					}
 				}
 			}
 		}
 		try
 		{
-			var tw = new site(sitestream_key, secret, sitestream_access_key, sitestream_access_secret);
+			var tw = new site(key, secret, sitestream_key, sitestream_secret);
 		}
 		catch (error)
 		{
