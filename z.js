@@ -6,11 +6,8 @@ var express = require('express');
 var googl = require('goo.gl');
 var gzip = require('connect-gzip');
 var io = require('socket.io');
-var nstore = require("nstore");
-var persistance = nstore.new(__dirname+"/store/sessions.db");
 var sio = require('socket.io-sessions');
 var site = require('./vendor/sitestreams');
-var storage = new express.session.MemoryStore();
 var sys = require('sys');
 var user = require('./vendor/clientstreams');
 
@@ -29,11 +26,34 @@ var sitestream_access_key = config.oauth_access_key_sitestream;
 var sitestream_access_secret = config.oauth_access_secret_sitestream;
 var startup_count = config.startup_count;
 var storage_fingerprint = config.storage_fingerprint;
+var storage_host = config.storage_host;
+var storage_name = config.storage_name;
+var storage_pass = config.storage_pass;
+var storage_port = config.storage_port;
 var storage_secret = config.storage_secret;
+var storage_type = config.storage_type;
 
 /*
  * server
  */
+switch (storage_type)
+{
+	case "memory":
+		var nstore = require("nstore");
+		var persistance = nstore.new(__dirname+"/store/sessions.db");
+		var storage = new express.session.MemoryStore();
+	break;
+	case "redis":
+		var RedisStore = require('connect-redis')(express);
+		var storage = new RedisStore(
+		{
+			host: storage_host,
+			db: storage_name,
+			pass: storage_pass,
+			port: storage_port
+		});
+	break;
+}
 var server = express.createServer();
 
 server.configure(function()
@@ -74,17 +94,20 @@ server.get("/",function(req, res)
 	gzip.gzip();
 	if (req.cookies.id)
 	{
-		persistance.get(req.cookies.id, function (error, this_session)
+		if (storage_type == "memory")
 		{
-			if (!error)
+			persistance.get(req.cookies.id, function (error, this_session)
 			{
-				if (typeof(this_session) == "object")
+				if (!error)
 				{
-					req.session.oauth = this_session;
-					res.redirect("/howdy");
+					if (typeof(this_session) == "object")
+					{
+						req.session.oauth = this_session;
+						res.redirect("/howdy");
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 	else
 	{
@@ -145,15 +168,21 @@ server.get("/oauth/logout", function(req, res)
 {
 	if (req.session.oauth)
 	{
-		persistance.remove(req.cookies.id, function (error)
+		if (storage_type == "memory")
 		{
-			if (!error)
+			persistance.remove(req.cookies.id, function (error)
 			{
-				req.session.destroy();
-			}
-		});
+				if (!error)
+				{
+				}
+			});
+		}
+		req.session.destroy();
 	}
-	res.cookie("id", "", {expires: new Date(Date.now()-10), httpOnly: true});
+	if (storage_type == "memory")
+	{
+		res.cookie("id", "", {expires: new Date(Date.now()-10), httpOnly: true});
+	}
 	res.redirect("/");
 });
 
@@ -179,13 +208,16 @@ server.get("/"+oauth_callback, function(req, res)
 			}
 			else
 			{
-				persistance.save(tw._results.user_id, tw, function(error)
+				if (storage_type == "memory")
 				{
-					if (error)
+					persistance.save(tw._results.user_id, tw, function(error)
 					{
-						console.log("oauth callback save error: "+error);
-					}
-				});
+						if (error)
+						{
+							console.log("oauth callback save error: "+error);
+						}
+					});
+				}
 				req.session.oauth = tw;
 				res.cookie("id", tw._results.user_id);
 				res.redirect("/howdy");

@@ -9,7 +9,12 @@
 	"imgur_key": "",
 	"oauth_callback": "oauth/callback",
 	"port": 8080,
-	"startup_count": 25,
+	"startup_count": 20,
 	"storage_fingerprint": "",
-	"storage_secret": ""
+	"storage_host": "",
+	"storage_name": "",
+	"storage_pass": "",
+	"storage_port": 0,
+	"storage_secret": "",
+	"storage_type": "memory"
 }

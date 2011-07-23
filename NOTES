@@ -13,10 +13,15 @@
      sudo npm install goo.gl
      sudo npm install jade
      sudo npm install jsonreq
-     sudo npm install nstore
      sudo npm install oauth
      sudo npm install socket.io
      sudo npm install socket.io-sessions
+
+     storage_type = memory:
+       sudo npm install nstore
+
+     storage_type = redis:
+       sudo npm install connect-redis
 
 2) register your application here: https://dev.twitter.com/apps
 3) register a gmail account, and go here for a url shortener key: https://code.google.com/apis/console
