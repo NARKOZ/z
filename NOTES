@@ -19,6 +19,7 @@
 
      storage_type = memory:
        sudo npm install nstore
+     you can leave all of the storage_* vars as is except for storage_secret (in config.json) if you use memory.
 
      storage_type = redis:
        sudo npm install connect-redis
@@ -32,4 +33,3 @@
      set application type to "browser", and use "http://<host>:<port>/<oauth_callback>" as the callback url.
      set access to read + write + direct messages
    if you cannot directly set the host and port, leave the host as "", and the port as 0.
-   be sure to change the storage_secret to something other than blank - it is a salt for sessions!
