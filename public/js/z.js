@@ -1058,38 +1058,6 @@ function z_engine_related(id, replyid)
 	socket.emit("related", {id_str: id, origin: replyid});
 }
 
-/* remember usernames (autocompleter related) */
-function z_engine_remember_author(author)
-{
-	author = "@"+author;
-	var new_users = "";
-	var user_found = false;
-	var users = $w(store.get('users')).uniq().compact();
-	users.each(function(item, index)
-	{
-		if (index <= remember_cutoff)
-		{
-			if (item == author)
-			{
-				user_found = true;
-			}
-			else
-			{
-				new_users += " "+item;
-			}
-		}
-		else
-		{
-			$break;
-		}
-	});
-	if (!user_found)
-	{
-		new_users = author+" "+new_users;
-	}
-	store.set('users', new_users.strip());
-}
-
 /* reply to a specific tweet */
 function z_engine_reply(author, id, mentions)
 {
@@ -1149,7 +1117,7 @@ function z_engine_retweet_comment(id, author, text)
 /* send our tweet */
 function z_engine_send_tweet()
 {
-	if ($("new-tweet").getValue().length > 0 && $("new-tweet").getValue().length <= 140 && !$("autocompleter").visible())
+	if ($("new-tweet").getValue().length > 0 && $("new-tweet").getValue().length <= 140)
 	{
 		$("new-tweet").disable();
 		$("new-dm-user").disable();
@@ -1654,10 +1622,6 @@ function z_engine_tweet(data, divinfo)
 	{
 		(new Image()).src = avatar; //load av in the background
 		content_stored[id] = Object.toJSON(data);
-		if (output != "threaded")
-		{
-			z_engine_remember_author(author);
-		}
 		if (!entities)
 		{
 			var mentioned = false;
@@ -2344,32 +2308,6 @@ function z_engine_ui_components()
 	{
 		z_engine_image_dropper();
 	}
-	new Autocompleter.Local("new-tweet", "autocompleter", function()
-	{
-		return $w(store.get('users').strip()).uniq();
-	},
-	{
-		choices: 20,
-		minChars: 2,
-		tokens: ' ',
-		afterUpdateElement: function(item)
-		{
-			$("new-tweet").setValue($("new-tweet").getValue()+" ");
-		}
-	});
-	new Autocompleter.Local("new-dm-user", "autocompleter-dm", function()
-	{
-		var autocomplete_dm = "";
-		$w(store.get('users').strip()).uniq().each(function(item)
-		{
-			autocomplete_dm += item.replace(/@/i,"")+" ";
-		});
-		return $w(autocomplete_dm.strip()).uniq();
-	},
-	{
-		choices: 20,
-		minChars: 2
-	});
 	if (store.get('geo') == "on")
 	{
 		new HotKey('l',function(event)
