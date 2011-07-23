@@ -9,12 +9,12 @@
 	"imgur_key": "",
 	"oauth_callback": "oauth/callback",
 	"port": 8080,
+	"redis_host": "127.0.0.1 or maybe even /tmp/redis.sock",
+	"redis_name": "user",
+	"redis_pass": "pass",
+	"redis_port": 6379,
 	"startup_count": 20,
 	"storage_fingerprint": "",
-	"storage_host": "",
-	"storage_name": "",
-	"storage_pass": "",
-	"storage_port": 0,
 	"storage_secret": "",
 	"storage_type": "memory"
 }

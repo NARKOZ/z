@@ -15,7 +15,7 @@ var user = require('./vendor/clientstreams');
  * these vars are pulled in automatically from config.json
  */
 var host = config.host;
-googl.setKey(config.googl_key);
+googl.setKey(config.googl_key); //we arent reusing this at any point, just set it here
 var imgur_key = config.imgur_key;
 var oauth_callback = config.oauth_callback;
 var key = config.oauth_key;
@@ -25,16 +25,16 @@ var sitestream_key = config.oauth_key_sitestream;
 var sitestream_access_key = config.oauth_access_key_sitestream;
 var sitestream_access_secret = config.oauth_access_secret_sitestream;
 var startup_count = config.startup_count;
+var redis_host = config.redis_host;
+var redis_name = config.redis_name;
+var redis_pass = config.redis_pass;
+var redis_port = config.redis_port;
 var storage_fingerprint = config.storage_fingerprint;
-var storage_host = config.storage_host;
-var storage_name = config.storage_name;
-var storage_pass = config.storage_pass;
-var storage_port = config.storage_port;
 var storage_secret = config.storage_secret;
 var storage_type = config.storage_type;
 
 /*
- * server
+ * extended storage vars
  */
 switch (storage_type)
 {
@@ -47,13 +47,18 @@ switch (storage_type)
 		var RedisStore = require('connect-redis')(express);
 		var storage = new RedisStore(
 		{
-			host: storage_host,
-			db: storage_name,
-			pass: storage_pass,
-			port: storage_port
+			host: redis_host,
+			db: redis_name,
+			pass: redis_pass,
+			port: redis_port
 		});
 	break;
+	//despite code being removed, you could easily add a few lines yourself to support couch, mongo, riak, etc etc :)
 }
+
+/*
+ * server
+ */
 var server = express.createServer();
 
 server.configure(function()
@@ -236,21 +241,29 @@ server.get("/"+oauth_callback, function(req, res)
 	}
 });
 
+/* determine the best way to listen, if thats even possible */
 if (!module.parent)
 {
-	if (host == "" && port == 0)
+	try
 	{
-		server.listen();
+		if (host == "" && port == 0)
+		{
+			server.listen();
+		}
+		else if (host == "" && port != 0)
+		{
+			server.listen(port);
+		}
+		else if (host != "" && port != 0)
+		{
+			server.listen(port, host);
+		}
+		console.log("z engine running at "+server.address().port);
 	}
-	else if (host == "" && port != 0)
+	catch (error)
 	{
-		server.listen(port);
+		console.error("bind server listener error: "+error);
 	}
-	else if (host != "" && port != 0)
-	{
-		server.listen(port, host);
-	}
-	console.log("z engine running at "+server.address().port);
 }
 
 /* gzipping */
@@ -268,10 +281,23 @@ gzip.gzip({matchType: /socket.io/});
 /* some settings that will most certainly be used later on if we can sitestream access */
 var connected_clients = new Array();
 
-/* socket.io itself */
+/* the raw socket.io listener */
 var raw_socket = io.listen(server);
 
-/* the sessioned socket itself, we directly listen on here */
+raw_socket.enable("browser client minification");
+
+raw_socket.configure("production", function()
+{
+	raw_socket.enable("browser client etag");
+	raw_socket.set("log level", 1);
+});
+
+raw_socket.configure("development", function()
+{
+	raw_socket.set("log level", 3);
+});
+
+/* the socket.io session listener - there are not two listeners, rather this extends the above instance */
 var socket = sio.enable(
 {
 	parser: express.cookieParser(),

@@ -19,7 +19,8 @@
 
      storage_type = memory:
        sudo npm install nstore
-     you can leave all of the storage_* vars as is except for storage_secret (in config.json) if you use memory.
+     you can safely ignore all redis_* vars if you leave this set to memory. note that leaving sessions set to memory
+     is a bad practice in node because stuff like connect's memory middleware (used by express) is known to leak.
 
      storage_type = redis:
        sudo npm install connect-redis
