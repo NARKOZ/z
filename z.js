@@ -92,9 +92,9 @@ server.dynamicHelpers(
 server.get("/",function(req, res)
 {
 	gzip.gzip();
-	if (req.cookies.id && storage_type == "memory")
+	if (req.cookies.key && storage_type == "memory")
 	{
-		persistance.get(req.cookies.id, function (error, this_session)
+		persistance.get(req.cookies.key, function (error, this_session)
 		{
 			if (!error)
 			{
@@ -108,7 +108,14 @@ server.get("/",function(req, res)
 	}
 	else if (req.session.oauth)
 	{
-		res.redirect("/howdy");
+		if (typeof(req.session.oauth.accessKey) == "object")
+		{
+			res.redirect("/howdy");
+		}
+		else
+		{
+			res.redirect("/oauth/logout");
+		}
 	}
 	else
 	{
@@ -171,18 +178,17 @@ server.get("/oauth/logout", function(req, res)
 	{
 		if (storage_type == "memory")
 		{
-			persistance.remove(req.cookies.id, function (error)
+			persistance.remove(req.cookies.key, function(error)
 			{
-				if (!error)
-				{
-				}
+				return; //do nothing, return
 			});
 		}
 		req.session.destroy();
 	}
 	if (storage_type == "memory")
 	{
-		res.cookie("id", "", {expires: new Date(Date.now()-10), httpOnly: true});
+		//res.cookie.unset("key"); //this should work but doesnt, whatever
+		res.cookie("key", "see-ya", {expires: new Date(Date.now()-86400), httpOnly: true}); //see above, dumb hack
 	}
 	res.redirect("/");
 });
@@ -211,7 +217,7 @@ server.get("/"+oauth_callback, function(req, res)
 			{
 				if (storage_type == "memory")
 				{
-					persistance.save(tw._results.user_id, tw, function(error)
+					persistance.save(tw.accessKey, tw, function(error)
 					{
 						if (error)
 						{
@@ -220,7 +226,7 @@ server.get("/"+oauth_callback, function(req, res)
 					});
 				}
 				req.session.oauth = tw;
-				res.cookie("id", tw._results.user_id);
+				res.cookie("key", tw.accessKey);
 				res.redirect("/howdy");
 			}
 		});
