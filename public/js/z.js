@@ -172,6 +172,7 @@ function z_engine_attrition()
 		socket.on("disconnect", function()
 		{
 			$("new-tweet").disable();
+			$("new-tweet").setValue("...");
 		});
 		socket.on("dms-inbox", function(json)
 		{
@@ -335,6 +336,8 @@ function z_engine_attrition()
 			}
 			else
 			{
+				z_engine_fetch_timeline("userstream");
+				$("new-tweet").clear();
 				$("new-tweet").enable();
 			}
 		});
@@ -350,88 +353,6 @@ function z_engine_attrition()
 				growler.growl("/img/dummy.png","notice!","you have "+json.remaining_hits+" (of "+json.hourly_limit+") request tokens left!");
 			}
 		});
-		/*socket.on("related", function(json) //very alpha material right here, it clones the sidebar in new twitter somewhat.
-		{                                   //this was built mostly from looking at standard calls to api, as there are no
-			try                             //official or unofficial docs on this method. hopefully it works for you too :)
-			{                               //it is possible that you may need new twitter enabled for this to work right!
-				var origin = false;
-				json.data.each(function(item1)
-				{
-					if (item1.kind == "Tweet")
-					{
-						if (item1.value.retweeted_status)
-						{
-							var id = item1.value.retweeted_status.id_str;
-						}
-						else
-						{
-							var id = item1.value.id_str;
-						}
-						if (id == json.origin)
-						{
-							origin = true;
-						}
-						var role = item1.annotations.ConversationRole;
-						switch (role)
-						{
-							case 'Ancestor':
-								var position = "bottom";
-							break;
-							case 'Descendant':
-								var position = "top";
-							break;
-							case 'Fork':
-								var position = "top";
-							break;
-						}
-						z_engine_tweet(item1.value, "threaded "+position);
-					}
-					else
-					{
-						item1.results.each(function(item2)
-						{
-							if (item2.kind == "Tweet")
-							{
-								if (item2.value.retweeted_status)
-								{
-									var id = item2.value.retweeted_status.id_str;
-								}
-								else
-								{
-									var id = item2.value.id_str;
-								}
-								if (id == json.origin)
-								{
-									origin = true;
-								}
-								var role = item2.annotations.ConversationRole;
-								switch (role)
-								{
-									case 'Ancestor':
-										var position = "bottom";
-									break;
-									case 'Descendant':
-										var position = "top";
-									break;
-									case 'Fork':
-										var position = "top";
-									break;
-								}
-								z_engine_tweet(item2.value, "threaded "+position);
-							}
-						});
-					}
-				});
-				if (content_stored[json.origin] && content_stored[json.origin].isJSON())
-				{
-					z_engine_tweet(content_stored[json.origin].evalJSON(true), "threaded top");
-				}
-			}
-			catch(error)
-			{
-				console.log(error);
-			}
-		});*/
 		socket.on("retweet_info", function(json)
 		{
 			var id = json.retweeted_status.id_str;
@@ -1016,7 +937,6 @@ function z_engine_input_resize()
 /* properly log out a user */
 function z_engine_logout()
 {
-	socket.disconnect();
 	$("new-tweet").disable();
 	$("new-tweet").setValue("see ya!");
 	window.location = "/oauth/logout";
@@ -1229,7 +1149,7 @@ function z_engine_retweet_comment(id, author, text)
 /* send our tweet */
 function z_engine_send_tweet()
 {
-	if ($("new-tweet").getValue().length > 0 && $("new-tweet").getValue().length <= 140)
+	if ($("new-tweet").getValue().length > 0 && $("new-tweet").getValue().length <= 140 && !$("autocompleter").visible())
 	{
 		$("new-tweet").disable();
 		$("new-dm-user").disable();
@@ -2424,13 +2344,10 @@ function z_engine_ui_components()
 	{
 		z_engine_image_dropper();
 	}
-	var autocomplete_users = $w(store.get('users').strip()).uniq();
-	var autocomplete_users_dm = "";
-	autocomplete_users.each(function(item)
+	new Autocompleter.Local("new-tweet", "autocompleter", function()
 	{
-		autocomplete_users_dm += item.replace(/@/i,"")+" ";
-	});
-	new Autocompleter.Local("new-tweet", "autocompleter", autocomplete_users,
+		return $w(store.get('users').strip()).uniq();
+	},
 	{
 		choices: 20,
 		minChars: 2,
@@ -2440,7 +2357,15 @@ function z_engine_ui_components()
 			$("new-tweet").setValue($("new-tweet").getValue()+" ");
 		}
 	});
-	new Autocompleter.Local("new-dm-user", "autocompleter-dm", $w(autocomplete_users_dm.strip()).uniq(),
+	new Autocompleter.Local("new-dm-user", "autocompleter-dm", function()
+	{
+		var autocomplete_dm = "";
+		$w(store.get('users').strip()).uniq().each(function(item)
+		{
+			autocomplete_dm += item.replace(/@/i,"")+" ";
+		});
+		return $w(autocomplete_dm.strip()).uniq();
+	},
 	{
 		choices: 20,
 		minChars: 2
