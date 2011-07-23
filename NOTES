@@ -13,30 +13,10 @@
      sudo npm install goo.gl
      sudo npm install jade
      sudo npm install jsonreq
+     sudo npm install nstore
      sudo npm install oauth
      sudo npm install socket.io
      sudo npm install socket.io-sessions
-
-   optional:
-
-     couchdb support (tested, works):
-       sudo npm install connect-couchdb
-       set storage_type to "couch" in config.json
-
-     mongo support (tested, works):
-       sudo npm install connect-mongo
-       set storage_type to "mongo" in config.json
-
-     redis support (thoroughly tested, you should use this one):
-       sudo npm install connect-redis
-       set storage_type to "redis" in config.json
-       redis extra support:
-         since redis is very cool and fast, if you have a *nix machine, install this too:
-         sudo npm install hiredis
-         this will use an interpreter written in C to access redis instead of one written in javascript...
-         (bootnote: rememeber to rebuild this _every_time_ you upgrade node, it can lead to issues otherwise)
-
-   it is highly recommended that you use one of the above store methods rather than memory, as it is known to leak.
 
 2) register your application here: https://dev.twitter.com/apps
 3) register a gmail account, and go here for a url shortener key: https://code.google.com/apis/console

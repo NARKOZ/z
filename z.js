@@ -6,8 +6,11 @@ var express = require('express');
 var googl = require('goo.gl');
 var gzip = require('connect-gzip');
 var io = require('socket.io');
+var nstore = require("nstore");
+var persistance = nstore.new(__dirname+"/store/sessions.db");
 var sio = require('socket.io-sessions');
 var site = require('./vendor/sitestreams');
+var storage = new express.session.MemoryStore();
 var sys = require('sys');
 var user = require('./vendor/clientstreams');
 
@@ -27,35 +30,10 @@ var sitestream_access_secret = config.oauth_access_secret_sitestream;
 var startup_count = config.startup_count;
 var storage_fingerprint = config.storage_fingerprint;
 var storage_secret = config.storage_secret;
-var storage_type = config.storage_type;
 
 /*
  * server
  */
-switch (storage_type)
-{
-	case "couch":
-		var CouchStore = require('connect-couchdb')(express);
-		var storage =  new CouchStore(
-		{
-			name: "sessions"
-		});
-	break;
-	case "memory":
-		var storage = new express.session.MemoryStore();
-	break;
-	case "mongo":
-		var MongoStore = require('connect-mongo');
-		var storage =  new MongoStore(
-		{
-			db: "sessions"
-		});
-	break;
-	case "redis":
-		var RedisStore = require('connect-redis')(express);
-		var storage = new RedisStore();
-	break;
-}
 var server = express.createServer();
 
 server.configure(function()
@@ -94,57 +72,95 @@ server.dynamicHelpers(
 server.get("/",function(req, res)
 {
 	gzip.gzip();
-	if (!req.session.oauth)
+	if (req.cookies.id)
+	{
+		persistance.get(req.cookies.id, function (error, this_session)
+		{
+			if (!error)
+			{
+				if (typeof(this_session) == "object")
+				{
+					req.session.oauth = this_session;
+					res.redirect("/howdy");
+				}
+			}
+		});
+	}
+	else
 	{
 		res.render("index.jade",
 		{
 			title: "hello, welcome to z!"
 		});
 	}
+});
+
+server.get("/howdy", function(req, res)
+{
+	gzip.gzip();
+	if (!req.session.oauth)
+	{
+		res.redirect("/");
+	}
 	else
 	{
-		if (typeof(req.session.oauth._results) == "object")
+		res.render("home.jade",
 		{
-			res.render("home.jade",
-			{
-				imgur_script: "var imgur_key = '"+imgur_key+"';",
-				title: "hello @"+req.session.oauth._results.screen_name+"!"
-			});
-		}
-		else
-		{
-			req.session.destroy(function()
-			{
-				res.redirect("/");
-			});
-		}
+			imgur_script: "var imgur_key = '"+imgur_key+"';",
+			title: "hello @"+req.session.oauth._results.screen_name+"!"
+		});
 	}
 });
 
 /* initial logging in */
 server.get("/oauth/login", function(req, res)
 {
-	var tw = new user(key, secret);
-	tw.getRequestToken(function(error, url)
+	if (!req.session.oauth)
 	{
-		if(error)
+		var tw = new user(key, secret);
+		tw.getRequestToken(function(error, url)
 		{
-			req.session.destroy(function()
+			if(error)
 			{
-				res.send("there was an issue building the url...<br /><br /><a href='/'>return</a>");
-			});
-		}
-		else
+				req.session.destroy(function()
+				{
+					res.send("there was an issue building the url...<br /><br /><a href='/'>return</a>");
+				});
+			}
+			else
+			{
+				req.session.oauth = tw;
+				res.redirect(url);
+			}
+		});
+	}
+	else
+	{
+		res.redirect("/howdy");
+	}
+});
+
+/* destroy all session information (including the id) */
+server.get("/oauth/logout", function(req, res)
+{
+	if (req.session.oauth)
+	{
+		persistance.remove(req.cookies.id, function (error)
 		{
-			req.session.oauth = tw;
-			res.redirect(url);
-		}
-	});
+			if (!error)
+			{
+				req.session.destroy();
+			}
+		});
+	}
+	res.cookie("id", "", {expires: new Date(Date.now()-10), httpOnly: true});
+	res.redirect("/");
 });
 
 /* oauth callback */
 server.get("/"+oauth_callback, function(req, res)
 {
+	gzip.gzip();
 	if (!req.session.oauth)
 	{
 		res.redirect("/");
@@ -158,25 +174,24 @@ server.get("/"+oauth_callback, function(req, res)
 			{
 				req.session.destroy(function()
 				{
-					res.send("there was an issue getting the token...<br /><br /><a href='/'>return</a>");
+					res.send("there was an issue getting the access token...<br /><br /><a href='/'>return</a>");
 				});
 			}
 			else
 			{
+				persistance.save(tw._results.user_id, tw, function(error)
+				{
+					if (error)
+					{
+						console.log("oauth callback save error: "+error);
+					}
+				});
 				req.session.oauth = tw;
-				res.redirect("/");
+				res.cookie("id", tw._results.user_id);
+				res.redirect("/howdy");
 			}
 		});
 	}
-});
-
-/* destroy all session information (including the id) */
-server.get("/oauth/logout", function(req, res)
-{
-	req.session.destroy(function()
-	{
-		res.redirect("/");
-	});
 });
 
 if (!module.parent)
