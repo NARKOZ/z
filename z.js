@@ -98,7 +98,7 @@ server.get("/",function(req, res)
 		{
 			if (!error)
 			{
-				if (typeof(this_session) == "object")
+				if (typeof(this_session.accessKey) == "string")
 				{
 					req.session.oauth = this_session;
 					res.redirect("/howdy");
@@ -108,13 +108,13 @@ server.get("/",function(req, res)
 	}
 	else if (req.session.oauth)
 	{
-		if (typeof(req.session.oauth.accessKey) == "object")
+		if (typeof(req.session.oauth.accessKey) == "string")
 		{
-			res.redirect("/howdy");
+			res.redirect("/howdy"); //valid session
 		}
 		else
 		{
-			res.redirect("/oauth/logout");
+			res.redirect("/oauth/logout"); //invalid session, restart
 		}
 	}
 	else
@@ -226,7 +226,10 @@ server.get("/"+oauth_callback, function(req, res)
 					});
 				}
 				req.session.oauth = tw;
-				res.cookie("key", tw.accessKey);
+				if (storage_type == "memory")
+				{
+					res.cookie("key", tw.accessKey);
+				}
 				res.redirect("/howdy");
 			}
 		});
@@ -265,11 +268,14 @@ gzip.gzip({matchType: /socket.io/});
 /* some settings that will most certainly be used later on if we can sitestream access */
 var connected_clients = new Array();
 
-/* the sessioned socket itself */
+/* socket.io itself */
+var raw_socket = io.listen(server);
+
+/* the sessioned socket itself, we directly listen on here */
 var socket = sio.enable(
 {
 	parser: express.cookieParser(),
-	socket: io.listen(server), // <--note the raw io.listen is over yonder
+	socket: raw_socket, // <--note the raw io.listen is over yonder
 	store: storage
 });
 
@@ -343,7 +349,7 @@ socket.on("sconnection", function(client, session)
 		{
 			console.error("user oauth session issue: "+error);
 		}
-		if(tw)
+		if (tw) //ignore any other connections
 		{
 			try
 			{
