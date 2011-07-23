@@ -92,22 +92,23 @@ server.dynamicHelpers(
 server.get("/",function(req, res)
 {
 	gzip.gzip();
-	if (req.cookies.id)
+	if (req.cookies.id && storage_type == "memory")
 	{
-		if (storage_type == "memory")
+		persistance.get(req.cookies.id, function (error, this_session)
 		{
-			persistance.get(req.cookies.id, function (error, this_session)
+			if (!error)
 			{
-				if (!error)
+				if (typeof(this_session) == "object")
 				{
-					if (typeof(this_session) == "object")
-					{
-						req.session.oauth = this_session;
-						res.redirect("/howdy");
-					}
+					req.session.oauth = this_session;
+					res.redirect("/howdy");
 				}
-			});
-		}
+			}
+		});
+	}
+	else if (req.session.oauth)
+	{
+		res.redirect("/howdy");
 	}
 	else
 	{
