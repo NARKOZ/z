@@ -3,7 +3,7 @@
  */
 var config = require('./vendor/config').config;
 var express = require('express');
-var googl = require('goo.gl');
+var googl = require('./vendor/googl');
 var gzip = require('connect-gzip');
 var site = require('./vendor/sitestreams');
 var sys = require('sys');
@@ -298,9 +298,7 @@ else
 	var raw_socket = io.listen(server,
 	{
 		transports: [
-			"htmlfile",
-			"xhr-multipart",
-			"xhr-polling"
+			"xhr-polling" //only support xhr-polling, this is all that seems to work on dotcloud (for example)
 		]
 	});
 }
