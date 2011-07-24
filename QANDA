@@ -4,3 +4,12 @@ a: i prefer to use raw javascript, as well as other one off libs that dont requi
 
 q: somethings broken
 a: haha, i bet it is. yea i really dont pay much attention to what i commit so things might sneak in sometimes.
+
+q: will this run on a host such as nodester, dotcloud, etc ("they support node and npm)
+a: absolutely, i have done testing on the nodester platform with z and it works just fine with all the latest stuff via npm.
+   now, dotcloud (and others that "front" their node.js installations with nginx) have problems with the very latest version of
+   socket.io (0.7), as well as just plain not supporting proxied websockets (nginx mangles them). the "fix" lies in setting a
+   var in config.json to 0.6 instead of 0.7 (of whatevers already there) - a slightly hacked version of socket.io 0.6 is shipped
+   and works only with xhr-polling, nothing more. because of the variability in how messages get handled between these two vers,
+   i will not be doing bugfixes (unless its major and deals with z and not socket.io) on this fallback method, all development
+   will be focused on whatever happens to be latest code available out of npm. this is why this note isnt in NOTES.
