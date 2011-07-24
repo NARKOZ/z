@@ -1492,7 +1492,6 @@ function z_engine_stream_queue()
 /* timers */
 function z_engine_timers()
 {
-	z_engine_fetch_timeline("dms-inbox");
 	z_engine_fetch_timeline("rates");
 	z_engine_fetch_timeline("home");
 	z_engine_fetch_timeline.delay(2, "userstream");
