@@ -26,7 +26,4 @@
    provide a working textarea and resizer but it is not within a modal window (back this code up?)
 8) decide whether to do list support:
      - lists are not available in realtime
-9) known bugs in the fallback method for socket.io 0.6:
-     - deleting dm's does not seem to work despite everything getting routed properly, no idea why this is happening.
-       i dont think im very motivated to uncover this after an afternoons worth of effort, if you can figure it out,
-       send in a pull request.
+9) unbreak deletions
