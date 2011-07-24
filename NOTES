@@ -10,9 +10,7 @@
      sudo npm install connect
      sudo npm install connect-gzip
      sudo npm install express
-     sudo npm install goo.gl
      sudo npm install jade
-     sudo npm install jsonreq
      sudo npm install oauth
      sudo npm install socket.io
      sudo npm install socket.io-sessions

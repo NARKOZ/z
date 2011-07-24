@@ -325,9 +325,12 @@ var socket = sio.enable(
 });
 
 /* delete a tweet */
-socket.drop_tweet = function (tw, client, json)
+socket.drop_tweet = function (tw, json)
 {
-	try
+	console.log("tw: "+tw);
+	console.log("client: "+client);
+	console.log("json: "+json);
+	/*try
 	{
 		switch (json.action)
 		{
@@ -341,8 +344,8 @@ socket.drop_tweet = function (tw, client, json)
 	}
 	catch (error)
 	{
-		console.error("socket.destroy error: "+error);
-	}
+		console.error("socket.drop_tweet error: "+error);
+	}*/
 	return this;
 };
 
@@ -376,7 +379,7 @@ socket.drop = function (session)
 };
 
 /* favorite a tweet */
-socket.favorite = function (tw, client, json)
+socket.favorite = function (tw, json)
 {
 	try
 	{
@@ -543,11 +546,11 @@ socket.on("sconnection", function(client, session)
 			{
 				client.on("delete", function(json)
 				{
-					socket.drop_tweet(tw, client, json);
+					socket.drop_tweet(tw, json);
 				});
 				client.on("favorite", function(json)
 				{
-					socket.favorite(tw, client, json);
+					socket.favorite(tw, json);
 				});
 				client.on("fetch", function(json)
 				{
@@ -574,28 +577,29 @@ socket.on("sconnection", function(client, session)
 			{
 				client.on("message", function(json)
 				{
-					switch (json.type)
+					console.log(JSON.stringify(json));
+					switch (json.msg)
 					{
 						case "delete":
-							socket.drop_tweet(tw. client, json.message);
+							socket.drop_tweet(tw. json.payload);
 						break;
 						case "favorite":
-							socket.favorite(tw, client, json.message);
+							socket.favorite(tw, json.payload);
 						break;
 						case "fetch":
-							socket.fetch(tw, client, session, json.message);
+							socket.fetch(tw, client, session, json.payload);
 						break;
 						case "retweet":
-							socket.retweet(tw, client, json.message);
+							socket.retweet(tw, client, json.payload);
 						break;
 						case "shorten":
-							socket.shorten(client, json.message);
+							socket.shorten(client, json.payload);
 						break;
 						case "show":
-							socket.show(tw, client, json.message);
+							socket.show(tw, client, json.payload);
 						break;
 						case "status":
-							socket.status(tw, client, json.message);
+							socket.status(tw, client, json.payload);
 						break;
 					}
 				});
@@ -611,17 +615,17 @@ socket.on("sinvalid", function(client)
 });
 
 /* broadcast to a single client */
-socket.radio = function (client, type, message)
+socket.radio = function (client, msg, payload)
 {
 	try
 	{
 		if (socket_io_version != "0.6")
 		{
-			client.json.emit(type, message);
+			client.json.emit(msg, payload);
 		}
 		else
 		{
-			client.send({type: type, message: message});
+			client.send({msg: msg, payload: payload});
 		}
 	}
 	catch (error)

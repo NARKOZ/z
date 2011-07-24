@@ -220,8 +220,8 @@ function z_engine_attrition()
 		{
 			socket.on("message", function(json)
 			{
-				var message = json.message;
-				var type = json.type;
+				var message = json.payload;
+				var type = json.msg;
 				switch (type)
 				{
 					case "delete":
@@ -298,70 +298,69 @@ function z_engine_destroy(id, method)
 	var confirm_delete = confirm("\nare you sure you want to delete this?\n");
 	if (confirm_delete)
 	{
-		if (method == "tweet" || method == "rt")
+		switch (method)
 		{
-			var params = {action: "tweet", id_str: id};
-		}
-		else if (method == "dm")
-		{
-			var params = {action: "dm", id_str: id};
-			z_engine_drop_tweet(id);
-		}
-		if (method == "rt")
-		{
-			content_rts_stored.each(function(item, index)
-			{
-				if (item.isJSON())
+			case "dm":
+				z_engine_handle_emitter("destroy", {action: "dm", id_str: id});
+				z_engine_drop_tweet(id);
+			break;
+			case "rt":
+				content_rts_stored.each(function(item, index)
 				{
-					var data = item.evalJSON(true);
-					var new_id = data.id_str;
-					if (id == new_id)
+					if (item.isJSON())
 					{
-						var author = data.retweeted_status.screen_name;
-						var author2 = data.screen_name;
-						var entities = data.retweeted_status.entities;
-						var faved = data.retweeted_status.favorited;
-						id = data.retweeted_status.id_str; //reset the idea to the original status
-						var locked = data.retweeted_status.user["protected"];
-						var params = {action: "tweet", id_str: id};
-						var text = data.retweeted_status.text;
-						var userid = data.retweeted_status.user.id;
-						if (!entities)
+						var data = item.evalJSON(true);
+						var new_id = data.id_str;
+						if (id == new_id)
 						{
-							var usermentions = false;
+							var author = data.retweeted_status.screen_name;
+							var author2 = data.screen_name;
+							var entities = data.retweeted_status.entities;
+							var faved = data.retweeted_status.favorited;
+							id = data.retweeted_status.id_str; //reset the id to the original status
+							var locked = data.retweeted_status.user["protected"];
+							var text = data.retweeted_status.text;
+							var userid = data.retweeted_status.user.id;
+							if (!entities)
+							{
+								var usermentions = false;
+							}
+							else
+							{
+								var usermentions = z_engine_tweet_mentioned_string(entities);
+							}
+							content_rts_stored.splice(index, 1); //see ya!
+							if ($("rt-"+id))
+							{
+								$("rt-"+id).writeAttribute("title", translation.retweet);
+								$("rt-"+id).writeAttribute("src","/img/rt.png");
+								$("rt-"+id).writeAttribute("onclick","z_engine_retweet('"+id+"');");
+								z_engine_tweet_right_click(id, "rt-"+id, author, author2, userid, usermentions, text, faved, false, locked, "home");
+							}
+							if ($("rt-"+id+"-mentioned"))
+							{
+								$("rt-"+id+"-mentioned").writeAttribute("title", translation.retweet);
+								$("rt-"+id+"-mentioned").writeAttribute("src","/img/rt.png");
+								$("rt-"+id+"-mentioned").writeAttribute("onclick","z_engine_retweet('"+id+"');");
+								z_engine_tweet_right_click(id, "rt-"+id+"-mentioned", author, author2, userid, usermentions, text, faved, false, locked, "mentions");
+							}
+							if ($("rt-"+id+"-threaded"))
+							{
+								$("rt-"+id+"-threaded").writeAttribute("title", translation.retweet);
+								$("rt-"+id+"-threaded").writeAttribute("src","/img/rt.png");
+								$("rt-"+id+"-threaded").writeAttribute("onclick","z_engine_retweet('"+id+"');");
+								z_engine_tweet_right_click(id, "rt-"+id+"-threaded", author, author2, userid, usermentions, text, faved, false, locked, "threads");
+							}
+							z_engine_handle_emitter("destroy", {action: "tweet", id_str: id});
+							$break;
 						}
-						else
-						{
-							var usermentions = z_engine_tweet_mentioned_string(entities);
-						}
-						content_rts_stored.splice(index, 1); //see ya!
-						if ($("rt-"+id))
-						{
-							$("rt-"+id).writeAttribute("title", translation.retweet);
-							$("rt-"+id).writeAttribute("src","/img/rt.png");
-							$("rt-"+id).writeAttribute("onclick","z_engine_retweet('"+id+"');");
-							z_engine_tweet_right_click(id, "rt-"+id, author, author2, userid, usermentions, text, faved, false, locked, "home");
-						}
-						if ($("rt-"+id+"-mentioned"))
-						{
-							$("rt-"+id+"-mentioned").writeAttribute("title", translation.retweet);
-							$("rt-"+id+"-mentioned").writeAttribute("src","/img/rt.png");
-							$("rt-"+id+"-mentioned").writeAttribute("onclick","z_engine_retweet('"+id+"');");
-							z_engine_tweet_right_click(id, "rt-"+id+"-mentioned", author, author2, userid, usermentions, text, faved, false, locked, "mentions");
-						}
-						if ($("rt-"+id+"-threaded"))
-						{
-							$("rt-"+id+"-threaded").writeAttribute("title", translation.retweet);
-							$("rt-"+id+"-threaded").writeAttribute("src","/img/rt.png");
-							$("rt-"+id+"-threaded").writeAttribute("onclick","z_engine_retweet('"+id+"');");
-							z_engine_tweet_right_click(id, "rt-"+id+"-threaded", author, author2, userid, usermentions, text, faved, false, locked, "threads");
-						}
-						$break;
 					}
-				}
-			});
+				});
+			break;
+			case "tweet":
+				z_engine_handle_emitter("destroy", {action: "tweet", id_str: id});
+			break;
 		}
-		z_engine_handle_emitter("delete", params);
 	}
 }
 
@@ -594,15 +593,15 @@ function z_engine_get_language()
 }
 
 /* handle emitted (or rather, client to server) messages here */
-function z_engine_handle_emitter(type, message)
+function z_engine_handle_emitter(msg, payload)
 {
 	if (socket_io_version != "6")
 	{
-		socket.emit(type, message);
+		socket.emit(msg, payload);
 	}
 	else
 	{
-		socket.send({type: type, message: message});
+		socket.send({msg: msg, payload: payload});
 	}
 }
 
@@ -720,6 +719,7 @@ function z_engine_handle_events(json)
 		case 'list_user_unsubscribed':
 		break;
 		case 'scrub_geo':
+			//todo: this
 		break;
 		case 'user_update':
 		break;
