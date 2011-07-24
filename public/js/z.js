@@ -1818,7 +1818,6 @@ function z_engine_tweet(data, divinfo)
 									}
 									else
 									{
-										//var in_reply_to_link_element = new Element('span', {'onclick': 'z_engine_related("'+id+'","'+replyid+'");', 'style': 'cursor: pointer;'});
 										var in_reply_to_link_element = new Element('span', {'onclick': 'z_engine_threaded("'+id+'","'+replyid+'");', 'style': 'cursor: pointer;'});
 									}
 									in_reply_to_link_element.update('@'+reply+' ');
@@ -1852,6 +1851,15 @@ function z_engine_tweet(data, divinfo)
 							}
 						comment_date_element.insert(left_element);
 						var right_element = new Element('div', {'class': 'right'});
+							if (output != "dms" && place && place.full_name)
+							{
+								var place_element = new Element('span', {'class': 'place', 'id': 'place-'+id});
+								var place_link_element = new Element('a', {'target': '_blank', href: 'http://maps.google.com?q='+place.full_name});
+								var place_img_element = new Element('img', {'src': '/img/plc.png', 'alt': '', 'title': place.full_name});
+								place_link_element.update(place_img_element);
+								place_element.update(place_link_element);
+								right_element.insert({'bottom': place_element});
+							}
 							if (rtd)
 							{
 								if (retweet_count > 0)
@@ -1870,15 +1878,6 @@ function z_engine_tweet(data, divinfo)
 								rtd_element.insert({'top': rtd_img_element});
 								rtd_element.insert({'bottom': rtd_author_link_element});
 								right_element.insert({'bottom': rtd_element});
-							}
-							if (output != "dms" && place && place.full_name)
-							{
-								var place_element = new Element('span', {'class': 'place', 'id': 'place-'+id});
-								var place_link_element = new Element('a', {'target': '_blank', href: 'http://maps.google.com?q='+place.full_name});
-								var place_img_element = new Element('img', {'src': '/img/plc.png', 'alt': '', 'title': place.full_name});
-								place_link_element.update(place_img_element);
-								place_element.update(place_link_element);
-								right_element.insert({'bottom':place_element});
 							}
 						comment_date_element.insert({'bottom': right_element});
 					comment_body_element.insert({'bottom': comment_date_element});
