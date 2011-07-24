@@ -5,8 +5,6 @@ var config = require('./vendor/config').config;
 var express = require('express');
 var googl = require('goo.gl');
 var gzip = require('connect-gzip');
-var io = require('socket.io');
-var sio = require('socket.io-sessions');
 var site = require('./vendor/sitestreams');
 var sys = require('sys');
 var user = require('./vendor/clientstreams');
@@ -28,9 +26,22 @@ var redis_host = config.redis_host;
 var redis_name = config.redis_name;
 var redis_pass = config.redis_pass;
 var redis_port = config.redis_port;
+var socket_io_version = config.socket_io_version;
 var storage_fingerprint = config.storage_fingerprint;
 var storage_secret = config.storage_secret;
 var storage_type = config.storage_type;
+
+if (socket_io_version != "0.6")
+{
+	var io = require('socket.io');
+	var sio = require('socket.io-sessions');
+}
+else
+{
+	//bundled final versions of the 0.6 series of socket.io
+	var io = require('./vendor/socket.io');
+	var sio = require('./vendor/socket.io/sessions');
+}
 
 /*
  * extended storage vars
@@ -278,17 +289,34 @@ gzip.gzip({matchType: /socket.io/});
 var connected_clients = new Array();
 
 /* the raw socket.io listener */
-var raw_socket = io.listen(server);
-raw_socket.enable("browser client minification");
-raw_socket.configure("production", function()
+if (socket_io_version != "0.6")
 {
-	raw_socket.enable("browser client etag");
-	raw_socket.set("log level", 1);
-});
-raw_socket.configure("development", function()
+	var raw_socket = io.listen(server);
+}
+else
 {
-	raw_socket.set("log level", 3);
-});
+	var raw_socket = io.listen(server,
+	{
+		transports: [
+			"htmlfile",
+			"xhr-multipart",
+			"xhr-polling"
+		]
+	});
+}
+if (socket_io_version != "0.6")
+{
+	raw_socket.enable("browser client minification");
+	raw_socket.configure("production", function()
+	{
+		raw_socket.enable("browser client etag");
+		raw_socket.set("log level", 1);
+	});
+	raw_socket.configure("development", function()
+	{
+		raw_socket.set("log level", 3);
+	});
+}
 
 /* the socket.io session listener - there are not two listeners, rather this extends the above instance */
 var socket = sio.enable(
@@ -297,6 +325,28 @@ var socket = sio.enable(
 	socket: raw_socket, // <--note the raw io.listen is over yonder
 	store: storage
 });
+
+/* delete a tweet */
+socket.drop_tweet = function (tw, client, json)
+{
+	try
+	{
+		switch (json.action)
+		{
+			case "dm":
+				tw.destroy_dm(json.id_str);
+			break;
+			case "tweet":
+				tw.destroy(json.id_str);
+			break;
+		}
+	}
+	catch (error)
+	{
+		console.error("socket.destroy error: "+error);
+	}
+	return this;
+};
 
 /* drop the client from everything */
 socket.drop = function (session)
@@ -323,6 +373,99 @@ socket.drop = function (session)
 	catch (error)
 	{
 		console.error("socket.drop error: "+error);
+	}
+	return this;
+};
+
+/* favorite a tweet */
+socket.favorite = function (tw, client, json)
+{
+	try
+	{
+		switch (json.action)
+		{
+			case "do":
+				tw.favorite(json.id_str);
+			break;
+			case "undo":
+				tw.unfavorite(json.id_str);
+			break;
+		}
+	}
+	catch (error)
+	{
+		console.error("socket.favorite error: "+error);
+	}
+	return this;
+};
+
+/* fetch a resource */
+socket.fetch = function (tw, client, session, json)
+{
+	try
+	{
+		switch (json)
+		{
+			case "dms-inbox":
+				tw.getInbox({count: startup_count, include_entities: true}, function(error, data, response)
+				{
+					if (!error)
+					{
+						socket.radiosort(client, "dms", data);
+					}
+				});
+			break;
+			case "dms-outbox":
+				tw.getOutbox({count: startup_count, include_entities: true}, function(error, data, response)
+				{
+					if (!error)
+					{
+						socket.radiosort(client, "dms", data);
+					}
+				});
+			break;
+			case "home":
+				tw.getTimeline({type: "home_timeline", count: startup_count, include_entities: true}, function(error, data, response)
+				{
+					if (!error)
+					{
+						socket.radiosort(client, "home", data);
+					}
+				});
+			break;
+			case "mentions":
+				tw.getTimeline({type: "mentions", count: startup_count, include_entities: true}, function(error, data, response)
+				{
+					if (!error)
+					{
+						socket.radiosort(client, "mentions", data);
+					}
+				});
+			break;
+			case "rates":
+				tw.rateLimit(function(error, data, response)
+				{
+					if (!error)
+					{
+						socket.radio(client, "rates", data);
+					}
+				});
+			break;
+			case "userstream":
+				if (!sitestream_key)
+				{
+					socket.userstream(tw, client, session);
+				}
+				else
+				{
+					//do something here?
+				}
+			break;
+		}
+	}
+	catch (error)
+	{
+		console.error("socket.fetch error: "+error);
 	}
 	return this;
 };
@@ -387,18 +530,6 @@ socket.on("sconnection", function(client, session)
 				screen_name: session.oauth._results.screen_name,
 				user_id: session.oauth._results.user_id
 			});
-			client.on("delete", function(json)
-			{
-				switch (json.action)
-				{
-					case "dm":
-						tw.destroy_dm(json.id_str);
-					break;
-					case "tweet":
-						tw.destroy(json.id_str);
-					break;
-				}
-			});
 			client.on("disconnect", function()
 			{
 				try
@@ -410,118 +541,67 @@ socket.on("sconnection", function(client, session)
 					console.error("client disconnect error: "+error);
 				}
 			});
-			client.on("favorite", function(json)
+			if (socket_io_version != "0.6")
 			{
-				switch (json.action)
+				client.on("delete", function(json)
 				{
-					case "do":
-						tw.favorite(json.id_str);
-					break;
-					case "undo":
-						tw.unfavorite(json.id_str);
-					break;
-				}
-			});
-			client.on("fetch", function(message)
+					socket.drop_tweet(tw, client, json);
+				});
+				client.on("favorite", function(json)
+				{
+					socket.favorite(tw, client, json);
+				});
+				client.on("fetch", function(json)
+				{
+					socket.fetch(tw, client, session, json);
+				});
+				client.on("retweet", function(json)
+				{
+					socket.retweet(tw, client, json);
+				});
+				client.on("shorten", function(json)
+				{
+					socket.shorten(client, json);
+				});
+				client.on("show", function(json)
+				{
+					socket.show(tw, client, json);
+				});
+				client.on("status", function(json)
+				{
+					socket.status(tw, client, json);
+				});
+			}
+			else
 			{
-				switch (message)
+				client.on("message", function(json)
 				{
-					case "dms-inbox":
-						tw.getInbox({count: startup_count, include_entities: true}, function(error, data, response)
-						{
-							if (!error)
-							{
-								socket.radiosort(client, "dms-inbox", data);
-							}
-						});
-					break;
-					case "dms-outbox":
-						tw.getOutbox({count: startup_count, include_entities: true}, function(error, data, response)
-						{
-							if (!error)
-							{
-								socket.radiosort(client, "dms-outbox", data);
-							}
-						});
-					break;
-					case "home":
-						tw.getTimeline({type: "home_timeline", count: startup_count, include_entities: true}, function(error, data, response)
-						{
-							if (!error)
-							{
-								socket.radiosort(client, "home", data);
-							}
-						});
-					break;
-					case "mentions":
-						tw.getTimeline({type: "mentions", count: startup_count, include_entities: true}, function(error, data, response)
-						{
-							if (!error)
-							{
-								socket.radiosort(client, "mentions", data);
-							}
-						});
-					break;
-					case "rates":
-						tw.rateLimit(function(error, data, response)
-						{
-							if (!error)
-							{
-								socket.radio(client, "rates", data);
-							}
-						});
-					break;
-					case "userstream":
-						if (!sitestream_key)
-						{
-							socket.userstream(tw, client, session);
-						}
-						else
-						{
-							//do something here!
-						}
-					break;
-				}
-			});
-			client.on("retweet", function(json)
-			{
-				tw.retweet(json.id_str, function(error, data, response)
-				{
-					if (!error)
+					switch (json.type)
 					{
-						socket.radio(client, "retweet_info", data);
+						case "delete":
+							socket.drop_tweet(tw. client, json.message);
+						break;
+						case "favorite":
+							socket.favorite(tw, client, json.message);
+						break;
+						case "fetch":
+							socket.fetch(tw, client, session, json.message);
+						break;
+						case "retweet":
+							socket.retweet(tw, client, json.message);
+						break;
+						case "shorten":
+							socket.shorten(client, json.message);
+						break;
+						case "show":
+							socket.show(tw, client, json.message);
+						break;
+						case "status":
+							socket.status(tw, client, json.message);
+						break;
 					}
 				});
-			});
-			client.on("shorten", function(json)
-			{
-				googl.shorten(json.shorten, function (data) 
-				{
-					socket.radio(client, "shorten", {shortened: data.id, original: json.shorten});
-				});
-			});
-			client.on("show", function(json)
-			{
-				tw.show(json.id_str, {include_entities: true}, function(error, data, response)
-				{
-					if (!error)
-					{
-						socket.radio(client, "show", data);
-					}
-				});
-			});
-			client.on("status", function(json)
-			{
-				switch (json.action)
-				{
-					case "dm":
-						tw.direct_message(json.data);
-					break;
-					case "tweet":
-						tw.update(json.data);
-					break;
-				}
-			});
+			}
 		}
 	}
 });
@@ -534,9 +614,17 @@ socket.on("sinvalid", function(client)
 
 /* broadcast to a single client */
 socket.radio = function (client, type, message)
-{	try
+{
+	try
 	{
-		client.json.emit(type, message);
+		if (socket_io_version != "0.6")
+		{
+			client.json.emit(type, message);
+		}
+		else
+		{
+			client.send({type: type, message: message});
+		}
 	}
 	catch (error)
 	{
@@ -568,110 +656,195 @@ socket.radiosort = function (client, type, data)
 	return this;
 };
 
+socket.retweet = function (tw, client, json)
+{
+	try
+	{
+		tw.retweet(json.id_str, function(error, data, response)
+		{
+			if (!error)
+			{
+				socket.radio(client, "retweet_info", data);
+			}
+		});
+	}
+	catch (error)
+	{
+		console.error("socket.retweet error: "+error);
+	}
+	return this;
+};
+
+/* shorten links */
+socket.shorten = function (client, json)
+{
+	try
+	{
+		googl.shorten(json.shorten, function (data) 
+		{
+			socket.radio(client, "shorten", {shortened: data.id, original: json.shorten});
+		});
+	}
+	catch (error)
+	{
+		console.error("socket.shorten error: "+error);
+	}
+	return this;
+};
+
 /* single sitestream connection */
 socket.sitestream = function ()
 {
-	if (sitestream_key && secret && sitestream_secret)
+	try
 	{
-		var connected_clients_sitestream = new Array();
-		if (connected_clients.length > 0)
+		if (key && secret && sitestream_key && sitestream_secret)
 		{
-			var sitestream_index = 0;
-			for (var index in connected_clients)
+			var connected_clients_sitestream = new Array();
+			if (connected_clients.length > 0)
 			{
-				if (index++ % 100 == 0)
+				var sitestream_index = 0;
+				for (var index in connected_clients)
 				{
-					sitestream_index++;
-				}
-				if (typeof(connected_clients[index].client) == "object" && typeof(connected_clients[index].session) == "object")
-				{
-					var found = false;
-					var user_id = connected_clients[index].session.oauth._results.user_id;
-					var userstream = false;
-					if (typeof(connected_clients[index].userstream) == "object")
+					if (index++ % 100 == 0)
 					{
-						userstream = connected_clients[index].userstream;
+						sitestream_index++;
 					}
-					for (var index2 in connected_clients_sitestream[sitestream_index]) //make sure this user_id doesnt exist already
+					if (typeof(connected_clients[index].client) == "object" && typeof(connected_clients[index].session) == "object")
 					{
-						if (connected_clients_sitestream[sitestream_index][index2] == user_id)
+						var found = false;
+						var user_id = connected_clients[index].session.oauth._results.user_id;
+						var userstream = false;
+						if (typeof(connected_clients[index].userstream) == "object")
 						{
-							found = true; //if so, we wont add it twice
+							userstream = connected_clients[index].userstream;
 						}
-					}
-					if (!found)
-					{
-						if (userstream)
+						for (var index2 in connected_clients_sitestream[sitestream_index]) //make sure this user_id doesnt exist already
 						{
-							connected_clients[index].userstream.destroy(); //destroy the userstream
+							if (connected_clients_sitestream[sitestream_index][index2] == user_id)
+							{
+								found = true; //if so, we wont add it twice
+							}
 						}
-						connected_clients_sitestream[sitestream_index].push(user_id); //push this non-duplicate user in
+						if (!found)
+						{
+							if (userstream)
+							{
+								connected_clients[index].userstream.destroy(); //destroy the userstream
+							}
+							connected_clients_sitestream[sitestream_index].push(user_id); //push this non-duplicate user in
+						}
 					}
 				}
 			}
-		}
-		try
-		{
-			var tw = new site(key, secret, sitestream_key, sitestream_secret);
-		}
-		catch (error)
-		{
-			console.error("user oauth session issue: "+error);
-		}
-		for (var index in connected_clients_sitestream[sitestream_index])
-		{
-			tw.stream("site", {follow: connected_clients_sitestream[index], with: followings, include_entities: true}, function(stream)
+			try
 			{
-				stream.on("data", function (data)
+				var tw = new site(key, secret, sitestream_key, sitestream_secret);
+			}
+			catch (error2)
+			{
+				console.error("socket.sitestream oauth issue: "+error2);
+			}
+			for (var index in connected_clients_sitestream[sitestream_index])
+			{
+				tw.stream("site", {follow: connected_clients_sitestream[index], with: followings, include_entities: true}, function(stream)
 				{
-					try
+					stream.on("data", function (data)
 					{
-						if (data.for_user && data.message)
+						try
 						{
-							var user_id = data.for_user;
-							var payload = data.message;
-							var client = connected_clients[user_id].client;
-							if (payload.text && payload.created_at && payload.user)
+							if (data.for_user && data.message)
 							{
-								socket.radio(client, "tweet", payload);
-							}
-							else if (payload["delete"])
-							{
-								socket.radio(client, "delete", payload["delete"]);
-							}
-							else if (payload.direct_message)
-							{
-								socket.radio(client, "direct_message", payload.direct_message);
-							}
-							else if (payload.event)
-							{
-								socket.radio(client, "event", payload);
-							}
-							else if (payload.friends)
-							{
-								socket.radio(client, "friends", payload.friends);
+								var user_id = data.for_user;
+								var payload = data.message;
+								var client = connected_clients[user_id].client;
+								if (payload.text && payload.created_at && payload.user)
+								{
+									socket.radio(client, "tweet", payload);
+								}
+								else if (payload["delete"])
+								{
+									socket.radio(client, "delete", payload["delete"]);
+								}
+								else if (payload.direct_message)
+								{
+									socket.radio(client, "direct_message", payload.direct_message);
+								}
+								else if (payload.event)
+								{
+									socket.radio(client, "event", payload);
+								}
+								else if (payload.friends)
+								{
+									socket.radio(client, "friends", payload.friends);
+								}
 							}
 						}
-					}
-					catch(error)
+						catch(error)
+						{
+							console.error("socket.sitestream message error: "+error);
+						}
+					});
+					stream.on("error", function(data)
 					{
-						console.error("socket.sitestream message error: "+error);
-					}
+						//
+					});
+					stream.on("end", function()
+					{
+						//
+					});
 				});
-				stream.on("error", function(data)
-				{
-					//
-				});
-				stream.on("end", function()
-				{
-					//
-				});
-			});
+			}
+		}
+		else
+		{
+			console.error("socket.sitestream error: no sitestream key & secret");
 		}
 	}
-	else
+	catch (error)
 	{
-		console.log("socket.sitestream error: no sitestream keys");
+		console.error("socket.sitestream error: "+error);
+	}
+	return this;
+};
+
+/* show a specific status */
+socket.show = function (tw, client, json)
+{
+	try
+	{
+		tw.show(json.id_str, {include_entities: true}, function(error, data, response)
+		{
+			if (!error)
+			{
+				socket.radio(client, "show", data);
+			}
+		});
+	}
+	catch (error)
+	{
+		console.error("socket.show error: "+error);
+	}
+	return this;
+};
+
+/* send new status */
+socket.status = function (tw, client, json)
+{
+	try
+	{
+		switch (json.action)
+		{
+			case "dm":
+				tw.direct_message(json.data);
+			break;
+			case "tweet":
+				tw.update(json.data);
+			break;
+		}
+	}
+	catch (error)
+	{
+		console.error("socket.status error: "+error);
 	}
 	return this;
 };
@@ -679,55 +852,62 @@ socket.sitestream = function ()
 /* basic userstream connection,  */
 socket.userstream = function (tw, client, session)
 {
-	if (typeof(connected_clients[session.oauth._results.user_id].userstream) == "undefined")
+	try
 	{
-		tw.stream("user", {include_entities: true}, function(stream)
+		if (typeof(connected_clients[session.oauth._results.user_id].userstream) == "undefined")
 		{
-			connected_clients[session.oauth._results.user_id].userstream = stream;
-			stream.on("data", function (data)
+			tw.stream("user", {include_entities: true}, function(stream)
 			{
-				try
+				connected_clients[session.oauth._results.user_id].userstream = stream;
+				stream.on("data", function (data)
 				{
-					if (data.text && data.created_at && data.user)
+					try
 					{
-						socket.radio(client, "tweet", data);
+						if (data.text && data.created_at && data.user)
+						{
+							socket.radio(client, "tweet", data);
+						}
+						else if (data["delete"])
+						{
+							socket.radio(client, "delete", data["delete"]);
+						}
+						else if (data.direct_message)
+						{
+							socket.radio(client, "direct_message", data.direct_message);
+						}
+						else if (data.event)
+						{
+							socket.radio(client, "event", data);
+						}
+						else if (data.friends)
+						{
+							socket.radio(client, "friends", data.friends);
+						}
 					}
-					else if (data["delete"])
+					catch (error2)
 					{
-						socket.radio(client, "delete", data["delete"]);
+						console.error("socket.userstream message error: "+error2);
 					}
-					else if (data.direct_message)
-					{
-						socket.radio(client, "direct_message", data.direct_message);
-					}
-					else if (data.event)
-					{
-						socket.radio(client, "event", data);
-					}
-					else if (data.friends)
-					{
-						socket.radio(client, "friends", data.friends);
-					}
-				}
-				catch(error)
+				});
+				stream.on("error", function(data)
 				{
-					console.error("socket.userstream message error: "+error);
-				}
+					socket.radio(client, "server_error", {event: "error"});
+				});
+				stream.on("end", function()
+				{
+					socket.radio(client, "server_error", {event: "end"});
+				});
 			});
-			stream.on("error", function(data)
-			{
-				socket.radio(client, "server_error", {event: "error"});
-			});
-			stream.on("end", function()
-			{
-				socket.radio(client, "server_error", {event: "end"});
-			});
-		});
+		}
+		else
+		{
+			socket.drop(session); //close the previous stream
+			socket.userstream(tw, client, session); //loop through here again
+		}
+		return this;
 	}
-	else
+	catch (error)
 	{
-		socket.drop(session); //close the previous stream
-		socket.userstream(tw, client, session); //loop through here again
+		console.error("socket.userstream error: "+error);
 	}
-	return this;
 };

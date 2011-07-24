@@ -25,6 +25,10 @@
      storage_type = redis:
        sudo npm install connect-redis
 
+     bootnote: if you are using dotcloud and socket.io 0.7.x seems to be broken, i have included backwards compatibilty
+     between whatever the latest version of socket.io is versus 0.6.18. if you seem to be having this problem, install
+     socket.io through npm at 0.7 (to pull in the libs), then set socket_io_version to 0.6 in config.json. should work!
+
 2) register your application here: https://dev.twitter.com/apps
 3) register a gmail account, and go here for a url shortener key: https://code.google.com/apis/console
 4) register for an imgur api key here: http://imgur.com/register/api_anon
