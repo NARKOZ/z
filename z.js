@@ -325,27 +325,36 @@ var socket = sio.enable(
 });
 
 /* delete a tweet */
-socket.drop_tweet = function (tw, json)
+socket.drop_tweet = function (tw, client, json)
 {
-	console.log("tw: "+tw);
-	console.log("client: "+client);
-	console.log("json: "+json);
-	/*try
+	try
 	{
 		switch (json.action)
 		{
 			case "dm":
-				tw.destroy_dm(json.id_str);
+				tw.destroy_dm(json.id_str, function(error)
+				{
+					if (error)
+					{
+						console.error(error);
+					}
+				});
 			break;
 			case "tweet":
-				tw.destroy(json.id_str);
+				tw.destroy(json.id_str, function(error)
+				{
+					if (error)
+					{
+						console.error(error);
+					}
+				});
 			break;
 		}
 	}
 	catch (error)
 	{
 		console.error("socket.drop_tweet error: "+error);
-	}*/
+	}
 	return this;
 };
 
@@ -379,17 +388,29 @@ socket.drop = function (session)
 };
 
 /* favorite a tweet */
-socket.favorite = function (tw, json)
+socket.favorite = function (tw, client, json)
 {
 	try
 	{
 		switch (json.action)
 		{
 			case "do":
-				tw.favorite(json.id_str);
+				tw.favorite(json.id_str, function(error)
+				{
+					if (error)
+					{
+						console.error(error);
+					}
+				});
 			break;
 			case "undo":
-				tw.unfavorite(json.id_str);
+				tw.unfavorite(json.id_str, function(error)
+				{
+					if (error)
+					{
+						console.error(error);
+					}
+				});
 			break;
 		}
 	}
@@ -546,11 +567,11 @@ socket.on("sconnection", function(client, session)
 			{
 				client.on("delete", function(json)
 				{
-					socket.drop_tweet(tw, json);
+					socket.drop_tweet(tw, client, json);
 				});
 				client.on("favorite", function(json)
 				{
-					socket.favorite(tw, json);
+					socket.favorite(tw, client, json);
 				});
 				client.on("fetch", function(json)
 				{
@@ -577,14 +598,13 @@ socket.on("sconnection", function(client, session)
 			{
 				client.on("message", function(json)
 				{
-					console.log(JSON.stringify(json));
 					switch (json.msg)
 					{
 						case "delete":
-							socket.drop_tweet(tw. json.payload);
+							socket.drop_tweet(tw, client, json.payload);
 						break;
 						case "favorite":
-							socket.favorite(tw, json.payload);
+							socket.favorite(tw, client, json.payload);
 						break;
 						case "fetch":
 							socket.fetch(tw, client, session, json.payload);
@@ -837,10 +857,22 @@ socket.status = function (tw, client, json)
 		switch (json.action)
 		{
 			case "dm":
-				tw.direct_message(json.data);
+				tw.direct_message(json.data, function(error)
+				{
+					if (error)
+					{
+						console.error(error);
+					}
+				});
 			break;
 			case "tweet":
-				tw.update(json.data);
+				tw.update(json.data, function(error)
+				{
+					if (error)
+					{
+						console.error(error);
+					}
+				});
 			break;
 		}
 	}

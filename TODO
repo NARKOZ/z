@@ -26,4 +26,3 @@
    provide a working textarea and resizer but it is not within a modal window (back this code up?)
 8) decide whether to do list support:
      - lists are not available in realtime
-9) unbreak deletions

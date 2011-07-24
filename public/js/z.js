@@ -301,7 +301,7 @@ function z_engine_destroy(id, method)
 		switch (method)
 		{
 			case "dm":
-				z_engine_handle_emitter("destroy", {action: "dm", id_str: id});
+				z_engine_handle_emitter("delete", {action: "dm", id_str: id});
 				z_engine_drop_tweet(id);
 			break;
 			case "rt":
@@ -351,14 +351,14 @@ function z_engine_destroy(id, method)
 								$("rt-"+id+"-threaded").writeAttribute("onclick","z_engine_retweet('"+id+"');");
 								z_engine_tweet_right_click(id, "rt-"+id+"-threaded", author, author2, userid, usermentions, text, faved, false, locked, "threads");
 							}
-							z_engine_handle_emitter("destroy", {action: "tweet", id_str: id});
+							z_engine_handle_emitter("delete", {action: "tweet", id_str: id});
 							$break;
 						}
 					}
 				});
 			break;
 			case "tweet":
-				z_engine_handle_emitter("destroy", {action: "tweet", id_str: id});
+				z_engine_handle_emitter("delete", {action: "tweet", id_str: id});
 			break;
 		}
 	}
@@ -1492,6 +1492,7 @@ function z_engine_stream_queue()
 /* timers */
 function z_engine_timers()
 {
+	z_engine_fetch_timeline("dms-inbox");
 	z_engine_fetch_timeline("rates");
 	z_engine_fetch_timeline("home");
 	z_engine_fetch_timeline.delay(2, "userstream");
