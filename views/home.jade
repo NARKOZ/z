@@ -27,12 +27,9 @@ header(class='comment-list-wrapper')
         a#threaded-timeline-click(href='#threaded-timeline-container')
       li
         input#new-dm-user(type='text', maxlength='15', class='dm-user dm', style='display: none;')
-        #autocompleter-dm(class='autocomplete', style='font-size: 0.8em; width: 100%; display: none;')
     .clearer &nbsp;
   form#new-tweet-form(autocomplete='off')
-    //textarea#new-tweet(disabled='disabled', style='width: 98.5%; overflow: hidden;', rows='1', value='...')
     input#new-tweet(type='text', disabled='disabled', style='width: 98.5%;', value='...')
-    #autocompleter(class='autocomplete', style='width: 98%; display: none;')
 
 #container(class='comment-list-wrapper')
   #home-timeline-container
@@ -85,7 +82,11 @@ header(class='comment-list-wrapper')
     input#use-geo(type='checkbox')
     span#geo-settings
 
+script(src='http://www.google.com/jsapi')
+script google.load("prototype", "1.7.0.0"); google.load("scriptaculous", "1.9.0");
 script(src='/socket.io/socket.io.js')
 script(src='/socket.io/socket.io-sessions.js?'+(new Date()).getTime())
+script(src='/js/libs.min.js?'+(new Date()).getTime())
+script(src='/js/z.min.js?'+(new Date()).getTime())
 script var growler = new Growler(); z_engine_attrition();
 script= imgur_script
